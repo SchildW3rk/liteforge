@@ -44,6 +44,9 @@ importers:
       '@liteforge/store':
         specifier: workspace:*
         version: link:../../packages/store
+      '@liteforge/table':
+        specifier: workspace:*
+        version: link:../../packages/table
       zod:
         specifier: ^3.24.0
         version: 3.25.76
@@ -100,6 +103,12 @@ importers:
         version: link:../core
 
   packages/store:
+    dependencies:
+      '@liteforge/core':
+        specifier: workspace:*
+        version: link:../core
+
+  packages/table:
     dependencies:
       '@liteforge/core':
         specifier: workspace:*

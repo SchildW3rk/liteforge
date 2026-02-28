@@ -16,6 +16,7 @@
     "@liteforge/devtools": "workspace:*",
     "@liteforge/query": "workspace:*",
     "@liteforge/form": "workspace:*",
+    "@liteforge/table": "workspace:*",
     "zod": "^3.24.0"
   },
   "devDependencies": {

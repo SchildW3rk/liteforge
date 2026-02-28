@@ -1,0 +1,45 @@
+{
+  "name": "@liteforge/table",
+  "version": "0.0.1",
+  "description": "LiteForge signals-based data table with sorting, filtering, pagination, and selection",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "dev": "tsc -p tsconfig.build.json --watch",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist *.tsbuildinfo"
+  },
+  "peerDependencies": {
+    "@liteforge/core": "workspace:*"
+  },
+  "keywords": [
+    "liteforge",
+    "table",
+    "data-table",
+    "signals",
+    "reactive",
+    "sorting",
+    "filtering",
+    "pagination"
+  ],
+  "author": "",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/liteforge/liteforge.git",
+    "directory": "packages/table"
+  }
+}

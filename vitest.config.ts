@@ -9,6 +9,7 @@ export default defineConfig({
       '@liteforge/store': path.resolve(__dirname, 'packages/store/src/index.ts'),
       '@liteforge/router': path.resolve(__dirname, 'packages/router/src/index.ts'),
       '@liteforge/vite-plugin': path.resolve(__dirname, 'packages/vite-plugin/src/index.ts'),
+      '@liteforge/table': path.resolve(__dirname, 'packages/table/src/index.ts'),
     },
   },
   test: {
@@ -22,6 +23,7 @@ export default defineConfig({
       ['packages/store/**', 'node'],
       ['packages/vite-plugin/**', 'node'],
       ['packages/devtools/**', 'happy-dom'],
+      ['packages/table/**', 'happy-dom'],
     ],
     coverage: {
       provider: 'v8',

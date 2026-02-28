@@ -219,6 +219,12 @@ export const routes: RouteDefinition[] = [
         export: 'FormsPage',
         meta: { title: 'Forms' },
       },
+      {
+        path: '/tables',
+        component: () => import('./pages/dashboard/Tables.js'),
+        export: 'TablesPage',
+        meta: { title: 'Tables' },
+      },
     ],
   },
 
