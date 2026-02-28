@@ -29,6 +29,9 @@ importers:
       '@liteforge/devtools':
         specifier: workspace:*
         version: link:../../packages/devtools
+      '@liteforge/query':
+        specifier: workspace:*
+        version: link:../../packages/query
       '@liteforge/router':
         specifier: workspace:*
         version: link:../../packages/router
@@ -59,6 +62,12 @@ importers:
       '@liteforge/store':
         specifier: workspace:*
         version: link:../store
+
+  packages/query:
+    dependencies:
+      '@liteforge/core':
+        specifier: workspace:*
+        version: link:../core
 
   packages/router:
     dependencies:

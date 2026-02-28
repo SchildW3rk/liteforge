@@ -1,0 +1,43 @@
+{
+  "name": "@liteforge/query",
+  "version": "0.0.1",
+  "description": "LiteForge data fetching and caching: createQuery, createMutation, queryCache",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "dev": "tsc -p tsconfig.build.json --watch",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist *.tsbuildinfo"
+  },
+  "peerDependencies": {
+    "@liteforge/core": "workspace:*"
+  },
+  "keywords": [
+    "liteforge",
+    "query",
+    "data-fetching",
+    "caching",
+    "signals",
+    "reactive"
+  ],
+  "author": "",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/liteforge/liteforge.git",
+    "directory": "packages/query"
+  }
+}

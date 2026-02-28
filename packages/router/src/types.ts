@@ -393,8 +393,8 @@ export interface LazyDefaults {
   timeout?: number;
   /** Minimum time to show loading state to prevent flash */
   minLoadTime?: number;
-  /** Default loading component for all lazy routes */
-  loading?: RouteComponent;
+  /** Default loading component for all lazy routes - must be zero-argument function */
+  loading?: () => Node;
   /** Default error component for all lazy routes */
   error?: (error: Error, retry: () => void) => Node;
 }

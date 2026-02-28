@@ -13,7 +13,8 @@
     "@liteforge/runtime": "workspace:*",
     "@liteforge/store": "workspace:*",
     "@liteforge/router": "workspace:*",
-    "@liteforge/devtools": "workspace:*"
+    "@liteforge/devtools": "workspace:*",
+    "@liteforge/query": "workspace:*"
   },
   "devDependencies": {
     "@liteforge/vite-plugin": "workspace:*",

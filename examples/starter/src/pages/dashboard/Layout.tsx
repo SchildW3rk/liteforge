@@ -54,6 +54,11 @@ export const DashboardLayout = createComponent({
               activeClass: 'active',
             })}
             {Link({
+              href: '/dashboard/posts',
+              children: 'Posts',
+              activeClass: 'active',
+            })}
+            {Link({
               href: '/dashboard/settings',
               children: 'Settings',
               activeClass: 'active',

@@ -261,7 +261,7 @@ export interface CompileRouteOptions {
   /** Guard registry for resolving named guards */
   guardRegistry: Map<string, RouteGuard>;
   /** Global lazy loading defaults */
-  lazyDefaults?: LazyDefaults;
+  lazyDefaults: LazyDefaults | undefined;
 }
 
 /**
@@ -272,7 +272,7 @@ export function compileRoute(
   parent: CompiledRoute | null,
   options: CompileRouteOptions
 ): CompiledRoute {
-  const { guardRegistry, lazyDefaults } = options;
+  const { lazyDefaults } = options;
   const normalizedPath = normalizePath(definition.path);
   const fullPath = parent ? joinPaths(parent.fullPath, normalizedPath) : normalizedPath;
   const { regex, paramNames, isCatchAll } = compilePath(fullPath);

@@ -224,9 +224,10 @@ export function createRouter(options: RouterOptions): Router {
     // Capture from path for debug events
     const fromPath = currentLocation?.path ?? '';
     // Compute toPath from target (string or object)
-    const toPath = typeof target === 'string' 
-      ? target.split('?')[0].split('#')[0]
-      : target.path ?? '/';
+    // Extract path without query string and hash
+    const toPath: string = typeof target === 'string' 
+      ? (target.split('?')[0]?.split('#')[0] ?? '/')
+      : target.path;
     
     // Emit navigation start (zero cost if debug not enabled)
     const navStartTime = performance.now();

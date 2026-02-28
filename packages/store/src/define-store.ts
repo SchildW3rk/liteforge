@@ -207,7 +207,9 @@ export function defineStore<
     for (const key of Object.keys(signalState) as Array<keyof S>) {
       if (key in snapshot) {
         const value = deepClone(snapshot[key as string]);
-        signalState[key].set(value);
+        // Safe: We trust snapshot data from time-travel debugging
+        // The signal.set() accepts Widen<S[K]>, and value came from a prior state
+        (signalState[key].set as (v: unknown) => void)(value);
       }
     }
   }

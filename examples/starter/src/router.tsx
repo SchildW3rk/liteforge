@@ -201,6 +201,18 @@ export const routes: RouteDefinition[] = [
         lazy: { delay: 100, timeout: 5000 },
         meta: { title: 'Settings' },
       },
+      {
+        path: '/posts',
+        component: () => import('./pages/dashboard/Posts.js'),
+        export: 'PostsPage',
+        meta: { title: 'Posts' },
+      },
+      {
+        path: '/posts/:id',
+        component: () => import('./pages/dashboard/PostDetail.js'),
+        export: 'PostDetailPage',
+        meta: { title: 'Post Detail' },
+      },
     ],
   },
 
