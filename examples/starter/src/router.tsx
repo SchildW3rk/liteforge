@@ -213,6 +213,12 @@ export const routes: RouteDefinition[] = [
         export: 'PostDetailPage',
         meta: { title: 'Post Detail' },
       },
+      {
+        path: '/forms',
+        component: () => import('./pages/dashboard/Forms.js'),
+        export: 'FormsPage',
+        meta: { title: 'Forms' },
+      },
     ],
   },
 

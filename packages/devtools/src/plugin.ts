@@ -272,7 +272,7 @@ function setupKeyboardShortcut(
 
   function handleKeyDown(e: KeyboardEvent): void {
     if (
-      e.key.toLowerCase() === key &&
+      e.key?.toLowerCase() === key &&
       e.ctrlKey === ctrl &&
       e.shiftKey === shift &&
       e.altKey === alt &&

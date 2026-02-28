@@ -14,7 +14,9 @@
     "@liteforge/store": "workspace:*",
     "@liteforge/router": "workspace:*",
     "@liteforge/devtools": "workspace:*",
-    "@liteforge/query": "workspace:*"
+    "@liteforge/query": "workspace:*",
+    "@liteforge/form": "workspace:*",
+    "zod": "^3.24.0"
   },
   "devDependencies": {
     "@liteforge/vite-plugin": "workspace:*",
