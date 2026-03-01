@@ -61,12 +61,13 @@ export default function liteforgePlugin(options?: LiteForgePluginOptions): Plugi
       // Add HMR code in dev mode
       let finalCode = result.code;
       if (isDev && resolvedOptions.hmr && !hasHmrAcceptance(finalCode)) {
-        finalCode = appendHmrCode(finalCode);
+        finalCode = appendHmrCode(finalCode, id);
       }
 
       return {
         code: finalCode,
-        map: result.map ?? undefined,
+        // Return source map or empty mappings (null can break Vite's module graph)
+        map: result.map ?? { mappings: '' },
       };
     },
   };

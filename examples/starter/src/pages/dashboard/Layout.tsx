@@ -23,7 +23,6 @@ import type { Router } from '@liteforge/router';
 export const DashboardLayout = createComponent({
   name: 'DashboardLayout',
   component({ use }) {
-    console.log('[DashboardLayout] RENDER');
     const router = use<Router>('router');
 
     const handleLogout = async () => {

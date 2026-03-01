@@ -14,6 +14,7 @@ import type {
 } from './types.js';
 import { initAppContext, clearContext, use } from './context.js';
 import { isComponentFactory } from './component.js';
+import { getHMRHandler } from './hmr.js';
 
 // ============================================================================
 // Debug Utilities Type
@@ -228,6 +229,38 @@ export async function createApp(config: AppConfig): Promise<AppInstance> {
       console.log('  $lf.context   — App context');
       console.log('  $lf.unmount() — Unmount app');
       console.log('='.repeat(50));
+    }
+
+    // ========================================
+    // 8b. HMR support
+    // ========================================
+    const hmrHandler = getHMRHandler();
+    if (hmrHandler) {
+      // Set up full app re-render for HMR fallback
+      hmrHandler.fullRerender = () => {
+        console.log('[LiteForge HMR] Full app re-render');
+        
+        // Unmount current root
+        if (rootInstance) {
+          rootInstance.unmount();
+          rootInstance = null;
+        }
+        if (rootNode && rootNode.parentNode) {
+          rootNode.parentNode.removeChild(rootNode);
+          rootNode = null;
+        }
+        
+        // Re-mount root component
+        if (targetElement) {
+          if (isComponentFactory(config.root)) {
+            rootInstance = (config.root as ComponentFactory<Record<string, unknown>>)({});
+            rootInstance.mount(targetElement);
+          } else {
+            rootNode = (config.root as () => Node)();
+            targetElement.appendChild(rootNode);
+          }
+        }
+      };
     }
 
     // ========================================
