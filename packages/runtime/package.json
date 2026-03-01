@@ -1,7 +1,29 @@
 {
   "name": "@liteforge/runtime",
-  "version": "0.0.1",
-  "description": "LiteForge DOM runtime: createComponent, context, lifecycle, control flow",
+  "version": "0.1.0",
+  "description": "Component runtime with JSX support. Control flow components for conditional and list rendering.",
+  "author": "SchildW3rk <contact@schildw3rk.dev>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/schildw3rk/liteforge",
+    "directory": "packages/runtime"
+  },
+  "homepage": "https://github.com/schildw3rk/liteforge#readme",
+  "bugs": {
+    "url": "https://github.com/schildw3rk/liteforge/issues"
+  },
+  "keywords": [
+    "liteforge",
+    "runtime",
+    "jsx",
+    "components",
+    "dom",
+    "show",
+    "for",
+    "switch",
+    "control-flow"
+  ],
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -13,30 +35,27 @@
     }
   },
   "files": [
-    "dist"
+    "dist",
+    "README.md",
+    "LICENSE"
   ],
   "sideEffects": false,
+  "engines": {
+    "node": ">=18"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "dev": "tsc -p tsconfig.build.json --watch",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf dist *.tsbuildinfo"
   },
-  "dependencies": {
-    "@liteforge/core": "workspace:*"
+  "peerDependencies": {
+    "@liteforge/core": ">=0.1.0"
   },
-  "keywords": [
-    "liteforge",
-    "runtime",
-    "components",
-    "dom",
-    "jsx"
-  ],
-  "author": "",
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/liteforge/liteforge.git",
-    "directory": "packages/runtime"
+  "devDependencies": {
+    "@liteforge/core": "workspace:*"
   }
 }

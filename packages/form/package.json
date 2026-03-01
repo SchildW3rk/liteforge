@@ -1,7 +1,28 @@
 {
   "name": "@liteforge/form",
-  "version": "0.0.1",
-  "description": "LiteForge signals-based form management with Zod validation",
+  "version": "0.1.0",
+  "description": "Form management with Zod validation. Signal-driven field state with nested fields and array fields.",
+  "author": "SchildW3rk <contact@schildw3rk.dev>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/schildw3rk/liteforge",
+    "directory": "packages/form"
+  },
+  "homepage": "https://github.com/schildw3rk/liteforge#readme",
+  "bugs": {
+    "url": "https://github.com/schildw3rk/liteforge/issues"
+  },
+  "keywords": [
+    "liteforge",
+    "form",
+    "forms",
+    "validation",
+    "zod",
+    "field-arrays",
+    "signals",
+    "reactive"
+  ],
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -13,9 +34,17 @@
     }
   },
   "files": [
-    "dist"
+    "dist",
+    "README.md",
+    "LICENSE"
   ],
   "sideEffects": false,
+  "engines": {
+    "node": ">=18"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "dev": "tsc -p tsconfig.build.json --watch",
@@ -23,22 +52,11 @@
     "clean": "rm -rf dist *.tsbuildinfo"
   },
   "peerDependencies": {
-    "@liteforge/core": "workspace:*",
+    "@liteforge/core": ">=0.1.0",
     "zod": "^3.0.0"
   },
-  "keywords": [
-    "liteforge",
-    "form",
-    "validation",
-    "zod",
-    "signals",
-    "reactive"
-  ],
-  "author": "",
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/liteforge/liteforge.git",
-    "directory": "packages/form"
+  "devDependencies": {
+    "@liteforge/core": "workspace:*",
+    "zod": "^3.24.1"
   }
 }

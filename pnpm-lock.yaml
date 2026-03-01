@@ -23,6 +23,9 @@ importers:
 
   examples/starter:
     dependencies:
+      '@liteforge/calendar':
+        specifier: workspace:*
+        version: link:../../packages/calendar
       '@liteforge/core':
         specifier: workspace:*
         version: link:../../packages/core
@@ -60,6 +63,12 @@ importers:
       vite:
         specifier: ^6.0.0
         version: 6.4.1(@types/node@25.3.2)
+
+  packages/calendar:
+    dependencies:
+      '@liteforge/core':
+        specifier: workspace:*
+        version: link:../core
 
   packages/core: {}
 

@@ -1,7 +1,29 @@
 {
   "name": "@liteforge/router",
-  "version": "0.0.1",
-  "description": "LiteForge router: guards, middleware, preloading, transitions",
+  "version": "0.1.0",
+  "description": "SPA router with nested routes, guards, middleware, lazy loading, and code splitting.",
+  "author": "SchildW3rk <contact@schildw3rk.dev>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/schildw3rk/liteforge",
+    "directory": "packages/router"
+  },
+  "homepage": "https://github.com/schildw3rk/liteforge#readme",
+  "bugs": {
+    "url": "https://github.com/schildw3rk/liteforge/issues"
+  },
+  "keywords": [
+    "liteforge",
+    "router",
+    "spa",
+    "navigation",
+    "routing",
+    "guards",
+    "middleware",
+    "lazy-loading",
+    "nested-routes"
+  ],
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -13,31 +35,28 @@
     }
   },
   "files": [
-    "dist"
+    "dist",
+    "README.md",
+    "LICENSE"
   ],
   "sideEffects": false,
+  "engines": {
+    "node": ">=18"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "dev": "tsc -p tsconfig.build.json --watch",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf dist *.tsbuildinfo"
   },
-  "dependencies": {
+  "peerDependencies": {
+    "@liteforge/core": ">=0.1.0"
+  },
+  "devDependencies": {
     "@liteforge/core": "workspace:*",
     "@liteforge/runtime": "workspace:*"
-  },
-  "keywords": [
-    "liteforge",
-    "router",
-    "guards",
-    "middleware",
-    "spa"
-  ],
-  "author": "",
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/liteforge/liteforge.git",
-    "directory": "packages/router"
   }
 }

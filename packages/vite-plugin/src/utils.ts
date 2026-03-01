@@ -88,11 +88,73 @@ export function mightContainJsx(code: string): boolean {
 // =============================================================================
 
 /**
- * Check if a prop name is an event handler (onClick, onInput, etc.)
- * Event handlers start with "on" followed by an uppercase letter.
+ * Common DOM event names (lowercase, without 'on' prefix)
+ * This covers the most common events. The runtime will handle
+ * any event starting with 'on' + uppercase, but we need this
+ * list to also support lowercase HTML-style event handlers.
+ */
+const KNOWN_EVENTS = new Set([
+  // Mouse events
+  'click', 'dblclick', 'mousedown', 'mouseup', 'mousemove',
+  'mouseenter', 'mouseleave', 'mouseover', 'mouseout',
+  // Keyboard events
+  'keydown', 'keyup', 'keypress',
+  // Form events
+  'input', 'change', 'submit', 'reset', 'focus', 'blur',
+  'focusin', 'focusout', 'invalid',
+  // Drag events
+  'drag', 'dragstart', 'dragend', 'dragenter', 'dragleave', 'dragover', 'drop',
+  // Touch events
+  'touchstart', 'touchmove', 'touchend', 'touchcancel',
+  // Pointer events
+  'pointerdown', 'pointerup', 'pointermove', 'pointerenter', 'pointerleave',
+  'pointerover', 'pointerout', 'pointercancel', 'gotpointercapture', 'lostpointercapture',
+  // Scroll/wheel
+  'scroll', 'wheel',
+  // Clipboard
+  'copy', 'cut', 'paste',
+  // Media
+  'play', 'pause', 'ended', 'loadeddata', 'loadedmetadata', 'canplay',
+  'timeupdate', 'volumechange', 'seeking', 'seeked',
+  // Animation
+  'animationstart', 'animationend', 'animationiteration',
+  'transitionstart', 'transitionend', 'transitionrun', 'transitioncancel',
+  // Load/error
+  'load', 'error', 'abort',
+  // Context menu
+  'contextmenu',
+  // Selection
+  'select', 'selectstart',
+  // Misc
+  'resize', 'beforeinput', 'compositionstart', 'compositionupdate', 'compositionend',
+]);
+
+/**
+ * Check if a prop name is an event handler (onClick, onInput, onclick, oninput, etc.)
+ * 
+ * Supports two patterns:
+ * 1. React-style: on + PascalCase (onClick, onInput) - always treated as event handler
+ * 2. HTML-style: on + lowercase known event (onclick, oninput) - only if event is known
+ * 
+ * This correctly excludes non-event props like 'online' and 'once'.
  */
 export function isEventHandler(propName: string): boolean {
-  return propName.length > 2 && propName.startsWith('on') && isUpperCase(propName.charAt(2));
+  if (propName.length <= 2 || !propName.startsWith('on')) {
+    return false;
+  }
+  
+  const thirdChar = propName.charAt(2);
+  
+  // React-style: on + PascalCase (onClick, onInput)
+  // If third char is uppercase, it's always an event handler
+  if (isUpperCase(thirdChar)) {
+    return true;
+  }
+  
+  // HTML-style: on + lowercase (onclick, oninput)
+  // Only treat as event if it's a known event name
+  const eventName = propName.slice(2).toLowerCase();
+  return KNOWN_EVENTS.has(eventName);
 }
 
 /**

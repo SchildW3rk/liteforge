@@ -1,7 +1,28 @@
 {
   "name": "@liteforge/store",
-  "version": "0.0.1",
-  "description": "LiteForge state management: defineStore, storeRegistry, plugins",
+  "version": "0.1.0",
+  "description": "Global state management with defineStore. Type-safe, reactive, with built-in devtools support.",
+  "author": "SchildW3rk <contact@schildw3rk.dev>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/schildw3rk/liteforge",
+    "directory": "packages/store"
+  },
+  "homepage": "https://github.com/schildw3rk/liteforge#readme",
+  "bugs": {
+    "url": "https://github.com/schildw3rk/liteforge/issues"
+  },
+  "keywords": [
+    "liteforge",
+    "store",
+    "state-management",
+    "global-state",
+    "defineStore",
+    "signals",
+    "reactive",
+    "frontend"
+  ],
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -13,30 +34,27 @@
     }
   },
   "files": [
-    "dist"
+    "dist",
+    "README.md",
+    "LICENSE"
   ],
   "sideEffects": false,
+  "engines": {
+    "node": ">=18"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "dev": "tsc -p tsconfig.build.json --watch",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf dist *.tsbuildinfo"
   },
-  "dependencies": {
-    "@liteforge/core": "workspace:*"
+  "peerDependencies": {
+    "@liteforge/core": ">=0.1.0"
   },
-  "keywords": [
-    "liteforge",
-    "store",
-    "state-management",
-    "signals",
-    "reactive"
-  ],
-  "author": "",
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/liteforge/liteforge.git",
-    "directory": "packages/store"
+  "devDependencies": {
+    "@liteforge/core": "workspace:*"
   }
 }

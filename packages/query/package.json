@@ -1,7 +1,29 @@
 {
   "name": "@liteforge/query",
-  "version": "0.0.1",
-  "description": "LiteForge data fetching and caching: createQuery, createMutation, queryCache",
+  "version": "0.1.0",
+  "description": "Data fetching and caching library. Automatic refetching, cache invalidation, and optimistic updates.",
+  "author": "SchildW3rk <contact@schildw3rk.dev>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/schildw3rk/liteforge",
+    "directory": "packages/query"
+  },
+  "homepage": "https://github.com/schildw3rk/liteforge#readme",
+  "bugs": {
+    "url": "https://github.com/schildw3rk/liteforge/issues"
+  },
+  "keywords": [
+    "liteforge",
+    "query",
+    "data-fetching",
+    "cache",
+    "api",
+    "async",
+    "mutation",
+    "signals",
+    "reactive"
+  ],
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -13,9 +35,17 @@
     }
   },
   "files": [
-    "dist"
+    "dist",
+    "README.md",
+    "LICENSE"
   ],
   "sideEffects": false,
+  "engines": {
+    "node": ">=18"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "dev": "tsc -p tsconfig.build.json --watch",
@@ -23,21 +53,9 @@
     "clean": "rm -rf dist *.tsbuildinfo"
   },
   "peerDependencies": {
-    "@liteforge/core": "workspace:*"
+    "@liteforge/core": ">=0.1.0"
   },
-  "keywords": [
-    "liteforge",
-    "query",
-    "data-fetching",
-    "caching",
-    "signals",
-    "reactive"
-  ],
-  "author": "",
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/liteforge/liteforge.git",
-    "directory": "packages/query"
+  "devDependencies": {
+    "@liteforge/core": "workspace:*"
   }
 }

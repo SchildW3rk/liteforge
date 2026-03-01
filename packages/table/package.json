@@ -1,7 +1,29 @@
 {
   "name": "@liteforge/table",
-  "version": "0.0.1",
-  "description": "LiteForge signals-based data table with sorting, filtering, pagination, and selection",
+  "version": "0.1.0",
+  "description": "Reactive data table with sorting, filtering, pagination, column visibility, and row selection.",
+  "author": "SchildW3rk <contact@schildw3rk.dev>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/schildw3rk/liteforge",
+    "directory": "packages/table"
+  },
+  "homepage": "https://github.com/schildw3rk/liteforge#readme",
+  "bugs": {
+    "url": "https://github.com/schildw3rk/liteforge/issues"
+  },
+  "keywords": [
+    "liteforge",
+    "table",
+    "data-table",
+    "data-grid",
+    "sorting",
+    "filtering",
+    "pagination",
+    "signals",
+    "reactive"
+  ],
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -13,9 +35,17 @@
     }
   },
   "files": [
-    "dist"
+    "dist",
+    "README.md",
+    "LICENSE"
   ],
   "sideEffects": false,
+  "engines": {
+    "node": ">=18"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "dev": "tsc -p tsconfig.build.json --watch",
@@ -23,23 +53,9 @@
     "clean": "rm -rf dist *.tsbuildinfo"
   },
   "peerDependencies": {
-    "@liteforge/core": "workspace:*"
+    "@liteforge/core": ">=0.1.0"
   },
-  "keywords": [
-    "liteforge",
-    "table",
-    "data-table",
-    "signals",
-    "reactive",
-    "sorting",
-    "filtering",
-    "pagination"
-  ],
-  "author": "",
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/liteforge/liteforge.git",
-    "directory": "packages/table"
+  "devDependencies": {
+    "@liteforge/core": "workspace:*"
   }
 }

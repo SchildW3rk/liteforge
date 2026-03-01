@@ -1,27 +1,28 @@
 {
-  "name": "@liteforge/vite-plugin",
+  "name": "@liteforge/calendar",
   "version": "0.1.0",
-  "description": "Vite plugin for LiteForge JSX transform. Converts JSX to direct DOM operations with signal-safe reactivity.",
+  "description": "Full scheduling calendar with day/week/month/agenda views, drag & drop, resize, and resource columns.",
   "author": "SchildW3rk <contact@schildw3rk.dev>",
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/schildw3rk/liteforge",
-    "directory": "packages/vite-plugin"
+    "directory": "packages/calendar"
   },
   "homepage": "https://github.com/schildw3rk/liteforge#readme",
   "bugs": {
     "url": "https://github.com/schildw3rk/liteforge/issues"
   },
   "keywords": [
-    "vite",
-    "vite-plugin",
     "liteforge",
-    "jsx",
-    "transform",
+    "calendar",
+    "scheduler",
+    "scheduling",
+    "events",
+    "resources",
+    "drag-drop",
     "signals",
-    "reactivity",
-    "build-tool"
+    "reactive"
   ],
   "type": "module",
   "main": "./dist/index.js",
@@ -51,22 +52,10 @@
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf dist *.tsbuildinfo"
   },
-  "dependencies": {
-    "@babel/core": "^7.26.0",
-    "@babel/generator": "^7.26.0",
-    "@babel/parser": "^7.26.0",
-    "@babel/traverse": "^7.26.0",
-    "@babel/types": "^7.26.0"
-  },
   "peerDependencies": {
-    "vite": "^5.0.0 || ^6.0.0"
+    "@liteforge/core": ">=0.1.0"
   },
   "devDependencies": {
-    "@types/babel__core": "^7.20.5",
-    "@types/babel__generator": "^7.6.8",
-    "@types/babel__traverse": "^7.20.6",
-    "@types/node": "^25.3.2",
-    "typescript": "^5.7.2",
-    "vite": "^6.0.7"
+    "@liteforge/core": "workspace:*"
   }
 }

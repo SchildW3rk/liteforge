@@ -73,6 +73,11 @@ export const DashboardLayout = createComponent({
               children: 'Tables',
               activeClass: 'active',
             })}
+            {Link({
+              href: '/dashboard/calendar',
+              children: 'Calendar',
+              activeClass: 'active',
+            })}
             {Show({
               when: () => authStore.isAdmin(),
               children: () => Link({

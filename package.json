@@ -13,7 +13,12 @@
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
     "clean": "pnpm -r exec rm -rf dist",
-    "clean:all": "pnpm clean && rm -rf node_modules"
+    "clean:all": "pnpm clean && rm -rf node_modules",
+    "prepublish:check": "pnpm clean && pnpm build:packages && pnpm test:run && pnpm typecheck:all",
+    "publish:all": "pnpm prepublish:check && pnpm -r publish --access public",
+    "publish:dry": "pnpm prepublish:check && pnpm -r publish --access public --dry-run",
+    "version:patch": "pnpm -r --filter './packages/*' exec npm version patch",
+    "version:minor": "pnpm -r --filter './packages/*' exec npm version minor"
   },
   "devDependencies": {
     "@vitest/coverage-v8": "^2.1.8",

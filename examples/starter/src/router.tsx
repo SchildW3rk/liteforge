@@ -225,6 +225,12 @@ export const routes: RouteDefinition[] = [
         export: 'TablesPage',
         meta: { title: 'Tables' },
       },
+      {
+        path: '/calendar',
+        component: () => import('./pages/dashboard/Calendar.js'),
+        export: 'CalendarPage',
+        meta: { title: 'Calendar' },
+      },
     ],
   },
 

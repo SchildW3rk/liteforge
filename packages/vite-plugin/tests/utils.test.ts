@@ -150,8 +150,14 @@ describe('isEventHandler', () => {
     expect(isEventHandler('on')).toBe(false);
   });
 
-  it('returns false for "onclick" (lowercase)', () => {
-    expect(isEventHandler('onclick')).toBe(false);
+  it('returns true for "onclick" (lowercase HTML-style)', () => {
+    // HTML-style lowercase event handlers are supported for known events
+    expect(isEventHandler('onclick')).toBe(true);
+    expect(isEventHandler('oninput')).toBe(true);
+    expect(isEventHandler('onchange')).toBe(true);
+    expect(isEventHandler('onkeydown')).toBe(true);
+    expect(isEventHandler('onmouseenter')).toBe(true);
+    expect(isEventHandler('onpointerdown')).toBe(true);
   });
 
   it('returns false for regular props', () => {

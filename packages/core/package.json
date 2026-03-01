@@ -1,7 +1,29 @@
 {
   "name": "@liteforge/core",
-  "version": "0.0.1",
-  "description": "LiteForge reactive primitives: signal, computed, effect, batch",
+  "version": "0.1.0",
+  "description": "Signals-based reactivity core for LiteForge. Create signals, computed values, and effects with fine-grained DOM updates.",
+  "author": "SchildW3rk <contact@schildw3rk.dev>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/schildw3rk/liteforge",
+    "directory": "packages/core"
+  },
+  "homepage": "https://github.com/schildw3rk/liteforge#readme",
+  "bugs": {
+    "url": "https://github.com/schildw3rk/liteforge/issues"
+  },
+  "keywords": [
+    "liteforge",
+    "signals",
+    "reactive",
+    "computed",
+    "effect",
+    "fine-grained",
+    "reactivity",
+    "frontend",
+    "framework"
+  ],
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -13,27 +35,21 @@
     }
   },
   "files": [
-    "dist"
+    "dist",
+    "README.md",
+    "LICENSE"
   ],
   "sideEffects": false,
+  "engines": {
+    "node": ">=18"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "dev": "tsc -p tsconfig.build.json --watch",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf dist *.tsbuildinfo"
-  },
-  "keywords": [
-    "liteforge",
-    "signals",
-    "reactive",
-    "fine-grained",
-    "reactivity"
-  ],
-  "author": "",
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/liteforge/liteforge.git",
-    "directory": "packages/core"
   }
 }

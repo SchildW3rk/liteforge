@@ -2,19 +2,21 @@
 
 ## Project Overview
 
-We are building **LiteForge** – a modern frontend framework with the following core principles:
+**LiteForge** is a modern frontend framework built from scratch with these core principles:
 
 - **No Virtual DOM** – Direct, fine-grained DOM manipulation via Signals/Effects
 - **JSX Syntax** – Custom Vite plugin transforms JSX to direct DOM operations at build-time
 - **Signals-based Reactivity** – Automatic dependency tracking, no manual subscriptions
 - **Zero-Flicker Architecture** – Components render ONLY when async data is fully loaded
 - **Unified Context System** – No provider wrapping, no prop drilling, one `use()` function
-- **Built-in Router** – With guards, middleware, preloading, and transitions
+- **Built-in Router** – With guards, middleware, lazy loading, and nested routes
 - **Store System** – With global registry for full state inspection
+- **Data Fetching** – Signals-based query/mutation system with caching
+- **Form Management** – Zod-validated forms with reactive fields
+- **Data Tables** – Full-featured reactive tables with sorting, filtering, pagination
 
-**Tech Stack:** TypeScript, Vite, JSX, no external runtime dependencies (we build everything ourselves).
-
-**Target:** < 5kb gzipped core runtime.
+**Tech Stack:** TypeScript, Vite, JSX, pnpm monorepo.  
+**Target:** < 5kb gzipped core runtime. Zero external runtime dependencies in core packages.
 
 ---
 
@@ -25,265 +27,104 @@ liteforge/
 ├── packages/
 │   ├── core/                # Reactivity: signal(), computed(), effect(), batch()
 │   ├── runtime/             # DOM Renderer, createComponent(), Lifecycle, use()
-│   ├── store/               # defineStore(), storeRegistry
-│   ├── router/              # Router, Guards, Middleware, Link, Route
-│   ├── vite-plugin/         # JSX → DOM transform, template extraction, HMR
-│   └── devtools/            # DevTools panel with time-travel debugging
-├── create-liteforge/        # CLI scaffolding tool (later phase)
+│   ├── store/               # defineStore(), storeRegistry, time-travel
+│   ├── router/              # Router, Guards, Middleware, Link, lazy loading
+│   ├── query/               # createQuery(), createMutation(), queryCache
+│   ├── form/                # createForm() with Zod validation
+│   ├── table/               # createTable() with sort, filter, pagination
+│   ├── vite-plugin/         # JSX → DOM transform, template extraction
+│   └── devtools/            # DevTools panel (Ctrl+Shift+D) with 5 tabs
 ├── examples/
-│   └── starter/             # Demo app using all features
+│   └── starter/             # Demo app showcasing all features
 ├── tsconfig.json
-├── package.json             # Monorepo root
+├── package.json             # Monorepo root (pnpm workspaces)
 └── vitest.config.ts
 ```
 
-Use a **pnpm workspace monorepo**. Each package is independently publishable.
+---
+
+## Package Status
+
+| Package | Status | Tests | Description |
+|---------|--------|-------|-------------|
+| `@liteforge/core` | ✅ Complete | ~120 | signal, computed, effect, batch, onCleanup |
+| `@liteforge/runtime` | ✅ Complete | ~200 | createComponent, createApp, use(), Show, For, Switch, Dynamic |
+| `@liteforge/store` | ✅ Complete | ~150 | defineStore, storeRegistry, plugins, time-travel |
+| `@liteforge/router` | ✅ Complete | ~250 | Router, guards, middleware, nested routes, lazy loading |
+| `@liteforge/query` | ✅ Complete | 67 | createQuery, createMutation, queryCache |
+| `@liteforge/form` | ✅ Complete | 48 | createForm with Zod, nested fields, array fields |
+| `@liteforge/table` | ✅ Complete | 61 | createTable with sort, filter, pagination, selection |
+| `@liteforge/vite-plugin` | ✅ Complete | — | JSX transform, template extraction, signal-safe getters |
+| `@liteforge/devtools` | ✅ Complete | ~100 | 5-tab panel: Signals, Stores, Router, Components, Performance |
+| Demo App | ✅ Complete | — | Full app with all features at examples/starter |
+
+**Total: ~1000+ tests across all packages**
 
 ---
 
-## Phase 1: Reactivity Core (`packages/core`)
+## Core Packages (Phase 1)
 
-This is the foundation. Everything else builds on this. Implement in this order:
-
-### 1.1 Signal
+### `@liteforge/core` — Reactivity
 
 ```ts
-const count = signal(0);
-count();                    // read → returns 0
-count.set(5);               // write → notifies all subscribers
-count.update(n => n + 1);   // functional update
-```
+import { signal, computed, effect, batch, onCleanup } from '@liteforge/core'
 
-**Internals:**
-- Global `observerStack` (array) tracks the currently running Effect/Computed
-- Each Signal holds a `Set<() => void>` of subscriber functions
-- On read (`count()`): if there's an active observer on the stack, add it to subscribers
-- On write (`count.set()`): if value changed (Object.is comparison), notify all subscribers
-- Signal is a callable function (the getter) with `.set()` and `.update()` methods attached
+const count = signal(0)
+count()                     // read → 0
+count.set(5)                // write → notifies subscribers
+count.update(n => n + 1)    // functional update
 
-### 1.2 Effect
+const doubled = computed(() => count() * 2)  // lazy, cached
 
-```ts
 const dispose = effect(() => {
-  console.log(count());  // auto-subscribes to count
-});
-dispose(); // cleanup, remove all subscriptions
+  console.log(count())      // auto-subscribes
+})
+
+batch(() => {               // deferred notifications
+  count.set(1)
+  name.set('Max')
+})
 ```
 
-**Internals:**
-- Pushes itself onto `observerStack` before running the callback
-- Pops itself after callback finishes
-- Before each re-run: clears old subscriptions to avoid stale dependencies
-- Returns a dispose function that cleans up all subscriptions
-- Supports nested effects (stack-based)
-
-### 1.3 Computed
-
-```ts
-const doubled = computed(() => count() * 2);
-doubled(); // read-only signal, lazy evaluation
-```
-
-**Internals:**
-- Implemented as a Signal + Effect combo internally
-- Lazy: only re-computes when read AND dependencies have changed
-- Uses a dirty flag to track if recomputation is needed
-- Read-only: no `.set()` or `.update()`
-
-### 1.4 Batch
-
-```ts
-batch(() => {
-  count.set(1);
-  name.set('Max');
-}); // subscribers notified only once after batch completes
-```
-
-**Internals:**
-- Global `batchDepth` counter
-- During batch: collect all pending notifications but don't fire them
-- When outermost batch ends (depth reaches 0): fire all pending notifications once
-- Supports nested batches
-
-### 1.5 Cleanup in Effects
-
-```ts
-effect(() => {
-  const handler = () => console.log(count());
-  window.addEventListener('resize', handler);
-
-  // Cleanup runs before next effect execution and on dispose
-  onCleanup(() => window.removeEventListener('resize', handler));
-});
-```
-
-### Tests (Vitest)
-
-Write comprehensive tests for:
-- Signal read/write/update
-- Effect auto-subscription and re-run
-- Computed lazy evaluation and caching
-- Batch deferred notifications
-- Nested effects
-- Cleanup functions
-- Diamond dependency problem (A → B, A → C, B+C → D: D should only update once)
-- Memory: disposed effects should not hold references
-
----
-
-## Phase 2: DOM Runtime (`packages/runtime`)
-
-### 2.1 createComponent Factory
-
-This is the central API. A component is defined as an object passed to `createComponent()`:
+### `@liteforge/runtime` — Components & DOM
 
 ```tsx
 export const MyComponent = createComponent({
-  // Optional: prop definitions with defaults
-  props: {
-    userId: { type: Number, required: true },
-    showAvatar: { type: Boolean, default: true },
-  },
-
-  // PHASE 1 – SETUP (synchronous, runs first)
-  // Create signals, local state. No DOM access. No async.
   setup({ props, use }) {
-    const editMode = signal(false);
-    const theme = use('theme'); // Access app-level context
-    return { editMode, theme };
+    const editMode = signal(false)
+    return { editMode }
   },
 
-  // PHASE 2 – LOAD (async, runs before render)
-  // Fetch data. Component is NOT rendered until this resolves.
-  // Return value becomes `data` in component function.
   async load({ props, setup, use }) {
-    const api = use('api');
-    const user = await api.get(`/users/${props.userId}`);
-    return { user };
+    const user = await api.get(`/users/${props.userId}`)
+    return { user }
   },
 
-  // PLACEHOLDER – shown IMMEDIATELY while load() is running
-  placeholder: ({ props }) => <div class="skeleton shimmer" />,
+  placeholder: () => <div class="skeleton" />,
+  error: ({ error, retry }) => <button onclick={retry}>Retry</button>,
 
-  // ERROR – shown if load() rejects
-  error: ({ error, retry }) => (
-    <div>
-      <p>Error: {error.message}</p>
-      <button onClick={retry}>Retry</button>
-    </div>
+  component: ({ props, data, setup }) => (
+    <div><h1>{data.user.name}</h1></div>
   ),
 
-  // PHASE 3 – COMPONENT (renders only when load() resolved)
-  // `data` is GUARANTEED to be available. No null checks needed.
-  component: ({ props, data, setup, use }) => (
-    <div>
-      <h1>{data.user.name}</h1>
-    </div>
-  ),
-
-  // PHASE 4 – MOUNTED (after component is in the DOM)
-  // `el` = root DOM node. For animations, event listeners, third-party libs.
-  // Return a cleanup function (optional).
-  mounted({ el, props, data, setup, use }) {
-    const analytics = use('analytics');
-    analytics.track('component_mounted');
-    el.classList.add('fade-in');
-    return () => { /* cleanup */ };
-  },
-
-  // PHASE 5 – DESTROYED (when component is removed from DOM)
-  destroyed({ props, setup }) {
-    console.log('cleaned up');
-  },
-
-  // SCOPED CONTEXT – provide additional or override context for children
-  provide: ({ use }) => ({
-    api: createAdminApiClient(),
-  }),
-});
+  mounted({ el }) { el.classList.add('fade-in') },
+  destroyed() { console.log('cleaned up') },
+})
 ```
 
-**Lifecycle Flow:**
-```
-createComponent() called
-  → setup()              [sync, create local signals]
-  → placeholder shown    [immediately in DOM]
-  → load()               [async, fetch data]
-      ├── success → component()  [replaces placeholder in DOM]
-      │              → mounted()  [post-render, DOM access]
-      └── error   → error()      [replaces placeholder, retry available]
-  → destroyed()          [when removed from DOM, cleanup]
-```
+**Lifecycle:** `setup()` → `placeholder` → `load()` → `component()` → `mounted()` → `destroyed()`
 
-**Key behaviors:**
-- Components WITHOUT `load` skip the placeholder phase entirely and render immediately
-- `use()` is passed via args in ALL lifecycle phases: `setup`, `load`, `component`, `mounted`, and `provide`
-- `retry` in error view re-triggers `load()` and shows placeholder again
-- The placeholder-to-component swap must be a clean DOM node replacement (no flicker)
-
-### 2.2 Context System (`use()`)
-
-```ts
-// App-level context defined in createApp()
-const app = createApp({
-  context: {
-    api: createApiClient({ baseUrl: '/api' }),
-    auth: createAuth(),
-    theme: signal('dark'),
-    i18n: createI18n({ locale: 'de' }),
-  },
-  stores: [uiStore, userStore],
-  plugins: [toastPlugin],
-  root: App,
-  target: '#app',
-});
-```
-
-**Internals:**
-- Context is a simple Map/object stored at app level
-- `use(key)` looks up the context chain: component → parent → ... → app root
-- Components with `provide` create a new context layer (child scope)
-- Child scopes inherit from parent and can override specific keys
-- Stores are auto-registered under `use('store:<name>')`
-- Plugins extend context with their own keys
-
-**No provider components. No wrapping. No nesting. Just `use('key')`.**
-
-### 2.3 Control Flow Components
-
-Since we have no VDOM, we need explicit control flow components that manage DOM insertion/removal:
-
+**Control Flow:**
 ```tsx
-// Conditional rendering
-<Show when={condition()} fallback={<FallbackContent />}>
-  <Content />
-</Show>
-
-// List rendering (keyed)
-<For each={items()} key="id">
-  {(item, index) => <li>{item.name}</li>}
-</For>
-
-// Switch/Match
+<Show when={condition}>Content</Show>
+<For each={items}>{(item) => <li>{item.name}</li>}</For>
 <Switch fallback={<Default />}>
-  <Match when={value() === 'a'}><ViewA /></Match>
-  <Match when={value() === 'b'}><ViewB /></Match>
+  <Match when={a}>A</Match>
+  <Match when={b}>B</Match>
 </Switch>
-
-// Dynamic component
-<Dynamic component={currentView()} props={{ id: 42 }} />
 ```
 
-**Internals:**
-- `<Show>` uses an Effect that watches `when`. On change, it swaps the DOM subtree.
-- `<For>` uses a keyed reconciliation algorithm (NOT full VDOM diff, only for the list).
-- These are the ONLY places where DOM insertion/removal logic lives.
-
----
-
-## Phase 3: Store System (`packages/store`)
-
-### 3.1 defineStore
+### `@liteforge/store` — State Management
 
 ```ts
 export const userStore = defineStore('users', {
@@ -291,60 +132,31 @@ export const userStore = defineStore('users', {
     currentUser: null as User | null,
     list: [] as User[],
     loading: false,
-    error: null as string | null,
   },
-
   getters: (state) => ({
     isLoggedIn: () => state.currentUser() !== null,
     admins: () => state.list().filter(u => u.role === 'admin'),
-    byId: (id: string) => state.list().find(u => u.id === id),
   }),
-
   actions: (state, use) => ({
     async fetchUsers() {
-      state.loading.set(true);
-      try {
-        const api = use('api');
-        state.list.set(await api.get('/users'));
-      } catch (e) {
-        state.error.set(e.message);
-      } finally {
-        state.loading.set(false);
-      }
+      state.loading.set(true)
+      state.list.set(await use('api').get('/users'))
+      state.loading.set(false)
     },
   }),
-});
+})
+
+// Registry
+storeRegistry.list()        // → ['users', 'ui']
+storeRegistry.snapshot()    // → full state as plain object
+storeRegistry.reset('ui')   // → reset to initial
 ```
 
-**Internals:**
-- `state` properties are automatically converted to Signals
-- `getters` are Computed values
-- `actions` receive the signal-ified state + `use()` for context access
-- Each store auto-registers in the global `storeRegistry`
-
-### 3.2 Store Registry
-
-```ts
-storeRegistry.list();                    // → ['ui', 'users', 'cart']
-storeRegistry.snapshot();                // → full app state as plain object
-storeRegistry.inspect('users');          // → state, getters, actions, metadata
-storeRegistry.onAnyChange(callback);     // → global change listener
-storeRegistry.reset('cart');             // → reset to initial state
-storeRegistry.resetAll();                // → reset ALL stores
-storeRegistry.serialize();               // → JSON string
-storeRegistry.hydrate(jsonString);       // → restore state from JSON
-```
-
----
-
-## Phase 4: Router (`packages/router`)
-
-### 4.1 Route Definition
+### `@liteforge/router` — Routing
 
 ```ts
 const app = createApp({
   router: {
-    middleware: [loggerMiddleware],
     routes: [
       { path: '/', component: Home },
       { path: '/users/:id', component: UserDetail, guard: 'auth' },
@@ -353,188 +165,366 @@ const app = createApp({
         component: AdminLayout,
         guard: ['auth', 'role:admin'],
         children: [
-          { path: '/', component: AdminDashboard },
+          { path: '/', component: Dashboard },
           { path: '/users', component: AdminUsers },
         ],
       },
-      { path: '*', component: NotFound },
     ],
   },
-});
+})
+
+// In components:
+const router = use('router')
+router.navigate('/path')
+router.params()    // Signal: { id: '42' }
+router.query()     // Signal: { search: 'foo' }
 ```
 
-### 4.2 Guards
-
-```ts
-const authGuard = defineGuard('auth', ({ to, from, use }) => {
-  const auth = use('auth');
-  if (!auth.isAuthenticated()) return `/login?redirect=${to.path}`;
-  return true;
-});
-
-// Parameterized guard: 'role:admin' → param = 'admin'
-const roleGuard = defineGuard('role', ({ to, from, use, param }) => {
-  return use('auth').hasRole(param) || '/unauthorized';
-});
-```
-
-### 4.3 Router API in Components
-
-```ts
-const router = use('router');
-router.navigate('/path');
-router.back();
-router.path();        // Signal: current path
-router.params();      // Signal: { id: '42' }
-router.query();       // Signal: { search: 'foo' }
-```
-
-### 4.4 Components
-
-```tsx
-<Link href="/about" activeClass="active">About</Link>
-<Route path="/users/:id" component={UserDetail} />
-```
-
-### 4.5 Navigation Flow
-
-```
-User navigates → Middleware (global) → Guards (route) → Preload data → Transition animation → Component render
-```
+**Features:** Guards, middleware, nested routes, lazy loading with `lazy()`, code splitting, route-based preloading.
 
 ---
 
-## Phase 5: Vite Plugin (`packages/vite-plugin`)
+## Data Packages (Phase 2)
 
-### What the developer writes:
+### `@liteforge/query` — Data Fetching & Caching
 
-```tsx
-function Counter() {
-  const count = signal(0);
-  return (
-    <div class="counter">
-      <h1>Count: {count()}</h1>
-      <button onClick={() => count.update(n => n + 1)}>+1</button>
-    </div>
-  );
-}
-```
-
-### What the plugin compiles it to:
-
-```js
-function Counter() {
-  const count = signal(0);
-  const _el = _template('<div class="counter"><h1></h1><button>+1</button></div>');
-  const _h1 = _el.firstChild;
-  const _btn = _h1.nextSibling;
-
-  _effect(() => { _h1.textContent = `Count: ${count()}`; });
-  _btn.addEventListener('click', () => count.update(n => n + 1));
-
-  return _el;
-}
-```
-
-### Plugin responsibilities:
-1. **JSX Transform** – compile JSX to direct DOM creation calls
-2. **Template Extraction** – static HTML parts become cloneable templates
-3. **Signal Detection** – detect signal reads in JSX expressions, wrap in effects
-4. **HMR** – component-level hot module replacement
-5. **Tree Shaking** – unused features eliminated
-
----
-
-## Phase 6: DevTools (`packages/devtools`)
-
-### 6.1 DevTools Plugin
+**Object-style API.** Every return value is a Signal.
 
 ```ts
-import { devtoolsPlugin } from '@liteforge/devtools';
+import { createQuery, createMutation, queryCache } from '@liteforge/query'
 
-const app = await createApp({
-  root: App,
-  target: '#app',
-  plugins: [
-    devtoolsPlugin({
-      shortcut: 'ctrl+shift+d',  // Toggle panel
-      position: 'right',          // 'right' | 'bottom' | 'floating'
-      defaultTab: 'signals',
+// Query — fetch data
+const users = createQuery({
+  key: 'users',
+  fn: () => fetch('/api/users').then(r => r.json()),
+  staleTime: 5 * 60 * 1000,   // 5 min fresh
+  retry: 3,
+})
+
+users.data()        // Signal: User[] | undefined
+users.error()       // Signal: Error | undefined
+users.isLoading()   // Signal: boolean
+users.refetch()     // Manual refetch
+
+// Reactive key — refetches when signal changes
+const userId = signal(1)
+const user = createQuery({
+  key: () => ['user', userId()],
+  fn: () => fetch(`/api/users/${userId()}`).then(r => r.json()),
+})
+
+// Mutation
+const addUser = createMutation({
+  fn: (data: NewUser) => api.createUser(data),
+  invalidate: ['users'],        // Refetch users on success
+  onSuccess: (data) => { ... },
+  onError: (err) => { ... },
+})
+addUser.mutate({ name: 'René' })
+
+// Optimistic updates via onMutate + rollback
+const addUserOptimistic = createMutation({
+  fn: api.addUser,
+  onMutate: (newUser, cache) => {
+    const previous = cache.get('users')
+    cache.set('users', [...(previous ?? []), { ...newUser, id: 'temp' }])
+    return previous  // rollback value
+  },
+  onError: (err, vars, rollback) => queryCache.set('users', rollback),
+  onSuccess: () => queryCache.invalidate('users'),
+})
+
+// Cache control
+queryCache.invalidate('users')
+queryCache.invalidate('user:*')   // Pattern matching
+queryCache.set('users', data)
+queryCache.clear()
+```
+
+**Options:**
+- `staleTime` — ms until data is stale (default: 0)
+- `cacheTime` — ms to keep unused cache (default: 5 min)
+- `refetchOnFocus` — refetch on tab focus (default: true)
+- `refetchInterval` — polling interval
+- `retry` / `retryDelay` — retry on error
+- `enabled` — reactive guard: `() => !!token()`
+
+### `@liteforge/form` — Form Management
+
+**Zod schema → reactive form. Object-style API.**
+
+```ts
+import { createForm } from '@liteforge/form'
+import { z } from 'zod'
+
+const form = createForm({
+  schema: z.object({
+    name: z.string().min(2, 'Min 2 Zeichen'),
+    email: z.string().email('Ungültige E-Mail'),
+    address: z.object({
+      street: z.string().min(1),
+      zip: z.string().regex(/^\d{4}$/, 'Ungültige PLZ'),
     }),
+    items: z.array(z.object({
+      description: z.string().min(1),
+      quantity: z.number().min(1),
+      price: z.number().min(0),
+    })).min(1, 'Mindestens ein Posten'),
+  }),
+  initial: { name: '', email: '', address: { street: '', zip: '' }, items: [] },
+  onSubmit: async (values) => { ... },  // Typed from schema
+  validateOn: 'blur',          // 'change' | 'blur' | 'submit'
+  revalidateOn: 'change',     // After first error: revalidate on change
+})
+
+// Field access — all Signals
+form.field('name').value()     // current value
+form.field('name').error()     // validation error
+form.field('name').touched()   // has been blurred
+form.field('name').dirty()     // value ≠ initial
+form.field('name').set('...')
+form.field('name').touch()     // trigger blur validation
+form.field('name').reset()
+
+// Nested fields — dot notation
+form.field('address.street').value()
+form.field('address.zip').error()
+
+// Array fields
+const items = form.array('items')
+items.fields()                 // Signal: ArrayItemField[]
+items.append({ description: '', quantity: 1, price: 0 })
+items.remove(index)
+items.move(from, to)
+items.swap(a, b)
+
+// Array item fields
+items.fields()[0].field('description').value()
+
+// Form-level state (all Signals)
+form.values()        // full form values
+form.errors()        // all errors
+form.isValid()       // all fields valid?
+form.isDirty()       // any field changed?
+form.isSubmitting()  // submit in progress?
+form.submitCount()   // number of submits
+
+// Actions
+form.submit()        // validate + call onSubmit
+form.reset()         // reset to initial
+form.setValues({})   // partial update
+form.validate()      // manual validation
+form.clearErrors()
+
+// In JSX:
+<input
+  value={() => form.field('email').value()}
+  oninput={(e) => form.field('email').set(e.target.value)}
+  onblur={() => form.field('email').touch()}
+/>
+<Show when={() => form.field('email').error()}>
+  <span class="error">{() => form.field('email').error()}</span>
+</Show>
+```
+
+**Peer dependencies:** `zod`, `@liteforge/core`
+
+### `@liteforge/table` — Data Tables
+
+**Full-featured reactive table. Object-style API.**
+
+```ts
+import { createTable } from '@liteforge/table'
+
+const table = createTable<User>({
+  // Data source — Signal or getter
+  data: () => usersQuery.data() ?? [],
+
+  // Column definitions
+  columns: [
+    { key: 'id', header: 'ID', width: 60, sortable: true },
+    { key: 'name', header: 'Name', sortable: true },
+    { key: 'email', header: 'Email', sortable: true },
+    { key: 'company.name', header: 'Company', sortable: true, filterable: true },
+    {
+      key: 'website',
+      header: 'Website',
+      cell: (value) => <a href={`https://${value}`} target="_blank">{value}</a>,
+    },
+    {
+      key: '_actions',    // Virtual column (no data field)
+      header: '',
+      cell: (_, row) => (
+        <div>
+          <button onclick={() => editUser(row)}>Edit</button>
+          <button onclick={() => deleteUser.mutate(row.id)}>Delete</button>
+        </div>
+      ),
+    },
   ],
-});
+
+  // Features (all optional)
+  search: { enabled: true, columns: ['name', 'email'], placeholder: 'Search...' },
+  filters: { 'company.name': { type: 'select' } },
+  pagination: { pageSize: 20, pageSizes: [10, 20, 50] },
+  selection: { enabled: true, mode: 'multi' },
+  columnToggle: true,
+  onRowClick: (row) => navigate(`/users/${row.id}`),
+  rowClass: (row) => row.active ? '' : 'row-inactive',
+
+  // Styling
+  unstyled: false,         // true = no CSS injected
+  classes: { ... },        // Override CSS classes per element
+})
+
+// Mount in JSX
+<table.Root />
+
+// Programmatic control (all Signals)
+table.sorting()            // { key, direction } | null
+table.sort('name', 'asc')
+table.searchQuery()        // current search text
+table.setSearch('...')
+table.filters()            // { 'company.name': 'Acme' }
+table.setFilter(key, value)
+table.page() / table.setPage(2) / table.nextPage()
+table.pageSize() / table.setPageSize(50)
+table.selected()           // Selected rows
+table.selectedCount()
+table.selectAll() / table.deselectAll() / table.toggleRow(row)
+table.visibleColumns()     // Visible column keys
+table.showColumn(key) / table.hideColumn(key) / table.toggleColumn(key)
+table.rows()               // Current visible rows (filtered + sorted + paginated)
 ```
 
-### 6.2 Features
-
-- **Signals Tab** – Live view of all signals with labels, values, update counts
-- **Stores Tab** – Store state tree with time-travel debugging
-- **Router Tab** – Navigation history, guard results, timing
-- **Components Tab** – Component tree with mount/unmount tracking
-- **Performance Tab** – Signal updates/sec, effect executions, component counts
-
-### 6.3 Time-Travel Debugging
-
-```
-History entries are clickable:
-  01:00:01  currentUser: null → {...}  [⏪ Restore]
-  01:00:02  loading: true → false       [⏪ Restore]
-
-Click "Restore" → app state jumps to that point in time
-Click "↻ Current" → returns to latest state
+**Column Definition:**
+```ts
+interface ColumnDef<T> {
+  key: string                    // Data field or '_prefix' for virtual
+  header: string
+  width?: number | string
+  sortable?: boolean
+  filterable?: boolean
+  visible?: boolean              // Default visibility
+  cell?: (value, row) => Node    // Custom cell renderer (JSX)
+  headerCell?: () => Node        // Custom header renderer
+}
 ```
 
-**Internals:**
-- Each history entry stores a full state snapshot from BEFORE the change
-- `preTimeTravelSnapshots` Map saves state before first time-travel action
-- `store.$restore(snapshot)` applies the snapshot to all store signals
-- Visual feedback: green flash on restore, gold border on active entry
+**Filter Types:** `text` (with debounce), `select` (auto-generated options), `boolean`, `number-range`
+
+**Dynamic Columns:** `columns` can be a Signal for server-driven tables.
+
+**Styling — 3 Layers:**
+1. BEM classes always present: `.lf-table`, `.lf-table-row`, `.lf-table-cell`, etc.
+2. Default theme via CSS Variables (overridable)
+3. `classes` override for Tailwind or full control
+4. `unstyled: true` disables default CSS injection
+
+**Data Pipeline (computed chain for performance):**
+```
+data() → filteredData (computed) → sortedData (computed) → paginatedData (computed) → DOM
+```
+
+---
+
+## Tooling Packages
+
+### `@liteforge/vite-plugin` — Build-time JSX Transform
+
+Transforms JSX to direct DOM operations with signal-safe getter wrapping:
+```tsx
+// Input:
+<h1>Count: {count()}</h1>
+
+// Output:
+const _h1 = document.createElement('h1')
+_effect(() => { _h1.textContent = `Count: ${count()}` })
+```
+
+Features: Template extraction for static HTML, code splitting support, JSX → DOM compilation.
+
+**Known Issue:** HMR (Hot Module Replacement) is not yet working. Manual browser refresh required after changes.
+
+### `@liteforge/devtools` — Debug Panel
+
+Toggle with `Ctrl+Shift+D`. Five tabs:
+- **Signals** — Live values, update counts, dependency graphs
+- **Stores** — State tree with time-travel debugging (restore any past state)
+- **Router** — Navigation history, guard results, timing
+- **Components** — Component tree with mount/unmount tracking
+- **Performance** — Signal updates/sec, effect executions, component counts
+
+---
+
+## Demo App (`examples/starter`)
+
+Located at `examples/starter/`. Demonstrates all packages working together:
+
+- **Dashboard layout** with sidebar navigation
+- **Home** — Component lifecycle demo (load/placeholder)
+- **Users** — User list (basic)
+- **Posts** — `@liteforge/query` with JSONPlaceholder API, createMutation
+- **Post Detail** — Reactive query keys from route params, dependent queries (comments)
+- **Forms** — Contact form (simple) + Invoice form (array fields, computed totals)
+- **Tables** — Full-featured table with sorting, filtering, pagination, selection
+- **Settings** — Theme toggle (light/dark)
+- **Admin Panel** — Nested routes demo
+
+---
+
+## API Consistency
+
+All data packages use **object-style API** for consistency:
+
+```ts
+// Query
+createQuery({ key: '...', fn: () => ..., staleTime: 5000 })
+
+// Mutation
+createMutation({ fn: (data) => ..., invalidate: ['...'] })
+
+// Form
+createForm({ schema: z.object({...}), initial: {...}, onSubmit: async (v) => {...} })
+
+// Table
+createTable({ data: () => [...], columns: [...], pagination: { pageSize: 20 } })
+```
+
+No positional arguments. Every option is named and self-documenting.
 
 ---
 
 ## Coding Standards
 
 - **Language:** TypeScript strict mode, no `any` unless absolutely necessary
-- **Testing:** Vitest for all packages, aim for high coverage on core and runtime
-- **Naming:** concise variable names in internals (i, el, fn), descriptive names in public API
-- **Exports:** each package has a clean public API via index.ts barrel exports
-- **No external runtime dependencies** in core, runtime, store, router
-- **Build tool dependencies** (Vite, etc.) are devDependencies only
-- **Comments:** document WHY, not WHAT – the code should be self-explanatory
+- **Testing:** Vitest for all packages, 1000+ total tests across all packages
+- **Naming:** Concise variable names in internals, descriptive names in public API
+- **Exports:** Clean barrel exports via index.ts per package
+- **Dependencies:** No external runtime deps in core/runtime/store/router/query/table. `zod` is peer dep of form only.
+- **API Style:** Object-style options for all `create*` functions
+- **JSX:** All demo components and user-facing code uses JSX (not document.createElement)
+- **Comments:** Document WHY, not WHAT
 
 ---
 
-## Implementation Order
+## Known Issues & TODOs
 
-```
-1. packages/core          → signal, computed, effect, batch, onCleanup
-                            + full test suite
-2. packages/runtime       → createComponent, use(), context, lifecycle
-                            + Show, For, Switch, Dynamic
-                            + full test suite
-3. packages/store         → defineStore, storeRegistry
-                            + full test suite
-4. packages/router        → Router, Route, Link, guards, middleware
-                            + full test suite
-5. packages/vite-plugin   → JSX transform, template extraction, HMR
-6. packages/devtools      → DevTools panel, time-travel debugging
-                            + full test suite
-7. examples/starter       → demo app showcasing all features
-8. create-liteforge       → CLI scaffolding tool
-```
-
-**Start with Phase 1. Do not skip ahead. Each phase must have passing tests before moving on.**
+- [ ] **HMR not working** — Vite plugin needs HMR boundary implementation for component-level hot reload
+- [ ] **Form value binding** — `value={field.value}` doesn't work, must use `value={() => field.value()}` (signal needs explicit getter in JSX attributes)
+- [ ] **Text spacing in JSX** — Adjacent text nodes and signals need explicit `{' '}` for spaces
+- [ ] **DevTools keydown** — `e.key?.toLowerCase()` needs optional chaining (some events have undefined key)
+- [ ] **create-liteforge CLI** — Scaffolding tool not yet built
 
 ---
 
-## Important Design Decisions
+## Future Roadmap
 
-1. **Zero-flicker rendering:** Components with async `load()` show a placeholder first, then swap to the rendered component ONLY when data is available. The component function receives `data` as a guaranteed non-null value.
-
-2. **No provider wrapping:** Context is a flat object defined once at app creation. `use('key')` retrieves from the nearest scope. Components can extend/override scope via `provide`.
-
-3. **Stores are Signals:** Every state property in a store becomes a Signal. Getters become Computed values. This means stores are automatically reactive everywhere.
-
-4. **Guards are functions:** A guard returns `true` (allow), `false` (block), or a `string` (redirect path). Parameterized guards like `'role:admin'` pass the param to the guard function.
-
-5. **The global store registry** enables full app state inspection at any time – this is a first-class feature, not an afterthought.
+- [ ] `@liteforge/query` — `createInfiniteQuery` for pagination/infinite scroll
+- [ ] `@liteforge/router` — Route-level DX refactor (lazy directly in route definitions)
+- [ ] `@liteforge/table` — Virtual scrolling for large datasets
+- [ ] `@liteforge/i18n` — Internationalization plugin
+- [ ] Docs site — Built with LiteForge itself
+- [ ] `create-liteforge` — CLI scaffolding tool (minimal + full templates)
+- [ ] HMR fix — Component-level hot module replacement
+- [ ] Published npm packages
