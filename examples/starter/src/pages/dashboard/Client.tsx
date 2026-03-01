@@ -89,9 +89,12 @@ export const ClientPage = createComponent({
     const postQuery = posts.useOne(1);
     const createMut = posts.useCreate();
 
-    // useList — reactive to params signal
+    // Reactive paginated list — createQuery with reactive key re-fetches automatically on page change
     const page = signal(1);
-    const listQuery = posts.useList(() => ({ _limit: 3, _page: page() }));
+    const listQuery = createQuery<Post[]>({
+      key: () => ['posts', 'list', page()],
+      fn: () => client.get<Post[]>('/posts', { params: { _limit: 3, _page: page() } }),
+    });
 
     // -----------------------------------------------------------------------
     // Render
@@ -187,10 +190,10 @@ export const ClientPage = createComponent({
             : null}
         </div>
 
-        {/* useList with pagination */}
+        {/* Reactive paginated list */}
         <div class="card">
-          <h2><code>posts.useList(params)</code></h2>
-          <p>Reactive params — changing <code>page</code> automatically triggers a new fetch &amp; updates the cache.</p>
+          <h2><code>createQuery</code> with reactive key</h2>
+          <p>Changing <code>page</code> updates the key → automatic re-fetch &amp; cache per page.</p>
 
           <div class="page-nav">
             <button
@@ -210,13 +213,13 @@ export const ClientPage = createComponent({
             {() => listQuery.isLoading() ? <span class="pill pill-loading">Loading…</span> : null}
             {() => listQuery.error() !== undefined ? <span class="pill pill-error">{() => listQuery.error()?.message}</span> : null}
             {() => listQuery.isFetched() && !listQuery.isLoading()
-              ? <span class="pill pill-ok">{() => `${listQuery.data()?.data?.length ?? 0} posts`}</span>
+              ? <span class="pill pill-ok">{() => `${listQuery.data()?.length ?? 0} posts`}</span>
               : null}
           </div>
 
-          {() => (listQuery.data()?.data?.length ?? 0) > 0
+          {() => (listQuery.data()?.length ?? 0) > 0
             ? <div class="result">
-                {() => listQuery.data()!.data.map((p: Post) =>
+                {() => listQuery.data()!.map(p =>
                   <div style="padding: 0.25rem 0; border-bottom: 1px solid var(--color-border,#e5e7eb);">
                     <span style="font-size:0.75rem;color:var(--color-text-secondary,#6b7280);">#{p.id} </span>
                     {p.title}
