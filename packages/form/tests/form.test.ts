@@ -2,7 +2,7 @@
  * createForm Tests
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { z } from 'zod';
 import { effect } from '@liteforge/core';
 import { createForm } from '../src/form.js';

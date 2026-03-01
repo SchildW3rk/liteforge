@@ -58,9 +58,9 @@ describe('Component Debug Hooks', () => {
       instance.mount(container);
 
       expect(events).toHaveLength(1);
-      expect(events[0].id).toBeDefined();
-      expect(events[0].name).toBe('Component');
-      expect(events[0].timestamp).toBeGreaterThan(0);
+      expect(events[0]!.id).toBeDefined();
+      expect(events[0]!.name).toBe('Component');
+      expect(events[0]!.timestamp).toBeGreaterThan(0);
     });
 
     it('uses component name from definition', () => {
@@ -75,7 +75,7 @@ describe('Component Debug Hooks', () => {
       const instance = NamedComponent({});
       instance.mount(container);
 
-      expect(events[0].name).toBe('UserProfile');
+      expect(events[0]!.name).toBe('UserProfile');
     });
 
     it('generates unique IDs for each component instance', () => {
@@ -110,7 +110,7 @@ describe('Component Debug Hooks', () => {
       const instance = RootComponent({});
       instance.mount(container);
 
-      expect(events[0].parent).toBeUndefined();
+      expect(events[0]!.parent).toBeUndefined();
     });
   });
 
@@ -132,9 +132,9 @@ describe('Component Debug Hooks', () => {
       instance.unmount();
 
       expect(events).toHaveLength(1);
-      expect(events[0].id).toBeDefined();
-      expect(events[0].name).toBe('Component');
-      expect(events[0].timestamp).toBeGreaterThan(0);
+      expect(events[0]!.id).toBeDefined();
+      expect(events[0]!.name).toBe('Component');
+      expect(events[0]!.timestamp).toBeGreaterThan(0);
     });
 
     it('mount and unmount events have matching IDs', () => {
@@ -154,8 +154,8 @@ describe('Component Debug Hooks', () => {
 
       expect(mountEvents).toHaveLength(1);
       expect(unmountEvents).toHaveLength(1);
-      expect(mountEvents[0].id).toBe(unmountEvents[0].id);
-      expect(mountEvents[0].name).toBe(unmountEvents[0].name);
+      expect(mountEvents[0]!.id).toBe(unmountEvents[0]!.id);
+      expect(mountEvents[0]!.name).toBe(unmountEvents[0]!.name);
     });
 
     it('emits unmount for created but never-rendered component', () => {
@@ -258,7 +258,7 @@ describe('Component Debug Hooks', () => {
 
       const childEvents = events.filter(e => e.name === 'Child');
       expect(childEvents).toHaveLength(2);
-      expect(childEvents[0].parent).toBe(childEvents[1].parent);
+      expect(childEvents[0]!.parent).toBe(childEvents[1]!.parent);
     });
 
     it('deeply nested components track full hierarchy', () => {
@@ -384,7 +384,7 @@ describe('Component Debug Hooks', () => {
       await new Promise(resolve => setTimeout(resolve, 10));
 
       expect(events).toHaveLength(1);
-      expect(events[0].name).toBe('AsyncComponent');
+      expect(events[0]!.name).toBe('AsyncComponent');
     });
 
     it('handles component with setup phase', () => {
@@ -401,7 +401,7 @@ describe('Component Debug Hooks', () => {
       instance.mount(container);
 
       expect(events).toHaveLength(1);
-      expect(events[0].name).toBe('SetupComponent');
+      expect(events[0]!.name).toBe('SetupComponent');
       expect(container.textContent).toBe('Value: 42');
     });
 

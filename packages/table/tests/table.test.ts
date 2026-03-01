@@ -63,8 +63,8 @@ describe('createTable - Basic Rendering', () => {
 
     const headers = document.querySelectorAll('th')
     expect(headers.length).toBe(5)
-    expect(headers[0].textContent).toContain('ID')
-    expect(headers[1].textContent).toContain('Name')
+    expect(headers[0]!.textContent).toContain('ID')
+    expect(headers[1]!.textContent).toContain('Name')
 
     const rows = document.querySelectorAll('tbody tr')
     expect(rows.length).toBe(5)
@@ -80,9 +80,9 @@ describe('createTable - Basic Rendering', () => {
     document.body.appendChild(table.Root())
 
     const cells = document.querySelectorAll('tbody tr:first-child td')
-    expect(cells[0].textContent).toBe('1')
-    expect(cells[1].textContent).toBe('Alice')
-    expect(cells[2].textContent).toBe('alice@test.com')
+    expect(cells[0]!.textContent).toBe('1')
+    expect(cells[1]!.textContent).toBe('Alice')
+    expect(cells[2]!.textContent).toBe('alice@test.com')
   })
 
   it('shows empty state when no data', () => {
@@ -170,7 +170,7 @@ describe('createTable - Basic Rendering', () => {
     document.body.appendChild(table.Root())
 
     const cells = document.querySelectorAll('tbody tr:first-child td')
-    expect(cells[1].textContent).toBe('Acme')
+    expect(cells[1]!.textContent).toBe('Acme')
   })
 })
 
@@ -236,8 +236,8 @@ describe('createTable - Sorting', () => {
     table.sort('name')
 
     expect(table.sorting()).toEqual({ key: 'name', direction: 'asc' })
-    expect(table.rows()[0].name).toBe('Alice')
-    expect(table.rows()[4].name).toBe('Eve')
+    expect(table.rows()[0]!.name).toBe('Alice')
+    expect(table.rows()[4]!.name).toBe('Eve')
   })
 
   it('toggles to descending on second sort call', () => {
@@ -251,7 +251,7 @@ describe('createTable - Sorting', () => {
     table.sort('name')
 
     expect(table.sorting()).toEqual({ key: 'name', direction: 'desc' })
-    expect(table.rows()[0].name).toBe('Eve')
+    expect(table.rows()[0]!.name).toBe('Eve')
   })
 
   it('clears sorting on third sort call', () => {
@@ -303,8 +303,8 @@ describe('createTable - Sorting', () => {
 
     table.sort('id', 'desc')
 
-    expect(table.rows()[0].id).toBe(5)
-    expect(table.rows()[4].id).toBe(1)
+    expect(table.rows()[0]!.id).toBe(5)
+    expect(table.rows()[4]!.id).toBe(1)
   })
 
   it('adds sort classes to header cells', async () => {
@@ -319,7 +319,7 @@ describe('createTable - Sorting', () => {
     table.sort('name')
     await new Promise(r => setTimeout(r, 0))
 
-    const nameHeader = document.querySelectorAll('th')[1]
+    const nameHeader = document.querySelectorAll('th')[1]!
     expect(nameHeader.className).toContain('lf-table-header-cell--sorted-asc')
   })
 })
@@ -352,7 +352,7 @@ describe('createTable - Search', () => {
     table.setSearch('alice')
 
     expect(table.rows().length).toBe(1)
-    expect(table.rows()[0].name).toBe('Alice')
+    expect(table.rows()[0]!.name).toBe('Alice')
     expect(table.filteredRows()).toBe(1)
   })
 
@@ -470,7 +470,7 @@ describe('createTable - Column Filters', () => {
 
     // Only Alice is admin + active
     expect(table.rows().length).toBe(1)
-    expect(table.rows()[0].name).toBe('Alice')
+    expect(table.rows()[0]!.name).toBe('Alice')
   })
 
   it('clears individual filter', () => {
@@ -533,15 +533,15 @@ describe('createTable - Pagination', () => {
       unstyled: true,
     })
 
-    expect(table.rows()[0].name).toBe('Alice')
+    expect(table.rows()[0]!.name).toBe('Alice')
 
     table.nextPage()
     expect(table.page()).toBe(2)
-    expect(table.rows()[0].name).toBe('Charlie')
+    expect(table.rows()[0]!.name).toBe('Charlie')
 
     table.prevPage()
     expect(table.page()).toBe(1)
-    expect(table.rows()[0].name).toBe('Alice')
+    expect(table.rows()[0]!.name).toBe('Alice')
   })
 
   it('setPage() navigates directly', () => {
@@ -554,7 +554,7 @@ describe('createTable - Pagination', () => {
 
     table.setPage(3)
     expect(table.page()).toBe(3)
-    expect(table.rows()[0].name).toBe('Eve')
+    expect(table.rows()[0]!.name).toBe('Eve')
   })
 
   it('clamps page to valid range', () => {
@@ -637,16 +637,16 @@ describe('createTable - Selection', () => {
     expect(table.selected()).toEqual([])
     expect(table.selectedCount()).toBe(0)
 
-    table.toggleRow(testUsers[0])
+    table.toggleRow(testUsers[0]!)
     expect(table.selectedCount()).toBe(1)
-    expect(table.isSelected(testUsers[0])).toBe(true)
+    expect(table.isSelected(testUsers[0]!)).toBe(true)
 
-    table.toggleRow(testUsers[1])
+    table.toggleRow(testUsers[1]!)
     expect(table.selectedCount()).toBe(2)
 
-    table.toggleRow(testUsers[0])
+    table.toggleRow(testUsers[0]!)
     expect(table.selectedCount()).toBe(1)
-    expect(table.isSelected(testUsers[0])).toBe(false)
+    expect(table.isSelected(testUsers[0]!)).toBe(false)
   })
 
   it('supports single-select mode', () => {
@@ -657,13 +657,13 @@ describe('createTable - Selection', () => {
       unstyled: true,
     })
 
-    table.toggleRow(testUsers[0])
+    table.toggleRow(testUsers[0]!)
     expect(table.selectedCount()).toBe(1)
 
-    table.toggleRow(testUsers[1])
+    table.toggleRow(testUsers[1]!)
     expect(table.selectedCount()).toBe(1)
-    expect(table.isSelected(testUsers[0])).toBe(false)
-    expect(table.isSelected(testUsers[1])).toBe(true)
+    expect(table.isSelected(testUsers[0]!)).toBe(false)
+    expect(table.isSelected(testUsers[1]!)).toBe(true)
   })
 
   it('selectAll() selects all visible rows', () => {
@@ -735,7 +735,7 @@ describe('createTable - Selection', () => {
 
     document.body.appendChild(table.Root())
 
-    table.toggleRow(testUsers[0])
+    table.toggleRow(testUsers[0]!)
     await new Promise(r => setTimeout(r, 0))
 
     const firstRow = document.querySelector('tbody tr')
@@ -762,7 +762,7 @@ describe('createTable - Column Visibility', () => {
 
     const headers = document.querySelectorAll('th')
     expect(headers.length).toBe(1)
-    expect(headers[0].textContent).toContain('Name')
+    expect(headers[0]!.textContent).toContain('Name')
   })
 
   it('visibleColumns() returns list of visible column keys', () => {
@@ -898,7 +898,7 @@ describe('createTable - Row Events', () => {
     const firstRow = document.querySelector('tbody tr') as HTMLElement
     firstRow.click()
 
-    expect(onClick).toHaveBeenCalledWith(testUsers[0])
+    expect(onClick).toHaveBeenCalledWith(testUsers[0]!)
   })
 
   it('calls onRowDoubleClick on double-click', async () => {
@@ -916,7 +916,7 @@ describe('createTable - Row Events', () => {
     const firstRow = document.querySelector('tbody tr') as HTMLElement
     firstRow.dispatchEvent(new MouseEvent('dblclick', { bubbles: true }))
 
-    expect(onDblClick).toHaveBeenCalledWith(testUsers[0])
+    expect(onDblClick).toHaveBeenCalledWith(testUsers[0]!)
   })
 
   it('applies rowClass function to rows', async () => {
@@ -1010,8 +1010,8 @@ describe('createTable - Styling', () => {
     document.body.appendChild(table.Root())
 
     const rows = document.querySelectorAll('tbody tr')
-    expect(rows[0].className).toContain('lf-table-row--even')
-    expect(rows[1].className).toContain('lf-table-row--odd')
+    expect(rows[0]!.className).toContain('lf-table-row--even')
+    expect(rows[1]!.className).toContain('lf-table-row--odd')
   })
 })
 
@@ -1033,11 +1033,11 @@ describe('createTable - Data Pipeline', () => {
 
     // Sort by name desc: Charlie, Alice
     table.sort('name', 'desc')
-    expect(table.rows()[0].name).toBe('Charlie')
+    expect(table.rows()[0]!.name).toBe('Charlie')
 
     // Paginate: first 2 are Charlie, Alice
     expect(table.rows().length).toBe(2)
-    expect(table.rows()[1].name).toBe('Alice')
+    expect(table.rows()[1]!.name).toBe('Alice')
   })
 
   it('filteredRows() reflects post-filter count', () => {
@@ -1079,14 +1079,14 @@ describe('createTable - Edge Cases', () => {
 
     // Should not crash
     const cells = document.querySelectorAll('tbody tr:first-child td')
-    expect(cells[0].textContent).toBe('')
-    expect(cells[1].textContent).toBe('')
+    expect(cells[0]!.textContent).toBe('')
+    expect(cells[1]!.textContent).toBe('')
 
     // Sorting should handle null (nulls sort to end in ascending)
     table.sort('name', 'asc')
     // Bob comes first (has value), null comes last
-    expect(table.rows()[0].name).toBe('Bob')
-    expect(table.rows()[1].name).toBeNull()
+    expect(table.rows()[0]!.name).toBe('Bob')
+    expect(table.rows()[1]!.name).toBeNull()
   })
 
   it('handles empty columns array', () => {

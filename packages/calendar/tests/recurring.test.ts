@@ -13,7 +13,7 @@ function createEvent(
   end: Date,
   recurring?: CalendarEvent['recurring']
 ): CalendarEvent {
-  return { id, title: `Event ${id}`, start, end, recurring }
+  return { id, title: `Event ${id}`, start, end, ...(recurring ? { recurring } : {}) }
 }
 
 describe('expandRecurring', () => {

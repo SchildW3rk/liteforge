@@ -326,13 +326,13 @@ describe('createMutation', () => {
       queryCache.set('todos', [{ id: 1, text: 'Old' }]);
 
       const onMutate = vi.fn().mockImplementation((vars, cache) => {
-        const previous = cache.get<{ id: number; text: string }[]>('todos');
+        const previous = cache.get('todos') as { id: number; text: string }[] | undefined;
         // Optimistically add new todo
         cache.set('todos', [...(previous ?? []), { id: 2, text: vars.text }]);
         return { previous };
       });
 
-      const onError = vi.fn().mockImplementation((error, vars, rollback) => {
+      const onError = vi.fn().mockImplementation((_error, _vars, rollback) => {
         // Rollback on error
         if (rollback?.previous) {
           queryCache.set('todos', rollback.previous);

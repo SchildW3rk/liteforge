@@ -303,9 +303,9 @@ describe('createCalendar', () => {
   describe('resource management', () => {
     let calendar: ReturnType<typeof createCalendar>
     const resources: Resource[] = [
-      { id: 'room-1', title: 'Room 1' },
-      { id: 'room-2', title: 'Room 2' },
-      { id: 'room-3', title: 'Room 3' },
+      { id: 'room-1', name: 'Room 1' },
+      { id: 'room-2', name: 'Room 2' },
+      { id: 'room-3', name: 'Room 3' },
     ]
 
     beforeEach(() => {
@@ -392,7 +392,7 @@ describe('createCalendar', () => {
   describe('selection state', () => {
     let calendar: ReturnType<typeof createCalendar>
     let eventClicks: CalendarEvent[]
-    let slotClicks: Array<{ start: Date; end: Date; resourceId?: string }>
+    let slotClicks: Array<{ start: Date; end: Date; resourceId: string | undefined }>
 
     beforeEach(() => {
       eventClicks = []

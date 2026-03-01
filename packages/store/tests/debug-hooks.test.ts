@@ -52,12 +52,12 @@ describe('Store Debug Hooks', () => {
       });
 
       expect(events).toHaveLength(1);
-      expect(events[0].id).toBe('users');
-      expect(events[0].initialState).toEqual({
+      expect(events[0]!.id).toBe('users');
+      expect(events[0]!.initialState).toEqual({
         list: [],
         loading: false,
       });
-      expect(events[0].timestamp).toBeGreaterThan(0);
+      expect(events[0]!.timestamp).toBeGreaterThan(0);
     });
 
     it('emits store:create with complex initial state', () => {
@@ -72,7 +72,7 @@ describe('Store Debug Hooks', () => {
         },
       });
 
-      expect(events[0].initialState).toEqual({
+      expect(events[0]!.initialState).toEqual({
         theme: 'dark',
         notifications: { email: true, push: false },
         tags: ['a', 'b', 'c'],
@@ -88,9 +88,9 @@ describe('Store Debug Hooks', () => {
       defineStore('store-c', { state: { value: 3 } });
 
       expect(events).toHaveLength(3);
-      expect(events[0].id).toBe('store-a');
-      expect(events[1].id).toBe('store-b');
-      expect(events[2].id).toBe('store-c');
+      expect(events[0]!.id).toBe('store-a');
+      expect(events[1]!.id).toBe('store-b');
+      expect(events[2]!.id).toBe('store-c');
     });
   });
 
@@ -110,10 +110,10 @@ describe('Store Debug Hooks', () => {
       store.count.set(5);
 
       expect(events).toHaveLength(1);
-      expect(events[0].storeId).toBe('counter');
-      expect(events[0].key).toBe('count');
-      expect(events[0].oldValue).toBe(0);
-      expect(events[0].newValue).toBe(5);
+      expect(events[0]!.storeId).toBe('counter');
+      expect(events[0]!.key).toBe('count');
+      expect(events[0]!.oldValue).toBe(0);
+      expect(events[0]!.newValue).toBe(5);
     });
 
     it('emits store:stateChange for each property change', () => {
@@ -164,8 +164,8 @@ describe('Store Debug Hooks', () => {
       store.user.set({ name: 'Bob', id: 2 });
 
       expect(events).toHaveLength(1);
-      expect(events[0].oldValue).toEqual({ name: 'Alice', id: 1 });
-      expect(events[0].newValue).toEqual({ name: 'Bob', id: 2 });
+      expect(events[0]!.oldValue).toEqual({ name: 'Alice', id: 1 });
+      expect(events[0]!.newValue).toEqual({ name: 'Bob', id: 2 });
     });
 
     it('emits store:stateChange with .update() calls', () => {
@@ -179,8 +179,8 @@ describe('Store Debug Hooks', () => {
       store.count.update(n => n + 5);
 
       expect(events).toHaveLength(1);
-      expect(events[0].oldValue).toBe(10);
-      expect(events[0].newValue).toBe(15);
+      expect(events[0]!.oldValue).toBe(10);
+      expect(events[0]!.newValue).toBe(15);
     });
   });
 
@@ -205,9 +205,9 @@ describe('Store Debug Hooks', () => {
       store.increment();
 
       expect(events).toHaveLength(1);
-      expect(events[0].storeId).toBe('actions');
-      expect(events[0].action).toBe('increment');
-      expect(events[0].args).toEqual([]);
+      expect(events[0]!.storeId).toBe('actions');
+      expect(events[0]!.action).toBe('increment');
+      expect(events[0]!.args).toEqual([]);
     });
 
     it('captures action arguments', () => {
@@ -217,7 +217,7 @@ describe('Store Debug Hooks', () => {
       const store = defineStore('with-args', {
         state: { items: [] as string[] },
         actions: (state) => ({
-          addItem(item: string, priority: number) {
+          addItem(item: string, _priority: number) {
             state.items.update(arr => [...arr, item]);
           },
         }),
@@ -226,8 +226,8 @@ describe('Store Debug Hooks', () => {
       store.addItem('test-item', 5);
 
       expect(events).toHaveLength(1);
-      expect(events[0].action).toBe('addItem');
-      expect(events[0].args).toEqual(['test-item', 5]);
+      expect(events[0]!.action).toBe('addItem');
+      expect(events[0]!.args).toEqual(['test-item', 5]);
     });
 
     it('emits store:action for async actions', async () => {
@@ -247,8 +247,8 @@ describe('Store Debug Hooks', () => {
       await store.fetchData(123);
 
       expect(events).toHaveLength(1);
-      expect(events[0].action).toBe('fetchData');
-      expect(events[0].args).toEqual([123]);
+      expect(events[0]!.action).toBe('fetchData');
+      expect(events[0]!.args).toEqual([123]);
     });
 
     it('emits store:action before state changes', () => {
@@ -501,13 +501,13 @@ describe('Store Debug Hooks', () => {
 
       // Restore in reverse order
       for (let i = 4; i >= 0; i--) {
-        store.$restore(snapshots[i]);
+        store.$restore(snapshots[i]!);
         expect(store.step()).toBe(i);
       }
 
       // Restore in forward order
       for (let i = 0; i < 5; i++) {
-        store.$restore(snapshots[i]);
+        store.$restore(snapshots[i]!);
         expect(store.step()).toBe(i);
       }
     });

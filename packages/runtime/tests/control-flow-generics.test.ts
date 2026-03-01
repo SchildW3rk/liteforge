@@ -27,12 +27,6 @@ interface User {
   role: 'admin' | 'user';
 }
 
-interface Product {
-  sku: string;
-  title: string;
-  price: number;
-}
-
 // =============================================================================
 // Type Inference Tests
 // =============================================================================

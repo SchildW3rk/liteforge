@@ -233,7 +233,7 @@ describe('createApp', () => {
         $name: 'test',
         $reset: () => {},
         $snapshot: () => ({}),
-        value: 42,
+        $restore: () => {},
       };
 
       let capturedStore: unknown;
@@ -261,6 +261,7 @@ describe('createApp', () => {
         $name: 'myStore',
         $reset: () => {},
         $snapshot: () => ({}),
+        $restore: () => {},
       };
 
       let capturedStore: unknown;
@@ -289,6 +290,7 @@ describe('createApp', () => {
         $name: 'init-test',
         $reset: () => {},
         $snapshot: () => ({ ready: initialized }),
+        $restore: () => {},
         initialize: () => {
           initialized = true;
         },
@@ -311,6 +313,7 @@ describe('createApp', () => {
         $name: 'a',
         $reset: () => {},
         $snapshot: () => ({}),
+        $restore: () => {},
         initialize: async () => {
           await new Promise(r => setTimeout(r, 10));
           initOrder.push('a');
@@ -321,6 +324,7 @@ describe('createApp', () => {
         $name: 'b',
         $reset: () => {},
         $snapshot: () => ({}),
+        $restore: () => {},
         initialize: () => {
           initOrder.push('b');
         },
@@ -344,6 +348,7 @@ describe('createApp', () => {
         $name: 'order-a',
         $reset: () => {},
         $snapshot: () => ({}),
+        $restore: () => {},
         initialize: () => { order.push('a'); },
       };
 
@@ -351,6 +356,7 @@ describe('createApp', () => {
         $name: 'order-b',
         $reset: () => {},
         $snapshot: () => ({}),
+        $restore: () => {},
         initialize: () => { order.push('b'); },
       };
 
@@ -513,6 +519,7 @@ describe('createApp', () => {
         $name: 'debug-test',
         $reset: () => {},
         $snapshot: () => ({ count: 42 }),
+        $restore: () => {},
       };
 
       const app = await createApp({

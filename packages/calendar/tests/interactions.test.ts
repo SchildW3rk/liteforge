@@ -4,7 +4,7 @@
  * Tests for drag & drop, resize, and slot selection interactions.
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { signal } from '@liteforge/core'
 import { createCalendar } from '../src/calendar.js'
 import type { CalendarEvent, Resource } from '../src/types.js'

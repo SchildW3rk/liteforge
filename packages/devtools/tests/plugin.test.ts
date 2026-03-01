@@ -209,7 +209,7 @@ describe('DevTools Plugin', () => {
       devtools = createDevTools();
 
       // Create a signal (should emit signal:create event)
-      const count = signal(0);
+      signal(0);
 
       expect(devtools.buffer.size()).toBeGreaterThanOrEqual(1);
     });
@@ -228,16 +228,16 @@ describe('DevTools Plugin', () => {
     it('buffer getAll returns events in order', () => {
       devtools = createDevTools();
 
-      const s1 = signal(1, { label: 'first' });
-      const s2 = signal(2, { label: 'second' });
-      const s3 = signal(3, { label: 'third' });
+      signal(1, { label: 'first' });
+      signal(2, { label: 'second' });
+      signal(3, { label: 'third' });
 
       const events = devtools.buffer.getAll();
       expect(events.length).toBeGreaterThanOrEqual(3);
 
       // Events should have incrementing IDs
       for (let i = 1; i < events.length; i++) {
-        expect(events[i].id).toBeGreaterThan(events[i - 1].id);
+        expect(events[i]!.id).toBeGreaterThan(events[i - 1]!.id);
       }
     });
 
@@ -439,8 +439,8 @@ describe('DevTools Plugin', () => {
       });
 
       const all = buffer.getAll();
-      expect(all[0].id).toBeLessThan(all[1].id);
-      expect(all[1].id).toBeLessThan(all[2].id);
+      expect(all[0]!.id).toBeLessThan(all[1]!.id);
+      expect(all[1]!.id).toBeLessThan(all[2]!.id);
     });
   });
 
