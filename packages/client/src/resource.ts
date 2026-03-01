@@ -4,8 +4,8 @@
  * Provides strongly-typed CRUD methods for a REST resource.
  */
 
-import type { Resource, ResourceOptions, RequestConfig, ListParams, ListResponse } from './types.js';
-import type { QueryIntegration, QueryMethods } from './integrations/query.js';
+import type { Resource, QueryResource, ResourceOptions, RequestConfig, ListParams, ListResponse } from './types.js';
+import type { QueryIntegration } from './integrations/query.js';
 import { buildQueryMethods } from './integrations/query.js';
 import { buildUrl, appendQueryParams } from './utils/url.js';
 
@@ -13,8 +13,20 @@ export function createResource<T, TCreate, TUpdate>(
   name: string,
   options: ResourceOptions,
   request: <R>(config: RequestConfig) => Promise<R>,
+  queryIntegration: QueryIntegration,
+): QueryResource<T, TCreate, TUpdate>;
+export function createResource<T, TCreate, TUpdate>(
+  name: string,
+  options: ResourceOptions,
+  request: <R>(config: RequestConfig) => Promise<R>,
+  queryIntegration?: undefined,
+): Resource<T, TCreate, TUpdate>;
+export function createResource<T, TCreate, TUpdate>(
+  name: string,
+  options: ResourceOptions,
+  request: <R>(config: RequestConfig) => Promise<R>,
   queryIntegration?: QueryIntegration,
-): Resource<T, TCreate, TUpdate> & Partial<QueryMethods<T, TCreate, TUpdate>> {
+): Resource<T, TCreate, TUpdate> | QueryResource<T, TCreate, TUpdate> {
   const basePath = options.path ?? name;
   const extraHeaders = options.headers;
 

@@ -127,7 +127,8 @@ export interface MutationResultShape<TData, TVariables> {
   reset: () => void;
 }
 
-export interface Resource<T, TCreate = Partial<T>, TUpdate = Partial<T>> {
+/** Base CRUD methods shared by Resource and QueryResource. */
+interface ResourceBase<T, TCreate = Partial<T>, TUpdate = Partial<T>> {
   getList: (params?: ListParams) => Promise<ListResponse<T>>;
   getOne: (id: string | number) => Promise<T>;
   create: (data: TCreate) => Promise<T>;
@@ -136,23 +137,28 @@ export interface Resource<T, TCreate = Partial<T>, TUpdate = Partial<T>> {
   delete: (id: string | number) => Promise<void>;
   action: (action: string, data?: unknown, id?: string | number) => Promise<unknown>;
   custom: <TResult>(config: Omit<RequestConfig, 'url'> & { path: string }) => Promise<TResult>;
-  // Optional — present only when createClient() receives a query integration
-  useList?: (params?: ListParams | (() => ListParams)) => QueryResultShape<ListResponse<T>>;
-  useOne?: (id: string | number) => QueryResultShape<T>;
-  useCreate?: () => MutationResultShape<T, TCreate>;
-  useUpdate?: () => MutationResultShape<T, { id: string | number; data: TUpdate }>;
-  useDelete?: () => MutationResultShape<void, string | number>;
+}
+
+/** Resource without query integration — use* methods absent. */
+export interface Resource<T, TCreate = Partial<T>, TUpdate = Partial<T>>
+  extends ResourceBase<T, TCreate, TUpdate> {}
+
+/** Resource with query integration — use* methods guaranteed present. */
+export interface QueryResource<T, TCreate = Partial<T>, TUpdate = Partial<T>>
+  extends ResourceBase<T, TCreate, TUpdate> {
+  useList: (params?: ListParams | (() => ListParams)) => QueryResultShape<ListResponse<T>>;
+  useOne: (id: string | number) => QueryResultShape<T>;
+  useCreate: () => MutationResultShape<T, TCreate>;
+  useUpdate: () => MutationResultShape<T, { id: string | number; data: TUpdate }>;
+  useDelete: () => MutationResultShape<void, string | number>;
 }
 
 // ============================================================================
 // Client
 // ============================================================================
 
-export interface Client {
-  resource: <T, TCreate = Partial<T>, TUpdate = Partial<T>>(
-    name: string,
-    options?: ResourceOptions,
-  ) => Resource<T, TCreate, TUpdate>;
+/** Shared HTTP methods used by both Client and QueryClient. */
+interface ClientBase {
   get: <T>(path: string, config?: Partial<RequestConfig>) => Promise<T>;
   post: <T>(path: string, body?: unknown, config?: Partial<RequestConfig>) => Promise<T>;
   put: <T>(path: string, body?: unknown, config?: Partial<RequestConfig>) => Promise<T>;
@@ -164,7 +170,27 @@ export interface Client {
   use: (middleware: Middleware) => () => void;
 }
 
+/** Client without query integration — resource() returns Resource (no use* methods). */
+export interface Client extends ClientBase {
+  resource: <T, TCreate = Partial<T>, TUpdate = Partial<T>>(
+    name: string,
+    options?: ResourceOptions,
+  ) => Resource<T, TCreate, TUpdate>;
+}
+
+/** Client with query integration — resource() returns QueryResource (use* methods guaranteed). */
+export interface QueryClient extends ClientBase {
+  resource: <T, TCreate = Partial<T>, TUpdate = Partial<T>>(
+    name: string,
+    options?: ResourceOptions,
+  ) => QueryResource<T, TCreate, TUpdate>;
+}
+
 export interface CreateClientOptions extends ClientConfig {
   interceptors?: InterceptorHandlers[];
   middleware?: Middleware[];
+}
+
+export interface CreateQueryClientOptions extends CreateClientOptions {
+  query: import('./integrations/query.js').QueryIntegration;
 }

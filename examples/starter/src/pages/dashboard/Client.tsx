@@ -86,12 +86,12 @@ export const ClientPage = createComponent({
     const posts = client.resource<Post, Omit<Post, 'id'>>('posts');
 
     // No loading/error/data signals needed — useOne manages all of it:
-    const postQuery    = posts.useOne!(1);
-    const createMut    = posts.useCreate!();
+    const postQuery = posts.useOne(1);
+    const createMut = posts.useCreate();
 
     // useList — reactive to params signal
     const page = signal(1);
-    const listQuery = posts.useList!(() => ({ _limit: 3, _page: page() }) as Record<string, number>);
+    const listQuery = posts.useList(() => ({ _limit: 3, _page: page() }));
 
     // -----------------------------------------------------------------------
     // Render

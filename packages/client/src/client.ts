@@ -4,13 +4,16 @@
 
 import type {
   Client,
+  QueryClient,
   CreateClientOptions,
+  CreateQueryClientOptions,
   RequestConfig,
   ResponseContext,
   InterceptorHandlers,
   Middleware,
   ResourceOptions,
   Resource,
+  QueryResource,
 } from './types.js';
 import { executeFetch } from './request.js';
 import { createInterceptorRegistry } from './interceptors.js';
@@ -21,11 +24,11 @@ import { mergeHeaders } from './utils/headers.js';
 import { retryRequest } from './utils/retry.js';
 import type { QueryIntegration } from './integrations/query.js';
 
-interface InternalCreateClientOptions extends CreateClientOptions {
-  query?: QueryIntegration;
-}
+type InternalOpts = (CreateClientOptions | CreateQueryClientOptions) & { query?: QueryIntegration };
 
-export function createClient(opts: InternalCreateClientOptions): Client {
+export function createClient(opts: CreateQueryClientOptions): QueryClient;
+export function createClient(opts: CreateClientOptions): Client;
+export function createClient(opts: InternalOpts): Client | QueryClient {
   const defaultHeaders = opts.headers ?? {};
   const defaultTimeout = opts.timeout ?? 30_000;
   const defaultRetry = opts.retry ?? 0;
@@ -113,16 +116,14 @@ export function createClient(opts: InternalCreateClientOptions): Client {
   function resource<T, TCreate = Partial<T>, TUpdate = Partial<T>>(
     name: string,
     options: ResourceOptions = {},
-  ): Resource<T, TCreate, TUpdate> {
+  ): Resource<T, TCreate, TUpdate> | QueryResource<T, TCreate, TUpdate> {
     const resourceBasePath = buildUrl(opts.baseUrl, options.path ?? name);
     const resourceOpts: ResourceOptions = { ...options, path: resourceBasePath };
 
-    return createResource<T, TCreate, TUpdate>(
-      name,
-      resourceOpts,
-      executeRequest,
-      opts.query,
-    );
+    if (opts.query !== undefined) {
+      return createResource<T, TCreate, TUpdate>(name, resourceOpts, executeRequest, opts.query);
+    }
+    return createResource<T, TCreate, TUpdate>(name, resourceOpts, executeRequest);
   }
 
   function addInterceptor(handlers: InterceptorHandlers): () => void {

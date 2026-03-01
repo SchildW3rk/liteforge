@@ -9,9 +9,12 @@ export { createClient } from './client.js';
 export { ApiError } from './errors.js';
 export type {
   Client,
+  QueryClient,
   ClientConfig,
   CreateClientOptions,
+  CreateQueryClientOptions,
   Resource,
+  QueryResource,
   ResourceOptions,
   RequestConfig,
   ResponseContext,
