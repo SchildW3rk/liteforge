@@ -1124,3 +1124,153 @@ describe('createTable - Edge Cases', () => {
     expect(table.rows().length).toBe(5) // Last update: slice(0, 5)
   })
 })
+
+// =============================================================================
+// Style Tokens
+// =============================================================================
+
+describe('createTable - Style Tokens', () => {
+  it('applies CSS custom properties on root container', () => {
+    const table = createTable({
+      data: () => testUsers,
+      columns: basicColumns,
+      styles: {
+        bg: '#1a1a2e',
+        border: '#2d2d44',
+        headerBg: '#16162a',
+      },
+      unstyled: true,
+    })
+
+    const root = table.Root() as HTMLElement
+    document.body.appendChild(root)
+
+    expect(root.style.getPropertyValue('--lf-table-bg')).toBe('#1a1a2e')
+    expect(root.style.getPropertyValue('--lf-table-border')).toBe('#2d2d44')
+    expect(root.style.getPropertyValue('--lf-table-header-bg')).toBe('#16162a')
+  })
+
+  it('styles.bg sets --lf-table-bg', () => {
+    const table = createTable({ data: () => testUsers, columns: basicColumns, styles: { bg: 'red' }, unstyled: true })
+    const root = table.Root() as HTMLElement
+    document.body.appendChild(root)
+    expect(root.style.getPropertyValue('--lf-table-bg')).toBe('red')
+  })
+
+  it('styles.headerBg sets --lf-table-header-bg', () => {
+    const table = createTable({ data: () => testUsers, columns: basicColumns, styles: { headerBg: '#abc' }, unstyled: true })
+    const root = table.Root() as HTMLElement
+    document.body.appendChild(root)
+    expect(root.style.getPropertyValue('--lf-table-header-bg')).toBe('#abc')
+  })
+
+  it('styles.borderRadius sets --lf-table-border-radius', () => {
+    const table = createTable({ data: () => testUsers, columns: basicColumns, styles: { borderRadius: '12px' }, unstyled: true })
+    const root = table.Root() as HTMLElement
+    document.body.appendChild(root)
+    expect(root.style.getPropertyValue('--lf-table-border-radius')).toBe('12px')
+  })
+
+  it('styles.accentColor sets --lf-table-sort-icon-active', () => {
+    const table = createTable({ data: () => testUsers, columns: basicColumns, styles: { accentColor: '#8b5cf6' }, unstyled: true })
+    const root = table.Root() as HTMLElement
+    document.body.appendChild(root)
+    expect(root.style.getPropertyValue('--lf-table-sort-icon-active')).toBe('#8b5cf6')
+  })
+
+  it('does not set inline styles for undefined tokens', () => {
+    const table = createTable({
+      data: () => testUsers,
+      columns: basicColumns,
+      styles: { bg: '#1a1a2e' },
+      unstyled: true,
+    })
+    const root = table.Root() as HTMLElement
+    document.body.appendChild(root)
+    expect(root.style.getPropertyValue('--lf-table-bg')).toBe('#1a1a2e')
+    expect(root.style.getPropertyValue('--lf-table-header-bg')).toBe('')
+  })
+
+  it('styles + classes — both applied simultaneously', () => {
+    const table = createTable({
+      data: () => testUsers,
+      columns: basicColumns,
+      styles: { bg: '#000' },
+      classes: { root: 'my-custom-table' },
+      unstyled: true,
+    })
+    const root = table.Root() as HTMLElement
+    document.body.appendChild(root)
+    expect(root.style.getPropertyValue('--lf-table-bg')).toBe('#000')
+    expect(root.className).toBe('my-custom-table')
+  })
+
+  it('styles + unstyled: true — inline styles applied but no default CSS injected', () => {
+    resetStylesInjection()
+    const table = createTable({
+      data: () => testUsers,
+      columns: basicColumns,
+      styles: { bg: '#fff' },
+      unstyled: true,
+    })
+    const root = table.Root() as HTMLElement
+    document.body.appendChild(root)
+    expect(root.style.getPropertyValue('--lf-table-bg')).toBe('#fff')
+    expect(document.getElementById('lf-table-styles')).toBeNull()
+  })
+
+  it('two tables with different styles are isolated', () => {
+    const table1 = createTable({ data: () => testUsers, columns: basicColumns, styles: { bg: '#ff0000' }, unstyled: true })
+    const table2 = createTable({ data: () => testUsers, columns: basicColumns, styles: { bg: '#00ff00' }, unstyled: true })
+    const root1 = table1.Root() as HTMLElement
+    const root2 = table2.Root() as HTMLElement
+    document.body.appendChild(root1)
+    document.body.appendChild(root2)
+    expect(root1.style.getPropertyValue('--lf-table-bg')).toBe('#ff0000')
+    expect(root2.style.getPropertyValue('--lf-table-bg')).toBe('#00ff00')
+  })
+
+  it('styles: undefined — no inline style properties set on container', () => {
+    const table = createTable({ data: () => testUsers, columns: basicColumns, unstyled: true })
+    const root = table.Root() as HTMLElement
+    document.body.appendChild(root)
+    expect(root.style.getPropertyValue('--lf-table-bg')).toBe('')
+    expect(root.style.getPropertyValue('--lf-table-border')).toBe('')
+  })
+
+  it('all token keys map to distinct CSS variables', () => {
+    const table = createTable({
+      data: () => testUsers,
+      columns: basicColumns,
+      styles: {
+        bg: 'v1', border: 'v2', borderRadius: 'v3',
+        headerBg: 'v4', headerColor: 'v5', headerFontWeight: 'v6',
+        rowBg: 'v7', rowBgHover: 'v8', rowBgSelected: 'v9', rowBgStriped: 'v10',
+        cellPadding: 'v11', cellColor: 'v12', cellFontSize: 'v13',
+        accentColor: 'v14', sortIconColor: 'v15',
+        paginationBg: 'v16', searchBorder: 'v17', searchFocus: 'v18',
+      },
+      unstyled: true,
+    })
+    const root = table.Root() as HTMLElement
+    document.body.appendChild(root)
+    expect(root.style.getPropertyValue('--lf-table-bg')).toBe('v1')
+    expect(root.style.getPropertyValue('--lf-table-border')).toBe('v2')
+    expect(root.style.getPropertyValue('--lf-table-border-radius')).toBe('v3')
+    expect(root.style.getPropertyValue('--lf-table-header-bg')).toBe('v4')
+    expect(root.style.getPropertyValue('--lf-table-header-color')).toBe('v5')
+    expect(root.style.getPropertyValue('--lf-table-header-font-weight')).toBe('v6')
+    expect(root.style.getPropertyValue('--lf-table-row-bg')).toBe('v7')
+    expect(root.style.getPropertyValue('--lf-table-row-bg-hover')).toBe('v8')
+    expect(root.style.getPropertyValue('--lf-table-row-bg-selected')).toBe('v9')
+    expect(root.style.getPropertyValue('--lf-table-row-bg-striped')).toBe('v10')
+    expect(root.style.getPropertyValue('--lf-table-cell-padding')).toBe('v11')
+    expect(root.style.getPropertyValue('--lf-table-cell-color')).toBe('v12')
+    expect(root.style.getPropertyValue('--lf-table-cell-font-size')).toBe('v13')
+    expect(root.style.getPropertyValue('--lf-table-sort-icon-active')).toBe('v14')
+    expect(root.style.getPropertyValue('--lf-table-sort-icon-color')).toBe('v15')
+    expect(root.style.getPropertyValue('--lf-table-pagination-bg')).toBe('v16')
+    expect(root.style.getPropertyValue('--lf-table-search-border')).toBe('v17')
+    expect(root.style.getPropertyValue('--lf-table-search-focus')).toBe('v18')
+  })
+})

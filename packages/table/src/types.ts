@@ -82,6 +82,60 @@ export interface SelectionOptions {
   mode: 'single' | 'multi'
 }
 
+// ─── Style Token Overrides ─────────────────────────────────
+
+/**
+ * Per-instance CSS variable overrides (Layer 2).
+ * Each key maps to a `--lf-table-*` CSS custom property that is set as an
+ * inline style on the table's root element, scoping the override to that
+ * instance only.
+ */
+export interface TableStyles {
+  /** Table background color — --lf-table-bg */
+  bg?: string
+  /** Border color — --lf-table-border */
+  border?: string
+  /** Border radius — --lf-table-border-radius */
+  borderRadius?: string
+
+  /** Header background — --lf-table-header-bg */
+  headerBg?: string
+  /** Header text color — --lf-table-header-color */
+  headerColor?: string
+  /** Header font weight — --lf-table-header-font-weight */
+  headerFontWeight?: string
+
+  /** Row background — --lf-table-row-bg */
+  rowBg?: string
+  /** Row hover background — --lf-table-row-bg-hover */
+  rowBgHover?: string
+  /** Selected row background — --lf-table-row-bg-selected */
+  rowBgSelected?: string
+  /** Striped row background — --lf-table-row-bg-striped */
+  rowBgStriped?: string
+
+  /** Cell padding — --lf-table-cell-padding */
+  cellPadding?: string
+  /** Cell text color — --lf-table-cell-color */
+  cellColor?: string
+  /** Cell font size — --lf-table-cell-font-size */
+  cellFontSize?: string
+
+  /** Accent / interactive color (sort icons active, button focus) — --lf-table-sort-icon-active */
+  accentColor?: string
+
+  /** Inactive sort icon color — --lf-table-sort-icon-color */
+  sortIconColor?: string
+
+  /** Pagination footer background — --lf-table-pagination-bg */
+  paginationBg?: string
+
+  /** Search input border — --lf-table-search-border */
+  searchBorder?: string
+  /** Search input focus ring — --lf-table-search-focus */
+  searchFocus?: string
+}
+
 // ─── CSS Classes Override ──────────────────────────────────
 
 export interface TableClasses {
@@ -138,7 +192,9 @@ export interface TableOptions<T> {
   // ── Styling ──
   /** No CSS injected at all (default: false) */
   unstyled?: boolean
-  /** Override CSS classes per element */
+  /** Per-instance CSS variable overrides — Layer 2 */
+  styles?: TableStyles
+  /** Override CSS classes per element — Layer 3 */
   classes?: Partial<TableClasses>
 }
 

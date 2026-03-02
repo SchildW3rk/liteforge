@@ -9,6 +9,7 @@ import { signal, computed, effect } from '@liteforge/core'
 import type {
   TableOptions,
   TableResult,
+  TableStyles,
   SortState,
   SortDirection,
   FilterDef,
@@ -133,6 +134,7 @@ export function createTable<T>(options: TableOptions<T>): TableResult<T> {
     onRowDoubleClick,
     rowClass,
     unstyled = false,
+    styles,
     classes = {},
   } = options
 
@@ -371,9 +373,42 @@ export function createTable<T>(options: TableOptions<T>): TableResult<T> {
 
   // ─── Root Component ──────────────────────────────────────
 
+  // Explicit mapping from TableStyles keys to CSS custom property names.
+  // Typed as ReadonlyArray so TypeScript narrows the tuple types correctly.
+  const STYLE_TOKEN_MAP: ReadonlyArray<readonly [keyof TableStyles, string]> = [
+    ['bg',               '--lf-table-bg'],
+    ['border',           '--lf-table-border'],
+    ['borderRadius',     '--lf-table-border-radius'],
+    ['headerBg',         '--lf-table-header-bg'],
+    ['headerColor',      '--lf-table-header-color'],
+    ['headerFontWeight', '--lf-table-header-font-weight'],
+    ['rowBg',            '--lf-table-row-bg'],
+    ['rowBgHover',       '--lf-table-row-bg-hover'],
+    ['rowBgSelected',    '--lf-table-row-bg-selected'],
+    ['rowBgStriped',     '--lf-table-row-bg-striped'],
+    ['cellPadding',      '--lf-table-cell-padding'],
+    ['cellColor',        '--lf-table-cell-color'],
+    ['cellFontSize',     '--lf-table-cell-font-size'],
+    ['accentColor',      '--lf-table-sort-icon-active'],
+    ['sortIconColor',    '--lf-table-sort-icon-color'],
+    ['paginationBg',     '--lf-table-pagination-bg'],
+    ['searchBorder',     '--lf-table-search-border'],
+    ['searchFocus',      '--lf-table-search-focus'],
+  ] as const
+
   const Root = (): Node => {
     const container = document.createElement('div')
     container.className = classes.root ?? 'lf-table'
+
+    // Apply per-instance style token overrides (Layer 2)
+    if (styles !== undefined) {
+      for (const [key, cssVar] of STYLE_TOKEN_MAP) {
+        const value = styles[key]
+        if (value !== undefined) {
+          container.style.setProperty(cssVar, value)
+        }
+      }
+    }
 
     // Search input
     if (searchOptions?.enabled) {

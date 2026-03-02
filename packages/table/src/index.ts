@@ -12,6 +12,7 @@ export type {
   TableResult,
   ColumnDef,
   TableClasses,
+  TableStyles,
 
   // Filter types
   FilterDef,
