@@ -1,4 +1,5 @@
 import { createComponent } from '@liteforge/runtime';
+import { createTable } from '@liteforge/table';
 
 export interface ApiRow {
   name: string;
@@ -14,29 +15,50 @@ interface ApiTableProps {
 export const ApiTable = createComponent<ApiTableProps>({
   name: 'ApiTable',
   component({ props }) {
-    return (
-      <div class="overflow-x-auto rounded-lg border border-neutral-800 my-4">
-        <table class="w-full text-sm text-left">
-          <thead class="bg-neutral-900 text-neutral-400 text-xs uppercase tracking-wider">
-            <tr>
-              <th class="px-4 py-3">Name</th>
-              <th class="px-4 py-3">Type</th>
-              <th class="px-4 py-3">Default</th>
-              <th class="px-4 py-3">Description</th>
-            </tr>
-          </thead>
-          <tbody>
-            {props.rows.map((row, i) => (
-              <tr class={i % 2 === 0 ? 'bg-neutral-950' : 'bg-neutral-900/50'}>
-                <td class="px-4 py-3 font-mono text-indigo-300 whitespace-nowrap">{row.name}</td>
-                <td class="px-4 py-3 font-mono text-emerald-400 whitespace-nowrap text-xs">{row.type}</td>
-                <td class="px-4 py-3 font-mono text-amber-400 text-xs">{row.default ?? '—'}</td>
-                <td class="px-4 py-3 text-neutral-300">{row.description}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    );
+    const table = createTable<ApiRow>({
+      data: () => props.rows,
+      columns: [
+        {
+          key: 'name',
+          header: 'Name',
+          sortable: false,
+          cell: (v) => <span class="font-mono text-indigo-300 whitespace-nowrap">{String(v)}</span>,
+        },
+        {
+          key: 'type',
+          header: 'Type',
+          sortable: false,
+          cell: (v) => <span class="font-mono text-emerald-400 text-xs">{String(v)}</span>,
+        },
+        {
+          key: 'default',
+          header: 'Default',
+          sortable: false,
+          cell: (v) => (
+            <span class="font-mono text-amber-400 text-xs whitespace-nowrap">
+              {v !== undefined ? String(v) : '—'}
+            </span>
+          ),
+        },
+        {
+          key: 'description',
+          header: 'Description',
+          sortable: false,
+          cell: (v) => <span class="text-neutral-300">{String(v)}</span>,
+        },
+      ],
+      unstyled: true,
+      classes: {
+        root:       'overflow-x-auto rounded-lg border border-neutral-800 my-4',
+        table:      'w-full text-sm text-left',
+        header:     'bg-neutral-900 text-neutral-400 text-xs uppercase tracking-wider',
+        headerCell: 'px-4 py-3',
+        body:       '',
+        row:        '',
+        cell:       'px-4 py-3',
+      },
+    });
+
+    return table.Root();
   },
 });

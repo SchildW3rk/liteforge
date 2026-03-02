@@ -1,5 +1,6 @@
-import { createComponent } from '@liteforge/runtime';
-import { signal, effect } from '@liteforge/core';
+import { createComponent, Show, For, Switch, Match } from '@liteforge/runtime';
+import { createTable } from '@liteforge/table';
+import { signal } from '@liteforge/core';
 import { DocSection } from '../components/DocSection.js';
 import { CodeBlock } from '../components/CodeBlock.js';
 import { LiveExample } from '../components/LiveExample.js';
@@ -14,51 +15,42 @@ function ShowLiveExample(): Node {
   const isLoggedIn = signal(false);
   const loading = signal(false);
 
-  const wrap = document.createElement('div');
-  wrap.className = 'space-y-3';
+  return (
+    <div class="space-y-3">
+      <div class="flex gap-2">
+        <button
+          class="px-3 py-1.5 text-sm rounded bg-indigo-600 hover:bg-indigo-500 text-white transition-colors"
+          onclick={() => isLoggedIn.update(v => !v)}
+        >
+          {() => isLoggedIn() ? 'Log out' : 'Log in'}
+        </button>
+        <button
+          class="px-3 py-1.5 text-sm rounded border border-neutral-700 hover:border-neutral-500 text-neutral-300 transition-colors"
+          onclick={() => { loading.set(true); setTimeout(() => loading.set(false), 1500); }}
+        >
+          Simulate load
+        </button>
+      </div>
 
-  const controls = document.createElement('div');
-  controls.className = 'flex gap-2';
-
-  const toggleBtn = document.createElement('button');
-  toggleBtn.className = 'px-3 py-1.5 text-sm rounded bg-indigo-600 hover:bg-indigo-500 text-white transition-colors';
-  toggleBtn.addEventListener('click', () => isLoggedIn.update(v => !v));
-
-  const loadBtn = document.createElement('button');
-  loadBtn.className = 'px-3 py-1.5 text-sm rounded border border-neutral-700 hover:border-neutral-500 text-neutral-300 transition-colors';
-  loadBtn.textContent = 'Simulate load';
-  loadBtn.addEventListener('click', () => {
-    loading.set(true);
-    setTimeout(() => loading.set(false), 1500);
-  });
-
-  controls.appendChild(toggleBtn);
-  controls.appendChild(loadBtn);
-
-  const output = document.createElement('div');
-  output.className = 'p-3 rounded border border-neutral-800 bg-neutral-900/50 text-sm min-h-10';
-
-  effect(() => {
-    toggleBtn.textContent = isLoggedIn() ? 'Log out' : 'Log in';
-
-    output.innerHTML = '';
-    const span = document.createElement('span');
-    if (loading()) {
-      span.className = 'text-yellow-300 font-mono text-xs';
-      span.textContent = 'Loading patient data…';
-    } else if (isLoggedIn()) {
-      span.className = 'text-emerald-300 font-mono text-xs';
-      span.textContent = '✓ Welcome back, Dr. Fischer';
-    } else {
-      span.className = 'text-neutral-500 font-mono text-xs';
-      span.textContent = 'Please log in to continue';
-    }
-    output.appendChild(span);
-  });
-
-  wrap.appendChild(controls);
-  wrap.appendChild(output);
-  return wrap;
+      <div class="p-3 rounded border border-neutral-800 bg-neutral-900/50 text-sm min-h-10">
+        {Show({
+          when: () => loading(),
+          children: () => (
+            <span class="text-yellow-300 font-mono text-xs">Loading patient data…</span>
+          ),
+          fallback: () => Show({
+            when: () => isLoggedIn(),
+            children: () => (
+              <span class="text-emerald-300 font-mono text-xs">✓ Welcome back, Dr. Fischer</span>
+            ),
+            fallback: () => (
+              <span class="text-neutral-500 font-mono text-xs">Please log in to continue</span>
+            ),
+          }),
+        })}
+      </div>
+    </div>
+  );
 }
 
 function ForLiveExample(): Node {
@@ -75,109 +67,90 @@ function ForLiveExample(): Node {
     { id: 3, name: 'Maria Fischer', status: 'active' },
   ]);
 
-  const wrap = document.createElement('div');
-  wrap.className = 'space-y-3';
+  const names = ['Klaus Bauer', 'Petra Huber', 'Stefan Gruber', 'Lisa Krämer'];
 
-  const controls = document.createElement('div');
-  controls.className = 'flex gap-2';
+  return (
+    <div class="space-y-3">
+      <div class="flex gap-2">
+        <button
+          class="px-3 py-1.5 text-sm rounded bg-indigo-600 hover:bg-indigo-500 text-white transition-colors"
+          onclick={() => {
+            const name = names[(nextId - 1) % names.length] ?? 'Patient';
+            patients.update(ps => [...ps, { id: nextId++, name, status: 'active' }]);
+          }}
+        >
+          Add patient
+        </button>
+        <button
+          class="px-3 py-1.5 text-sm rounded border border-neutral-700 hover:border-neutral-500 text-neutral-300 transition-colors"
+          onclick={() => patients.update(ps => ps.slice(0, -1))}
+        >
+          Remove last
+        </button>
+      </div>
 
-  const addBtn = document.createElement('button');
-  addBtn.className = 'px-3 py-1.5 text-sm rounded bg-indigo-600 hover:bg-indigo-500 text-white transition-colors';
-  addBtn.textContent = 'Add patient';
-  addBtn.addEventListener('click', () => {
-    const names = ['Klaus Bauer', 'Petra Huber', 'Stefan Gruber', 'Lisa Krämer'];
-    const name = names[(nextId - 1) % names.length] ?? 'Patient';
-    patients.update(ps => [...ps, { id: nextId++, name, status: 'active' }]);
-  });
-
-  const removeBtn = document.createElement('button');
-  removeBtn.className = 'px-3 py-1.5 text-sm rounded border border-neutral-700 hover:border-neutral-500 text-neutral-300 transition-colors';
-  removeBtn.textContent = 'Remove last';
-  removeBtn.addEventListener('click', () => {
-    patients.update(ps => ps.slice(0, -1));
-  });
-
-  controls.appendChild(addBtn);
-  controls.appendChild(removeBtn);
-
-  const list = document.createElement('ul');
-  list.className = 'space-y-1.5';
-
-  effect(() => {
-    const items = patients();
-    list.innerHTML = '';
-    for (const p of items) {
-      const li = document.createElement('li');
-      li.className = 'flex items-center justify-between px-3 py-2 rounded border border-neutral-800 bg-neutral-900/50 text-sm';
-
-      const nameSpan = document.createElement('span');
-      nameSpan.className = 'text-neutral-300';
-      nameSpan.textContent = p.name;
-
-      const badge = document.createElement('span');
-      badge.className = p.status === 'active'
-        ? 'text-xs px-1.5 py-0.5 rounded-full bg-emerald-950 text-emerald-300'
-        : 'text-xs px-1.5 py-0.5 rounded-full bg-neutral-800 text-neutral-500';
-      badge.textContent = p.status;
-
-      li.appendChild(nameSpan);
-      li.appendChild(badge);
-      list.appendChild(li);
-    }
-  });
-
-  wrap.appendChild(controls);
-  wrap.appendChild(list);
-  return wrap;
+      <ul class="space-y-1.5">
+        {For({
+          each: patients,
+          key: 'id',
+          children: (p) => (
+            <li class="flex items-center justify-between px-3 py-2 rounded border border-neutral-800 bg-neutral-900/50 text-sm">
+              <span class="text-neutral-300">{p.name}</span>
+              <span class={() => p.status === 'active'
+                ? 'text-xs px-1.5 py-0.5 rounded-full bg-emerald-950 text-emerald-300'
+                : 'text-xs px-1.5 py-0.5 rounded-full bg-neutral-800 text-neutral-500'
+              }>
+                {p.status}
+              </span>
+            </li>
+          ),
+          fallback: () => (
+            <li class="px-3 py-2 text-neutral-500 text-sm font-mono">No patients</li>
+          ),
+        })}
+      </ul>
+    </div>
+  );
 }
 
 function SwitchLiveExample(): Node {
   type Status = 'idle' | 'loading' | 'success' | 'error';
   const status = signal<Status>('idle');
 
-  const wrap = document.createElement('div');
-  wrap.className = 'space-y-3';
+  const btnClass = 'px-3 py-1.5 text-sm rounded border border-neutral-700 hover:border-neutral-500 text-neutral-300 transition-colors font-mono';
 
-  const controls = document.createElement('div');
-  controls.className = 'flex flex-wrap gap-2';
+  return (
+    <div class="space-y-3">
+      <div class="flex flex-wrap gap-2">
+        <button class={btnClass} onclick={() => status.set('idle')}>idle</button>
+        <button class={btnClass} onclick={() => status.set('loading')}>loading</button>
+        <button class={btnClass} onclick={() => status.set('success')}>success</button>
+        <button class={btnClass} onclick={() => status.set('error')}>error</button>
+      </div>
 
-  const states: Status[] = ['idle', 'loading', 'success', 'error'];
-  for (const s of states) {
-    const btn = document.createElement('button');
-    btn.className = 'px-3 py-1.5 text-sm rounded border border-neutral-700 hover:border-neutral-500 text-neutral-300 transition-colors font-mono';
-    btn.textContent = s;
-    btn.addEventListener('click', () => status.set(s));
-    controls.appendChild(btn);
-  }
-
-  const output = document.createElement('div');
-  output.className = 'p-3 rounded border border-neutral-800 bg-neutral-900/50 text-sm min-h-12';
-
-  effect(() => {
-    output.innerHTML = '';
-    const s = status();
-    const span = document.createElement('span');
-
-    if (s === 'loading') {
-      span.className = 'text-yellow-300 font-mono text-xs';
-      span.textContent = '⟳ Fetching appointment data…';
-    } else if (s === 'error') {
-      span.className = 'text-red-300 font-mono text-xs';
-      span.textContent = '✕ Failed to load — check your connection';
-    } else if (s === 'success') {
-      span.className = 'text-emerald-300 font-mono text-xs';
-      span.textContent = '✓ 12 appointments loaded';
-    } else {
-      span.className = 'text-neutral-500 font-mono text-xs';
-      span.textContent = 'Click a status button above';
-    }
-
-    output.appendChild(span);
-  });
-
-  wrap.appendChild(controls);
-  wrap.appendChild(output);
-  return wrap;
+      <div class="p-3 rounded border border-neutral-800 bg-neutral-900/50 text-sm min-h-12">
+        {Switch({
+          fallback: () => (
+            <span class="text-neutral-500 font-mono text-xs">Click a status button above</span>
+          ),
+          children: [
+            Match({
+              when: () => status() === 'loading',
+              children: () => <span class="text-yellow-300 font-mono text-xs">⟳ Fetching appointment data…</span>,
+            }),
+            Match({
+              when: () => status() === 'error',
+              children: () => <span class="text-red-300 font-mono text-xs">✕ Failed to load — check your connection</span>,
+            }),
+            Match({
+              when: () => status() === 'success',
+              children: () => <span class="text-emerald-300 font-mono text-xs">✓ 12 appointments loaded</span>,
+            }),
+          ],
+        })}
+      </div>
+    </div>
+  );
 }
 
 // =============================================================================
@@ -289,10 +262,10 @@ interface Patient {
 
 const patients = signal<Patient[]>([]);
 
-// Render a keyed list — key is used to match DOM nodes on updates
+// Pass the signal directly as each — For reads it reactively
 For({
-  each: () => patients(),
-  key: (patient) => patient.id,
+  each: patients,
+  key: 'id',
   children: (patient, index) => (
     <li>
       {index + 1}. {patient.name} — {patient.status}
@@ -301,7 +274,7 @@ For({
 })`;
 
 const FOR_JSX_CODE = `// JSX tag syntax
-<For each={() => patients()} key={(p) => p.id}>
+<For each={patients} key="id">
   {(patient, index) => (
     <li class="patient-item">
       <strong>{patient.name}</strong>
@@ -324,13 +297,13 @@ const FOR_WHY_NOT_MAP_CODE = `// ❌ Don't do this with signals — .map() runs 
 
 // ✅ Use For — keyed reconciliation, only changed nodes update
 <ul>
-  <For each={() => patients()} key={(p) => p.id}>
+  <For each={patients} key="id">
     {(p) => <li>{p.name}</li>}
   </For>
 </ul>`;
 
 const NESTED_CODE = `// Show inside For — conditional items in a list
-<For each={() => appointments()} key={(a) => a.id}>
+<For each={appointments} key="id">
   {(appointment) => (
     <Show
       when={() => appointment.doctorId === selectedDoctor()}
@@ -342,7 +315,7 @@ const NESTED_CODE = `// Show inside For — conditional items in a list
 // For inside Show — don't render the list at all when loading
 <Show when={() => !isLoading()} fallback={() => <Skeleton />}>
   {() => (
-    <For each={() => patients()} key={(p) => p.id}>
+    <For each={patients} key="id">
       {(p) => <PatientRow patient={p} />}
     </For>
   )}
@@ -373,12 +346,15 @@ Show({
 const LIVE_SHOW_CODE = `const isLoggedIn = signal(false);
 const loading = signal(false);
 
-<Show when={() => loading()}>
-  {() => <p>Loading patient data…</p>}
-</Show>
-<Show when={() => !loading() && isLoggedIn()} fallback={() => <LoginForm />}>
-  {() => <p>Welcome back, Dr. Fischer</p>}
-</Show>`;
+Show({
+  when: () => loading(),
+  children: () => <span>Loading patient data…</span>,
+  fallback: () => Show({
+    when: () => isLoggedIn(),
+    children: () => <span>✓ Welcome back, Dr. Fischer</span>,
+    fallback: () => <span>Please log in to continue</span>,
+  }),
+})`;
 
 const LIVE_FOR_CODE = `const patients = signal([
   { id: 1, name: 'Anna Müller',    status: 'active' },
@@ -386,31 +362,33 @@ const LIVE_FOR_CODE = `const patients = signal([
   { id: 3, name: 'Maria Fischer',  status: 'active' },
 ]);
 
-<For each={() => patients()} key={(p) => p.id}>
-  {(p) => (
+For({
+  each: patients,
+  key: 'id',
+  children: (p) => (
     <li>
       {p.name}
       <span class={p.status === 'active' ? 'green' : 'gray'}>
         {p.status}
       </span>
     </li>
-  )}
-</For>`;
+  ),
+})`;
 
 const LIVE_SWITCH_CODE = `type Status = 'idle' | 'loading' | 'success' | 'error';
 const status = signal<Status>('idle');
 
-<Switch>
-  <Match when={() => status() === 'loading'}>
-    {() => <p>Fetching appointment data…</p>}
-  </Match>
-  <Match when={() => status() === 'error'}>
-    {() => <p>Failed to load — check your connection</p>}
-  </Match>
-  <Match when={() => status() === 'success'}>
-    {() => <p>12 appointments loaded</p>}
-  </Match>
-</Switch>`;
+Switch({
+  fallback: () => <span>Click a status button above</span>,
+  children: [
+    Match({ when: () => status() === 'loading',
+            children: () => <span>⟳ Fetching appointment data…</span> }),
+    Match({ when: () => status() === 'error',
+            children: () => <span>✕ Failed to load</span> }),
+    Match({ when: () => status() === 'success',
+            children: () => <span>✓ 12 appointments loaded</span> }),
+  ],
+})`;
 
 // =============================================================================
 // API rows
@@ -423,8 +401,8 @@ const SHOW_API: ApiRow[] = [
 ];
 
 const FOR_API: ApiRow[] = [
-  { name: 'each', type: '() => T[] | T[]', description: 'Reactive array source — can be a signal getter or a plain array' },
-  { name: 'key', type: '(item: T, index: number) => string | number', default: 'index', description: 'Key extractor for reconciliation — use a stable unique ID for best performance' },
+  { name: 'each', type: 'Signal<T[]> | T[]', description: 'Array source — pass the signal directly or a plain array' },
+  { name: 'key', type: 'keyof T | (item: T, index: number) => string | number', default: 'index', description: 'Key for reconciliation — string property name (e.g. \'id\') or key extractor function' },
   { name: 'children', type: '(item: T, index: number) => Node', description: 'Render function called for each item' },
   { name: 'fallback', type: '() => Node', default: 'nothing', description: 'Rendered when the array is empty' },
 ];
@@ -440,12 +418,58 @@ const MATCH_API: ApiRow[] = [
 ];
 
 // =============================================================================
+// Decision guide data
+// =============================================================================
+
+interface DecisionRow {
+  situation: string;
+  use: string;
+}
+
+const DECISION_ROWS: DecisionRow[] = [
+  { situation: 'Simple true/false, no fallback',   use: '{() => cond() ? <A /> : null}' },
+  { situation: 'True/false with fallback UI',       use: 'Show' },
+  { situation: 'Multiple exclusive conditions (3+)', use: 'Switch / Match' },
+  { situation: 'Rendering an array',                use: 'For' },
+  { situation: 'Dynamic text / interpolation',      use: '{() => signal()}' },
+  { situation: 'Typed value in condition body',     use: 'Show (narrows NonNullable<T>)' },
+];
+
+// =============================================================================
 // Page
 // =============================================================================
 
 export const ControlFlowPage = createComponent({
   name: 'ControlFlowPage',
   component() {
+    const decisionTable = createTable<DecisionRow>({
+      data: () => DECISION_ROWS,
+      columns: [
+        {
+          key: 'situation',
+          header: 'Situation',
+          sortable: false,
+          cell: (v) => <span class="text-neutral-300">{String(v)}</span>,
+        },
+        {
+          key: 'use',
+          header: 'Use',
+          sortable: false,
+          cell: (v) => <span class="font-mono text-indigo-300 text-xs">{String(v)}</span>,
+        },
+      ],
+      unstyled: true,
+      classes: {
+        root:       'overflow-x-auto rounded-lg border border-neutral-800 my-4',
+        table:      'w-full text-sm text-left',
+        header:     'bg-neutral-900 text-neutral-400 text-xs uppercase tracking-wider',
+        headerCell: 'px-4 py-3',
+        body:       '',
+        row:        '',
+        cell:       'px-4 py-3',
+      },
+    });
+
     return (
       <div>
         {/* Header */}
@@ -507,16 +531,10 @@ export const ControlFlowPage = createComponent({
           <div>
             <CodeBlock code={SWITCH_CODE} language="tsx" />
             <CodeBlock code={SWITCH_JSX_CODE} language="tsx" title="JSX tag syntax" />
-            <div class="grid grid-cols-2 gap-0 mt-2">
-              <div>
-                <p class="text-xs font-semibold text-neutral-400 mb-1 mt-4">Switch</p>
-                <ApiTable rows={SWITCH_API} />
-              </div>
-              <div>
-                <p class="text-xs font-semibold text-neutral-400 mb-1 mt-4">Match</p>
-                <ApiTable rows={MATCH_API} />
-              </div>
-            </div>
+            <p class="text-xs font-semibold text-neutral-400 mb-1 mt-4">Switch</p>
+            <ApiTable rows={SWITCH_API} />
+            <p class="text-xs font-semibold text-neutral-400 mb-1 mt-4">Match</p>
+            <ApiTable rows={MATCH_API} />
             <LiveExample
               title="Switch — appointment status"
               component={SwitchLiveExample}
@@ -545,46 +563,8 @@ export const ControlFlowPage = createComponent({
         </DocSection>
 
         {/* Section 5: Decision guide */}
-        <DocSection
-          title="When to use what"
-          id="decision-guide"
-        >
-          <div class="overflow-x-auto rounded-lg border border-neutral-800 my-4">
-            <table class="w-full text-sm text-left">
-              <thead class="bg-neutral-900 text-neutral-400 text-xs uppercase tracking-wider">
-                <tr>
-                  <th class="px-4 py-3">Situation</th>
-                  <th class="px-4 py-3">Use</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr class="bg-neutral-950">
-                  <td class="px-4 py-3 text-neutral-300">Simple true/false, no fallback</td>
-                  <td class="px-4 py-3 font-mono text-indigo-300 text-xs">{'`{() => cond() ? <A /> : null}`'}</td>
-                </tr>
-                <tr class="bg-neutral-900/50">
-                  <td class="px-4 py-3 text-neutral-300">True/false with fallback UI</td>
-                  <td class="px-4 py-3 font-mono text-indigo-300 text-xs">Show</td>
-                </tr>
-                <tr class="bg-neutral-950">
-                  <td class="px-4 py-3 text-neutral-300">Multiple exclusive conditions (3+)</td>
-                  <td class="px-4 py-3 font-mono text-indigo-300 text-xs">Switch / Match</td>
-                </tr>
-                <tr class="bg-neutral-900/50">
-                  <td class="px-4 py-3 text-neutral-300">Rendering an array</td>
-                  <td class="px-4 py-3 font-mono text-indigo-300 text-xs">For</td>
-                </tr>
-                <tr class="bg-neutral-950">
-                  <td class="px-4 py-3 text-neutral-300">Dynamic text / interpolation</td>
-                  <td class="px-4 py-3 font-mono text-indigo-300 text-xs">{'`{() => signal()}`'}</td>
-                </tr>
-                <tr class="bg-neutral-900/50">
-                  <td class="px-4 py-3 text-neutral-300">Typed value in condition body</td>
-                  <td class="px-4 py-3 font-mono text-indigo-300 text-xs">Show (narrows NonNullable&lt;T&gt;)</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+        <DocSection title="When to use what" id="decision-guide">
+          {decisionTable.Root()}
         </DocSection>
 
         {/* Section 6: Patterns & tips */}
