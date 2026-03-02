@@ -76,7 +76,8 @@ const DEFAULT_STYLES = `
   padding: 6px 12px;
   border: 1px solid var(--lf-table-border);
   border-radius: 4px;
-  background: white;
+  background: var(--lf-table-row-bg);
+  color: var(--lf-table-cell-color);
   cursor: pointer;
   font-size: 13px;
 }
@@ -89,7 +90,7 @@ const DEFAULT_STYLES = `
   position: absolute;
   top: 100%;
   left: 16px;
-  background: white;
+  background: var(--lf-table-row-bg);
   border: 1px solid var(--lf-table-border);
   border-radius: 6px;
   padding: 8px 0;
@@ -280,7 +281,8 @@ const DEFAULT_STYLES = `
   padding: 6px 12px;
   border: 1px solid var(--lf-table-border);
   border-radius: 4px;
-  background: white;
+  background: var(--lf-table-row-bg);
+  color: var(--lf-table-cell-color);
   cursor: pointer;
   font-size: 13px;
   transition: background-color 0.15s;
@@ -300,10 +302,25 @@ const DEFAULT_STYLES = `
   border: 1px solid var(--lf-table-border);
   border-radius: 4px;
   font-size: 13px;
-  background: white;
+  background: var(--lf-table-row-bg);
+  color: var(--lf-table-cell-color);
 }
 
 /* ─── Dark Mode Support ────────────────────────────────────── */
+
+.dark {
+  --lf-table-bg: #1e1e2e;
+  --lf-table-border: #313244;
+  --lf-table-header-bg: #181825;
+  --lf-table-header-color: #cdd6f4;
+  --lf-table-row-bg: #1e1e2e;
+  --lf-table-row-bg-hover: #313244;
+  --lf-table-row-bg-selected: #45475a;
+  --lf-table-row-bg-striped: #181825;
+  --lf-table-cell-color: #cdd6f4;
+  --lf-table-pagination-bg: #181825;
+  --lf-table-search-border: #45475a;
+}
 
 [data-theme="dark"] {
   --lf-table-bg: #1e1e2e;
@@ -317,6 +334,22 @@ const DEFAULT_STYLES = `
   --lf-table-cell-color: #cdd6f4;
   --lf-table-pagination-bg: #181825;
   --lf-table-search-border: #45475a;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+  --lf-table-bg: #1e1e2e;
+  --lf-table-border: #313244;
+  --lf-table-header-bg: #181825;
+  --lf-table-header-color: #cdd6f4;
+  --lf-table-row-bg: #1e1e2e;
+  --lf-table-row-bg-hover: #313244;
+  --lf-table-row-bg-selected: #45475a;
+  --lf-table-row-bg-striped: #181825;
+  --lf-table-cell-color: #cdd6f4;
+  --lf-table-pagination-bg: #181825;
+  --lf-table-search-border: #45475a;
+  }
 }
 `
 
