@@ -421,6 +421,8 @@ export interface RouterOptions {
   onError?: (error: Error) => void;
   /** Global lazy loading defaults for all routes */
   lazyDefaults?: LazyDefaults;
+  /** Automatically set document.title on every navigation */
+  titleTemplate?: (title: string | undefined) => string;
 }
 
 /**

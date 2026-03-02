@@ -150,6 +150,8 @@ export {
   getActiveRouterOrNull,
 } from './router.js';
 
+export { useTitle } from './title.js';
+
 export type { RouterInternal } from './router.js';
 
 // =============================================================================

@@ -30,6 +30,7 @@ import { createMemoryHistory } from './history.js';
 import { GuardRegistry, runGuards, collectRouteGuards, normalizeGuardResult } from './guards.js';
 import { runMiddleware } from './middleware.js';
 import { createScrollHandlers, initScrollRestoration } from './scroll.js';
+import { setupTitleEffect } from './title.js';
 
 // =============================================================================
 // Router Creation
@@ -48,6 +49,7 @@ export function createRouter(options: RouterOptions): Router {
     onError,
     lazyDefaults,
     scrollBehavior = 'top',
+    titleTemplate,
   } = options;
 
   // Set up scroll handlers and disable browser-managed scroll restoration
@@ -471,6 +473,7 @@ export function createRouter(options: RouterOptions): Router {
 
     // Cleanup
     destroy() {
+      disposeTitleEffect?.();
       unlistenHistory();
       history.destroy();
       beforeEachCallbacks.clear();
@@ -478,6 +481,12 @@ export function createRouter(options: RouterOptions): Router {
       guardRegistry.clear();
     },
   };
+
+  // Setup title effect AFTER router object creation (needs router.matched signal)
+  let disposeTitleEffect: (() => void) | undefined;
+  if (titleTemplate !== undefined) {
+    disposeTitleEffect = setupTitleEffect(titleTemplate, router);
+  }
 
   // Attach method to set context accessor (called by createApp)
   (router as RouterInternal)._setContextAccessor = (accessor: <T>(key: string) => T) => {

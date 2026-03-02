@@ -336,6 +336,23 @@ function appendChild(parent: Node, child: HChild): void {
     return;
   }
 
+  // ComponentInstance as child (returned by calling a ComponentFactory directly)
+  if (
+    child !== null &&
+    typeof child === 'object' &&
+    typeof (child as Record<string, unknown>)['mount'] === 'function' &&
+    typeof (child as Record<string, unknown>)['getNode'] === 'function'
+  ) {
+    const instance = child as { mount(p: Element): void; getNode(): Node | null };
+    const container = document.createDocumentFragment();
+    instance.mount(container as unknown as Element);
+    const node = instance.getNode();
+    if (node !== null && node !== undefined) {
+      parent.appendChild(node);
+    }
+    return;
+  }
+
   // Reactive child (function)
   if (typeof child === 'function') {
     // Create a placeholder and marker for reactive content
