@@ -29,6 +29,7 @@ import {
 import { createMemoryHistory } from './history.js';
 import { GuardRegistry, runGuards, collectRouteGuards, normalizeGuardResult } from './guards.js';
 import { runMiddleware } from './middleware.js';
+import { createScrollHandlers, initScrollRestoration } from './scroll.js';
 
 // =============================================================================
 // Router Creation
@@ -46,7 +47,12 @@ export function createRouter(options: RouterOptions): Router {
     // base = '', // Reserved for future use
     onError,
     lazyDefaults,
+    scrollBehavior = 'top',
   } = options;
+
+  // Set up scroll handlers and disable browser-managed scroll restoration
+  initScrollRestoration();
+  const scrollHandlers = createScrollHandlers(scrollBehavior);
 
   // Initialize guard registry
   const guardRegistry = new GuardRegistry();
@@ -275,6 +281,11 @@ export function createRouter(options: RouterOptions): Router {
         const finalTargetLocation = createLocation(currentTarget, currentState);
         const matched = matchRoutes(finalTargetLocation.path, compiledRoutes) ?? [];
 
+        // Capture scroll position BEFORE history.push changes window.history.state
+        if (typeof window !== 'undefined') {
+          scrollHandlers.beforePush(currentLocation);
+        }
+
         // Update history (use replace for redirects or if explicitly requested)
         if (replace || redirectCount > 0) {
           history.replace(currentTarget);
@@ -286,6 +297,11 @@ export function createRouter(options: RouterOptions): Router {
         const previousLocation = currentLocation;
         currentLocation = finalTargetLocation;
         updateState(finalTargetLocation, matched, result.preloadedData);
+
+        // Scroll after navigation (runs in browser environment only)
+        if (typeof window !== 'undefined') {
+          scrollHandlers.onPush(finalTargetLocation);
+        }
 
         // Run afterEach hooks
         for (const callback of afterEachCallbacks) {
@@ -351,6 +367,11 @@ export function createRouter(options: RouterOptions): Router {
       const matched = matchRoutes(location.path, compiledRoutes);
       currentLocation = location;
       updateState(location, matched ?? []);
+
+      // Restore scroll position for back/forward navigation
+      if (typeof window !== 'undefined') {
+        scrollHandlers.onPop(location);
+      }
     }
   });
 

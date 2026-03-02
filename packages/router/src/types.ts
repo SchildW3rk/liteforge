@@ -425,11 +425,16 @@ export interface RouterOptions {
 
 /**
  * Scroll behavior configuration
+ *
+ * - `'top'`  — scroll to top on every push navigation; anchor-scroll if hash
+ *              present; restore position on back/forward. **Default.**
+ * - `'none'` — no automatic scrolling (app manages scroll manually).
+ * - `(to, from) => void` — fully custom scroll handler.
  */
-export type ScrollBehavior = 
-  | 'auto'
-  | 'smooth'
-  | ((to: Location, from: Location | null) => ScrollToOptions | false);
+export type ScrollBehavior =
+  | 'top'
+  | 'none'
+  | ((to: Location, from: Location | null) => void);
 
 // =============================================================================
 // Router Instance Types

@@ -12,3 +12,4 @@ await createApp({
   target: '#app',
   router,
 });
+

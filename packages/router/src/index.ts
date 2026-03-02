@@ -184,3 +184,15 @@ export {
 export type { LazyOptions, LazyComponentWithMethods } from './lazy.js';
 
 export type { CompileRouteOptions } from './route-matcher.js';
+
+// =============================================================================
+// Scroll
+// =============================================================================
+
+export {
+  createScrollHandlers,
+  initScrollRestoration,
+  saveScrollPosition,
+  getHistoryKey,
+  embedScrollKey,
+} from './scroll.js';
