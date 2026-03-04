@@ -5,6 +5,7 @@
  */
 
 import { signal, effect } from '@liteforge/core';
+import { onSetupCleanup } from '@liteforge/runtime';
 import { queryCache, serializeKey } from './cache.js';
 import type {
   CreateQueryOptions,
@@ -372,7 +373,7 @@ export function createQuery<T>(options: CreateQueryOptions<T>): QueryResult<T> {
     cleanup();
   }
 
-  return {
+  const result = {
     data: dataSignal,
     error: errorSignal,
     isLoading: isLoadingSignal,
@@ -381,6 +382,11 @@ export function createQuery<T>(options: CreateQueryOptions<T>): QueryResult<T> {
     refetch,
     dispose,
   };
+
+  // Auto-dispose when created inside a component setup() scope
+  onSetupCleanup(dispose);
+
+  return result;
 }
 
 // ============================================================================

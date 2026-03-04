@@ -53,9 +53,16 @@
     "clean": "rm -rf dist *.tsbuildinfo"
   },
   "peerDependencies": {
-    "@liteforge/core": ">=0.1.0"
+    "@liteforge/core": ">=0.1.0",
+    "@liteforge/runtime": ">=0.1.0"
+  },
+  "peerDependenciesMeta": {
+    "@liteforge/runtime": {
+      "optional": true
+    }
   },
   "devDependencies": {
-    "@liteforge/core": "workspace:*"
+    "@liteforge/core": "workspace:*",
+    "@liteforge/runtime": "workspace:*"
   }
 }
