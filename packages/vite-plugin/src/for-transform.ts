@@ -83,7 +83,15 @@ function transformWhen(prop: t.ObjectProperty): void {
 function transformEach(prop: t.ObjectProperty): void {
   const value = prop.value;
   if (!t.isExpression(value)) return;
+  // Already a function — leave as-is (handles () => signal(), signal itself, etc.)
   if (t.isArrowFunctionExpression(value) || t.isFunctionExpression(value)) return;
+  // Plain identifier: could be a signal (callable) or a plain array.
+  // The For runtime accepts both — pass the identifier directly so that:
+  //   - signal refs establish reactivity via the internal effect's dependency tracking
+  //   - plain arrays are used as-is
+  // We must NOT wrap as () => ident because that returns the signal object, not the array.
+  if (t.isIdentifier(value)) return;
+  // For other expressions (member access, call expressions, etc.) wrap in a getter
   if (!shouldWrapExpression(value)) return;
   prop.value = wrapInGetter(value);
 }
@@ -209,7 +217,15 @@ function rewriteExprForParam(
 ): t.Expression {
   // Already a getter — recurse into its body instead of wrapping again
   if (t.isArrowFunctionExpression(expr) || t.isFunctionExpression(expr)) {
-    walkJsxNodes(expr.body, itemName, indexName);
+    if (t.isExpression(expr.body)) {
+      // Expression body: () => row.label() — rewrite param refs directly
+      const rewritten = rewriteParamRefs(expr.body, itemName, indexName);
+      if (rewritten !== expr.body) {
+        (expr as t.ArrowFunctionExpression).body = rewritten;
+      }
+    } else {
+      walkJsxNodes(expr.body, itemName, indexName);
+    }
     return expr;
   }
 
