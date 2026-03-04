@@ -1,5 +1,5 @@
-import { createComponent, For, Show } from '@liteforge/runtime';
-import { signal } from '@liteforge/core';
+import { createComponent, For, Show } from 'liteforge';
+import { signal } from 'liteforge';
 import { SignalBench } from './SignalBench.js';
 import { ListBench } from './ListBench.js';
 import { MountBench } from './MountBench.js';

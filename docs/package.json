@@ -9,19 +9,10 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@liteforge/core": "workspace:*",
-    "@liteforge/runtime": "workspace:*",
-    "@liteforge/router": "workspace:*",
-    "@liteforge/query": "workspace:*",
-    "@liteforge/form": "workspace:*",
-    "@liteforge/table": "workspace:*",
-    "@liteforge/client": "workspace:*",
-    "@liteforge/calendar": "workspace:*",
-    "@liteforge/store": "workspace:*",
+    "liteforge": "workspace:*",
     "zod": "^3.24.0"
   },
   "devDependencies": {
-    "@liteforge/vite-plugin": "workspace:*",
     "@tailwindcss/vite": "^4.1.0",
     "tailwindcss": "^4.1.0",
     "typescript": "^5.7.2",

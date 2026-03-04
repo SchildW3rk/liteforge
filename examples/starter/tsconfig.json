@@ -5,7 +5,21 @@
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "allowImportingTsExtensions": true,
     "noEmit": true,
-    "jsx": "preserve"
+    "jsx": "preserve",
+    "baseUrl": "../..",
+    "paths": {
+      "liteforge": ["packages/liteforge/src/index.ts"],
+      "liteforge/router": ["packages/liteforge/src/router.ts"],
+      "liteforge/store": ["packages/liteforge/src/store.ts"],
+      "liteforge/query": ["packages/liteforge/src/query.ts"],
+      "liteforge/client": ["packages/liteforge/src/client.ts"],
+      "liteforge/form": ["packages/liteforge/src/form.ts"],
+      "liteforge/table": ["packages/liteforge/src/table.ts"],
+      "liteforge/modal": ["packages/liteforge/src/modal.ts"],
+      "liteforge/calendar": ["packages/liteforge/src/calendar.ts"],
+      "liteforge/devtools": ["packages/liteforge/src/devtools.ts"],
+      "liteforge/vite-plugin": ["packages/liteforge/src/vite-plugin.ts"]
+    }
   },
   "include": ["src/**/*.ts", "src/**/*.tsx"]
 }

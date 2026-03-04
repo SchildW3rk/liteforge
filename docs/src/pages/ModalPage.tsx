@@ -1,6 +1,6 @@
-import { createComponent } from '@liteforge/runtime';
-import { createModal, confirm, alert, prompt } from '@liteforge/modal';
-import { signal } from '@liteforge/core';
+import { createComponent } from 'liteforge';
+import { createModal, confirm, alert, prompt } from 'liteforge/modal';
+import { signal } from 'liteforge';
 import { DocSection } from '../components/DocSection.js';
 import { CodeBlock } from '../components/CodeBlock.js';
 import { LiveExample } from '../components/LiveExample.js';
@@ -64,13 +64,13 @@ function ModalExample(): Node {
 // ─── Code strings ─────────────────────────────────────────────────────────────
 
 const SETUP_CODE = `// main.tsx — mount ModalProvider once at app root
-import { ModalProvider } from '@liteforge/modal';
+import { ModalProvider } from 'liteforge/modal';
 
 document.body.appendChild(ModalProvider());
 
 await createApp({ root: App, target: '#app', router });`;
 
-const BASIC_CODE = `import { createModal } from '@liteforge/modal';
+const BASIC_CODE = `import { createModal } from 'liteforge/modal';
 
 const modal = createModal({
   config: {
@@ -114,7 +114,7 @@ modal.close();   // hide
 modal.toggle();  // toggle
 modal.destroy(); // remove from DOM`;
 
-const PRESETS_CODE = `import { confirm, alert, prompt } from '@liteforge/modal';
+const PRESETS_CODE = `import { confirm, alert, prompt } from 'liteforge/modal';
 
 // Confirm — resolves to boolean
 const ok = await confirm('Delete this record?');
@@ -188,7 +188,7 @@ export const ModalPage = createComponent({
             <code class="text-indigo-400 text-sm">prompt()</code> presets.
           </p>
           <CodeBlock code={`pnpm add @liteforge/modal`} language="bash" />
-          <CodeBlock code={`import { createModal, confirm, alert, prompt } from '@liteforge/modal';`} language="typescript" />
+          <CodeBlock code={`import { createModal, confirm, alert, prompt } from 'liteforge/modal';`} language="typescript" />
         </div>
 
         <DocSection

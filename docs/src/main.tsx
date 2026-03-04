@@ -1,6 +1,6 @@
-import { createApp } from '@liteforge/runtime';
-import { createBrowserHistory, createRouter } from '@liteforge/router';
-import { ModalProvider } from '@liteforge/modal';
+import { createApp } from 'liteforge';
+import { createBrowserHistory, createRouter } from 'liteforge/router';
+import { ModalProvider } from 'liteforge/modal';
 import { routes } from './router.js';
 import { App } from './App.js';
 import { initTheme } from './stores/theme.js';

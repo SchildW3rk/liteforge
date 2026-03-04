@@ -1,5 +1,5 @@
-import { createComponent } from '@liteforge/runtime';
-import { signal } from '@liteforge/core';
+import { createComponent } from 'liteforge';
+import { signal } from 'liteforge';
 import { DocSection } from '../components/DocSection.js';
 import { CodeBlock } from '../components/CodeBlock.js';
 import { LiveExample } from '../components/LiveExample.js';
@@ -69,8 +69,8 @@ function ForExample(): Node {
 
 // Use variable to prevent vite-plugin HMR transform from injecting __hmrId into demo strings
 const _cc = 'createComponent';
-const COMPONENT_CODE = `import { ${_cc} } from '@liteforge/runtime';
-import { signal } from '@liteforge/core';
+const COMPONENT_CODE = `import { ${_cc} } from 'liteforge';
+import { signal } from 'liteforge';
 
 export const PatientCard = ${_cc}({
   name: 'PatientCard',
@@ -113,7 +113,7 @@ const JSX_CODE = `// Static attribute
   {(patient) => <PatientRow patient={patient} />}
 </For>`;
 
-const SHOW_CODE = `import { Show } from '@liteforge/runtime';
+const SHOW_CODE = `import { Show } from 'liteforge';
 
 const isAdmin = signal(false);
 
@@ -124,7 +124,7 @@ Show({
   fallback: () => <p>Access denied</p>,
 })`;
 
-const FOR_CODE = `import { For } from '@liteforge/runtime';
+const FOR_CODE = `import { For } from 'liteforge';
 
 const appointments = signal([
   { id: 1, patient: 'Anna Müller', time: '09:00' },
@@ -230,7 +230,7 @@ const COMPONENT_API: ApiRow[] = [
 
 // ─── Page ──────────────────────────────────────────────────────────────────────
 
-import { effect } from '@liteforge/core';
+import { effect } from 'liteforge';
 
 export const RuntimePage = createComponent({
   name: 'RuntimePage',
@@ -249,7 +249,7 @@ export const RuntimePage = createComponent({
             <code class="font-mono text-sm text-indigo-300">Switch</code>.
           </p>
           <CodeBlock code={`pnpm add @liteforge/runtime @liteforge/core`} language="bash" />
-          <CodeBlock code={`import { createComponent, Show, For } from '@liteforge/runtime';`} language="typescript" />
+          <CodeBlock code={`import { createComponent, Show, For } from 'liteforge';`} language="typescript" />
         </div>
 
         <DocSection

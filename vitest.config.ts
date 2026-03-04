@@ -13,6 +13,9 @@ export default defineConfig({
       '@liteforge/calendar': path.resolve(__dirname, 'packages/calendar/src/index.ts'),
       '@liteforge/modal': path.resolve(__dirname, 'packages/modal/src/index.ts'),
       '@liteforge/client': path.resolve(__dirname, 'packages/client/src/index.ts'),
+      '@liteforge/query': path.resolve(__dirname, 'packages/query/src/index.ts'),
+      '@liteforge/form': path.resolve(__dirname, 'packages/form/src/index.ts'),
+      '@liteforge/devtools': path.resolve(__dirname, 'packages/devtools/src/index.ts'),
     },
   },
   test: {
@@ -31,6 +34,7 @@ export default defineConfig({
       ['packages/calendar/**', 'happy-dom'],
       ['packages/modal/**', 'happy-dom'],
       ['packages/client/**', 'node'],
+      ['packages/liteforge/**', 'node'],
     ],
     coverage: {
       provider: 'v8',

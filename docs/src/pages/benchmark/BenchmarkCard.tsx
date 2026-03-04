@@ -1,5 +1,5 @@
-import { createComponent, Show, Switch, Match } from '@liteforge/runtime';
-import type { Signal } from '@liteforge/core';
+import { createComponent, Show, Switch, Match } from 'liteforge';
+import type { Signal } from 'liteforge';
 import type { BenchStatus } from './bench-utils.js';
 
 interface BenchmarkCardProps {

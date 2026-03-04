@@ -10,10 +10,10 @@
  * - Clickable posts linking to detail page
  */
 
-import { createComponent, Show, For } from '@liteforge/runtime';
-import { signal } from '@liteforge/core';
-import { Link } from '@liteforge/router';
-import { createQuery, createMutation } from '@liteforge/query';
+import { createComponent, Show, For } from 'liteforge';
+import { signal } from 'liteforge';
+import { Link } from 'liteforge/router';
+import { createQuery, createMutation } from 'liteforge/query';
 
 // =============================================================================
 // Types

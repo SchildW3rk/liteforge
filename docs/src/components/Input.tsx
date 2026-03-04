@@ -1,5 +1,5 @@
-import { createComponent, Show } from '@liteforge/runtime';
-import { computed } from '@liteforge/core';
+import { createComponent, Show } from 'liteforge';
+import { computed } from 'liteforge';
 
 export type InputSize = 'sm' | 'md';
 

@@ -1,6 +1,6 @@
-import { createComponent, Show } from '@liteforge/runtime';
-import { createForm } from '@liteforge/form';
-import { computed } from '@liteforge/core';
+import { createComponent, Show } from 'liteforge';
+import { createForm } from 'liteforge/form';
+import { computed } from 'liteforge';
 import { z } from 'zod';
 import { DocSection } from '../components/DocSection.js';
 import { CodeBlock } from '../components/CodeBlock.js';
@@ -145,7 +145,7 @@ function ArrayFieldExample(): Node {
 
 // ─── Code strings ─────────────────────────────────────────────────────────────
 
-const SETUP_CODE = `import { createForm } from '@liteforge/form';
+const SETUP_CODE = `import { createForm } from 'liteforge/form';
 import { z } from 'zod';
 
 const form = createForm({
@@ -302,7 +302,7 @@ export const FormPage = createComponent({
             array fields, submission state — all as reactive signals.
           </p>
           <CodeBlock code={`pnpm add @liteforge/form zod`} language="bash" />
-          <CodeBlock code={`import { createForm } from '@liteforge/form';\nimport { z } from 'zod';`} language="typescript" />
+          <CodeBlock code={`import { createForm } from 'liteforge/form';\nimport { z } from 'zod';`} language="typescript" />
         </div>
 
         <DocSection

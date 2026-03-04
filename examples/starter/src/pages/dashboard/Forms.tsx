@@ -9,9 +9,9 @@
  * - Form submission handling
  */
 
-import { createComponent, Show, For } from '@liteforge/runtime';
-import { signal, computed } from '@liteforge/core';
-import { createForm } from '@liteforge/form';
+import { createComponent, Show, For } from 'liteforge';
+import { signal, computed } from 'liteforge';
+import { createForm } from 'liteforge/form';
 import { z } from 'zod';
 
 // =============================================================================

@@ -14,10 +14,10 @@
  * - Nested property access (company.name)
  */
 
-import { createComponent, Show } from '@liteforge/runtime';
-import { createQuery } from '@liteforge/query';
-import { createTable } from '@liteforge/table';
-import type { ColumnDef } from '@liteforge/table';
+import { createComponent, Show } from 'liteforge';
+import { createQuery } from 'liteforge/query';
+import { createTable } from 'liteforge/table';
+import type { ColumnDef } from 'liteforge/table';
 
 // =============================================================================
 // User Type (JSONPlaceholder schema)

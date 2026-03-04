@@ -5,6 +5,11 @@ node_modules/
 # Build outputs
 dist/
 *.tsbuildinfo
+# tsc artifacts that accidentally land in src/ (wrong outDir)
+packages/*/src/**/*.js
+packages/*/src/**/*.js.map
+packages/*/src/**/*.d.ts
+packages/*/src/**/*.d.ts.map
 
 # Test & Coverage
 coverage/

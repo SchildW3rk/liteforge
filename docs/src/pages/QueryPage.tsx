@@ -1,6 +1,6 @@
-import { createComponent } from '@liteforge/runtime';
-import { signal } from '@liteforge/core';
-import { createQuery } from '@liteforge/query';
+import { createComponent } from 'liteforge';
+import { signal } from 'liteforge';
+import { createQuery } from 'liteforge/query';
 import { DocSection } from '../components/DocSection.js';
 import { CodeBlock } from '../components/CodeBlock.js';
 import { LiveExample } from '../components/LiveExample.js';
@@ -38,7 +38,7 @@ function QueryExample(): Node {
   const label = document.createElement('span');
   label.className = 'text-xs text-[var(--content-muted)] font-mono';
 
-  import('@liteforge/core').then(({ effect }) => {
+  import('liteforge').then(({ effect }) => {
     effect(() => { label.textContent = `post #${postId()}`; });
 
     const status = document.createElement('div');
@@ -79,7 +79,7 @@ function QueryExample(): Node {
 
 // ─── Code strings ─────────────────────────────────────────────────────────────
 
-const QUERY_CODE = `import { createQuery } from '@liteforge/query';
+const QUERY_CODE = `import { createQuery } from 'liteforge/query';
 
 const patients = createQuery({
   key: 'patients',
@@ -93,7 +93,7 @@ patients.isLoading() // boolean
 patients.error()     // Error | undefined
 patients.refetch()   // force refresh`;
 
-const REACTIVE_KEY_CODE = `import { signal, computed } from '@liteforge/core';
+const REACTIVE_KEY_CODE = `import { signal, computed } from 'liteforge';
 
 const clinicId = signal(1);
 
@@ -106,7 +106,7 @@ const patients = createQuery({
 // Changing clinicId triggers automatic re-fetch
 clinicId.set(2);`;
 
-const MUTATION_CODE = `import { createMutation } from '@liteforge/query';
+const MUTATION_CODE = `import { createMutation } from 'liteforge/query';
 
 const createPatient = createMutation({
   fn: (data: NewPatient) =>
@@ -194,7 +194,7 @@ export const QueryPage = createComponent({
             Mutations automatically invalidate related queries so your UI stays in sync.
           </p>
           <CodeBlock code={`pnpm add @liteforge/query`} language="bash" />
-          <CodeBlock code={`import { createQuery, createMutation } from '@liteforge/query';`} language="typescript" />
+          <CodeBlock code={`import { createQuery, createMutation } from 'liteforge/query';`} language="typescript" />
         </div>
 
         <DocSection

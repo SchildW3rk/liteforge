@@ -8,7 +8,7 @@
  * - NO singleton wrapper needed - defineStore handles it!
  */
 
-import { defineStore } from '@liteforge/store';
+import { defineStore } from 'liteforge/store';
 
 // =============================================================================
 // Types

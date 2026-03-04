@@ -1,7 +1,7 @@
-import { createComponent, Show, For, Switch, Match } from '@liteforge/runtime';
+import { createComponent, Show, For, Switch, Match } from 'liteforge';
 import { Button } from '../components/Button.js';
-import { createTable } from '@liteforge/table';
-import { signal } from '@liteforge/core';
+import { createTable } from 'liteforge/table';
+import { signal } from 'liteforge';
 import { DocSection } from '../components/DocSection.js';
 import { CodeBlock } from '../components/CodeBlock.js';
 import { LiveExample } from '../components/LiveExample.js';
@@ -167,7 +167,7 @@ const REACTIVE_EXPR_CODE = `// Any {() => expr} in JSX is a fine-grained reactiv
 // Ternary with fallback
 <div>{() => count() > 0 ? \`\${count()} items\` : 'No items'}</div>`;
 
-const REACTIVE_EXPR_SIGNAL_CODE = `import { signal, effect } from '@liteforge/core';
+const REACTIVE_EXPR_SIGNAL_CODE = `import { signal, effect } from 'liteforge';
 
 const count = signal(0);
 
@@ -179,8 +179,8 @@ const count = signal(0);
 // When count changes, ONLY the text node updates.
 // The <button> element is never recreated.`;
 
-const SHOW_BASIC_CODE = `import { Show } from '@liteforge/runtime';
-import { signal } from '@liteforge/core';
+const SHOW_BASIC_CODE = `import { Show } from 'liteforge';
+import { signal } from 'liteforge';
 
 const isLoggedIn = signal(false);
 
@@ -197,8 +197,8 @@ Show({
   fallback: () => <LoginForm />,
 })`;
 
-const SHOW_REALISTIC_CODE = `import { Show } from '@liteforge/runtime';
-import { createQuery } from '@liteforge/query';
+const SHOW_REALISTIC_CODE = `import { Show } from 'liteforge';
+import { createQuery } from 'liteforge/query';
 
 const patientQuery = createQuery({
   key: 'patients',
@@ -228,8 +228,8 @@ const SHOW_JSX_CODE = `// JSX tag syntax — same thing, different style
   {(user) => <Dashboard user={user} />}
 </Show>`;
 
-const SWITCH_CODE = `import { Switch, Match } from '@liteforge/runtime';
-import { signal } from '@liteforge/core';
+const SWITCH_CODE = `import { Switch, Match } from 'liteforge';
+import { signal } from 'liteforge';
 
 type Status = 'idle' | 'loading' | 'success' | 'error';
 const status = signal<Status>('idle');
@@ -250,8 +250,8 @@ const SWITCH_JSX_CODE = `// JSX syntax
   <Match when={() => status() === 'success'}>{() => <AppointmentList />}</Match>
 </Switch>`;
 
-const FOR_BASIC_CODE = `import { For } from '@liteforge/runtime';
-import { signal } from '@liteforge/core';
+const FOR_BASIC_CODE = `import { For } from 'liteforge';
+import { signal } from 'liteforge';
 
 interface Patient {
   id: number;
@@ -320,8 +320,8 @@ const NESTED_CODE = `// Show inside For — conditional items in a list
   )}
 </Show>`;
 
-const QUERY_SHOW_CODE = `import { Show } from '@liteforge/runtime';
-import { createQuery } from '@liteforge/query';
+const QUERY_SHOW_CODE = `import { Show } from 'liteforge';
+import { createQuery } from 'liteforge/query';
 
 const appointments = createQuery({
   key: 'appointments',
@@ -480,7 +480,7 @@ export const ControlFlowPage = createComponent({
             Each reactive node updates independently when its signal changes.
           </p>
           <CodeBlock
-            code={`import { Show, Switch, Match, For } from '@liteforge/runtime';`}
+            code={`import { Show, Switch, Match, For } from 'liteforge';`}
             language="typescript"
           />
         </div>

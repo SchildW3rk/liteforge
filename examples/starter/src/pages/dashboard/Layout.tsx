@@ -10,11 +10,11 @@
  * - Sidebar toggle
  */
 
-import { createComponent, Show } from '@liteforge/runtime';
-import { Link, RouterOutlet } from '@liteforge/router';
+import { createComponent, Show } from 'liteforge';
+import { Link, RouterOutlet } from 'liteforge/router';
 import { authStore } from '../../stores/auth.js';
 import { uiStore } from '../../stores/ui.js';
-import type { Router } from '@liteforge/router';
+import type { Router } from 'liteforge/router';
 
 // =============================================================================
 // Component

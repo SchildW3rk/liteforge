@@ -1,6 +1,6 @@
-import { createComponent } from '@liteforge/runtime';
-import { createTable } from '@liteforge/table';
-import { signal } from '@liteforge/core';
+import { createComponent } from 'liteforge';
+import { createTable } from 'liteforge/table';
+import { signal } from 'liteforge';
 import { DocSection } from '../components/DocSection.js';
 import { CodeBlock } from '../components/CodeBlock.js';
 import { LiveExample } from '../components/LiveExample.js';
@@ -96,8 +96,8 @@ function TableExampleTailwind(): Node {
 
 // ─── Code strings ──────────────────────────────────────────────────────────────
 
-const SETUP_CODE = `import { createTable } from '@liteforge/table';
-import { signal } from '@liteforge/core';
+const SETUP_CODE = `import { createTable } from 'liteforge/table';
+import { signal } from 'liteforge';
 
 interface Patient {
   id: number;
@@ -278,7 +278,7 @@ export const TablePage = createComponent({
             Data is a signal — the table automatically re-renders when data changes.
           </p>
           <CodeBlock code={`pnpm add @liteforge/table`} language="bash" />
-          <CodeBlock code={`import { createTable } from '@liteforge/table';`} language="typescript" />
+          <CodeBlock code={`import { createTable } from 'liteforge/table';`} language="typescript" />
         </div>
 
         <DocSection

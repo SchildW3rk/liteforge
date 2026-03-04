@@ -9,7 +9,7 @@
  * - Retry functionality on error
  */
 
-import { createComponent } from '@liteforge/runtime';
+import { createComponent } from 'liteforge';
 import { authStore } from '../../stores/auth.js';
 
 // =============================================================================

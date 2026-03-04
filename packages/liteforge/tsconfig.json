@@ -1,0 +1,35 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "baseUrl": "../..",
+    "paths": {
+      "@liteforge/core": ["packages/core/src/index.ts"],
+      "@liteforge/core/*": ["packages/core/src/*"],
+      "@liteforge/runtime": ["packages/runtime/src/index.ts"],
+      "@liteforge/runtime/*": ["packages/runtime/src/*"],
+      "@liteforge/store": ["packages/store/src/index.ts"],
+      "@liteforge/store/*": ["packages/store/src/*"],
+      "@liteforge/router": ["packages/router/src/index.ts"],
+      "@liteforge/router/*": ["packages/router/src/*"],
+      "@liteforge/query": ["packages/query/src/index.ts"],
+      "@liteforge/query/*": ["packages/query/src/*"],
+      "@liteforge/client": ["packages/client/src/index.ts"],
+      "@liteforge/client/*": ["packages/client/src/*"],
+      "@liteforge/form": ["packages/form/src/index.ts"],
+      "@liteforge/form/*": ["packages/form/src/*"],
+      "@liteforge/table": ["packages/table/src/index.ts"],
+      "@liteforge/table/*": ["packages/table/src/*"],
+      "@liteforge/modal": ["packages/modal/src/index.ts"],
+      "@liteforge/modal/*": ["packages/modal/src/*"],
+      "@liteforge/calendar": ["packages/calendar/src/index.ts"],
+      "@liteforge/calendar/*": ["packages/calendar/src/*"],
+      "@liteforge/devtools": ["packages/devtools/src/index.ts"],
+      "@liteforge/devtools/*": ["packages/devtools/src/*"],
+      "@liteforge/vite-plugin": ["packages/vite-plugin/src/index.ts"],
+      "@liteforge/vite-plugin/*": ["packages/vite-plugin/src/*"]
+    },
+    "types": ["vitest/globals"]
+  },
+  "include": ["src/**/*.ts", "tests/**/*.ts"]
+}

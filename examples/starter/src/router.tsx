@@ -18,7 +18,7 @@ import {
   defineMiddleware,
   type RouteDefinition,
   type LazyDefaults,
-} from '@liteforge/router';
+} from 'liteforge/router';
 import { authStore } from './stores/auth.js';
 import { uiStore } from './stores/ui.js';
 

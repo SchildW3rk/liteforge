@@ -1,4 +1,4 @@
-import { defineStore } from '@liteforge/store';
+import { defineStore } from 'liteforge/store';
 
 const STORAGE_KEY = 'lf-docs-theme';
 

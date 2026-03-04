@@ -9,21 +9,10 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@liteforge/core": "workspace:*",
-    "@liteforge/runtime": "workspace:*",
-    "@liteforge/store": "workspace:*",
-    "@liteforge/router": "workspace:*",
-    "@liteforge/devtools": "workspace:*",
-    "@liteforge/client": "workspace:*",
-    "@liteforge/query": "workspace:*",
-    "@liteforge/form": "workspace:*",
-    "@liteforge/table": "workspace:*",
-    "@liteforge/calendar": "workspace:*",
-    "@liteforge/modal": "workspace:*",
+    "liteforge": "workspace:*",
     "zod": "^3.24.0"
   },
   "devDependencies": {
-    "@liteforge/vite-plugin": "workspace:*",
     "typescript": "^5.7.2",
     "vite": "^6.0.0"
   }

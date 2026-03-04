@@ -9,8 +9,8 @@
  * - UI notifications
  */
 
-import { signal } from '@liteforge/core';
-import { createComponent, For } from '@liteforge/runtime';
+import { signal } from 'liteforge';
+import { createComponent, For } from 'liteforge';
 import { uiStore } from '../../stores/ui.js';
 
 // =============================================================================

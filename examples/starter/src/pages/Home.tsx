@@ -10,8 +10,8 @@
  * - Reading from auth store
  */
 
-import { createComponent, Show } from '@liteforge/runtime';
-import { Link } from '@liteforge/router';
+import { createComponent, Show } from 'liteforge';
+import { Link } from 'liteforge/router';
 import { authStore } from '../stores/auth.js';
 
 // =============================================================================

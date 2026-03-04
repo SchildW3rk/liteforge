@@ -8,8 +8,8 @@
  * - Navigation back to posts list
  */
 
-import { createComponent, Show, For } from '@liteforge/runtime';
-import { Link, useParam } from '@liteforge/router';
+import { createComponent, Show, For } from 'liteforge';
+import { Link, useParam } from 'liteforge/router';
 
 // =============================================================================
 // Types

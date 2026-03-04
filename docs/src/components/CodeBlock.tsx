@@ -1,5 +1,5 @@
-import { createComponent } from '@liteforge/runtime';
-import { signal } from '@liteforge/core';
+import { createComponent } from 'liteforge';
+import { signal } from 'liteforge';
 
 interface CodeBlockProps {
   code: string;

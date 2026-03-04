@@ -10,10 +10,10 @@
  * - Navigation and view switching
  */
 
-import { createComponent, Show, For } from '@liteforge/runtime';
-import { signal, effect } from '@liteforge/core';
-import { createCalendar } from '@liteforge/calendar';
-import type { CalendarEvent, Resource, CalendarView } from '@liteforge/calendar';
+import { createComponent, Show, For } from 'liteforge';
+import { signal, effect } from 'liteforge';
+import { createCalendar } from 'liteforge/calendar';
+import type { CalendarEvent, Resource, CalendarView } from 'liteforge/calendar';
 
 // =============================================================================
 // Sample Data - Therapy Practice Schedule

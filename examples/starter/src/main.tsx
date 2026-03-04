@@ -7,12 +7,12 @@
  * - .use(devtoolsPlugin) → DevTools panel inserted next to #app
  */
 
-import { createApp } from '@liteforge/runtime';
-import { routerPlugin } from '@liteforge/router';
-import { clientPlugin, queryIntegration } from '@liteforge/client';
-import { queryPlugin } from '@liteforge/query';
-import { modalPlugin } from '@liteforge/modal';
-import { devtoolsPlugin } from '@liteforge/devtools';
+import { createApp } from 'liteforge';
+import { routerPlugin } from 'liteforge/router';
+import { clientPlugin, queryIntegration } from 'liteforge/client';
+import { queryPlugin } from 'liteforge/query';
+import { modalPlugin } from 'liteforge/modal';
+import { devtoolsPlugin } from 'liteforge/devtools';
 
 // Import app components
 import { App } from './App.js';

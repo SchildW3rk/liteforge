@@ -1,5 +1,5 @@
-import { createComponent } from '@liteforge/runtime';
-import { Link } from '@liteforge/router';
+import { createComponent } from 'liteforge';
+import { Link } from 'liteforge/router';
 import { CodeBlock } from '../components/CodeBlock.js';
 
 type BadgeToken = 'violet' | 'blue' | 'emerald' | 'amber';
@@ -32,8 +32,8 @@ const PACKAGES: PackageCard[] = [
 
 // Use variable to prevent vite-plugin HMR transform from injecting __hmrId into demo strings
 const _cc = 'createComponent';
-const QUICKSTART = `import { signal, computed } from '@liteforge/core';
-import { ${_cc} } from '@liteforge/runtime';
+const QUICKSTART = `import { signal, computed } from 'liteforge';
+import { ${_cc} } from 'liteforge';
 
 const Counter = ${_cc}({
   name: 'Counter',

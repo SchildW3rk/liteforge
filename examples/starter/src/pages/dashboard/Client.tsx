@@ -6,10 +6,10 @@
  *             Loading, error, caching — all managed by @liteforge/query automatically.
  */
 
-import { createComponent } from '@liteforge/runtime';
-import { createClient, ApiError, useQueryClient } from '@liteforge/client';
-import type { RequestConfig, ResponseContext } from '@liteforge/client';
-import { signal } from '@liteforge/core';
+import { createComponent } from 'liteforge';
+import { createClient, ApiError, useQueryClient } from 'liteforge/client';
+import type { RequestConfig, ResponseContext } from 'liteforge/client';
+import { signal } from 'liteforge';
 
 // ============================================================================
 // Types (JSONPlaceholder)

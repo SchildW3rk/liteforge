@@ -10,10 +10,10 @@
  * - Router navigation after login
  */
 
-import { signal } from '@liteforge/core';
-import { createComponent, Show, use } from '@liteforge/runtime';
+import { signal } from 'liteforge';
+import { createComponent, Show, use } from 'liteforge';
 import { authStore } from '../stores/auth.js';
-import type { Router } from '@liteforge/router';
+import type { Router } from 'liteforge/router';
 
 // =============================================================================
 // Component

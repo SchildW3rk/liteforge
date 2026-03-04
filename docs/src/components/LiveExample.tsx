@@ -1,5 +1,5 @@
-import { createComponent } from '@liteforge/runtime';
-import type { ComponentFactory } from '@liteforge/runtime';
+import { createComponent } from 'liteforge';
+import type { ComponentFactory } from 'liteforge';
 import { CodeBlock } from './CodeBlock.js';
 
 interface LiveExampleProps {

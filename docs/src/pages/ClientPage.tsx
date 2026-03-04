@@ -1,5 +1,5 @@
-import { createComponent, For, Show } from '@liteforge/runtime';
-import { signal } from '@liteforge/core';
+import { createComponent, For, Show } from 'liteforge';
+import { signal } from 'liteforge';
 import { DocSection } from '../components/DocSection.js';
 import { CodeBlock } from '../components/CodeBlock.js';
 import { ApiTable } from '../components/ApiTable.js';
@@ -117,7 +117,7 @@ const FetchDemo = createComponent({
 // Prevent vite-plugin HMR transform from injecting __hmrId into demo strings
 const _cc = 'createComponent';
 
-const SETUP_CODE = `import { createClient } from '@liteforge/client';
+const SETUP_CODE = `import { createClient } from 'liteforge/client';
 
 const client = createClient({
   baseUrl: 'https://api.example.com',
@@ -148,8 +148,8 @@ await patients.action('discharge', { reason: 'recovered' }, 42);
 await patients.custom({ method: 'GET', path: 'count' });
 // → GET /patients/count`;
 
-const QUERY_CLIENT_CODE = `import { createClient } from '@liteforge/client';
-import { createQuery, createMutation } from '@liteforge/query';
+const QUERY_CLIENT_CODE = `import { createClient } from 'liteforge/client';
+import { createQuery, createMutation } from 'liteforge/query';
 
 // createClient with query → returns QueryClient
 // resource() returns QueryResource — use* methods guaranteed, no ! needed
@@ -171,7 +171,7 @@ listQuery.data()       // Patient[] | undefined (via ListResponse)
 listQuery.isLoading()  // boolean
 createMut.mutate({ name: 'Anna', dob: '1990-01-15' });`;
 
-const ERROR_CODE = `import { ApiError } from '@liteforge/client';
+const ERROR_CODE = `import { ApiError } from 'liteforge/client';
 
 try {
   const patient = await client.get<Patient>('/patients/99');
@@ -317,7 +317,7 @@ export const ClientPage = createComponent({
             cached CRUD operations in 4 levels of progressively better DX.
           </p>
           <CodeBlock code={`pnpm add @liteforge/client`} language="bash" />
-          <CodeBlock code={`import { createClient, ApiError } from '@liteforge/client';`} language="typescript" />
+          <CodeBlock code={`import { createClient, ApiError } from 'liteforge/client';`} language="typescript" />
         </div>
 
         <DocSection

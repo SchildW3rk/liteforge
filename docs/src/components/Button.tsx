@@ -1,4 +1,4 @@
-import { createComponent } from '@liteforge/runtime';
+import { createComponent } from 'liteforge';
 
 export type ButtonVariant = 'primary' | 'secondary' | 'neutral' | 'ghost' | 'danger';
 export type ButtonSize = 'sm' | 'md';

@@ -1,4 +1,4 @@
-import { createComponent } from '@liteforge/runtime';
+import { createComponent } from 'liteforge';
 import { DocSection } from '../components/DocSection.js';
 import { CodeBlock } from '../components/CodeBlock.js';
 import { ApiTable } from '../components/ApiTable.js';
@@ -7,8 +7,8 @@ import type { ApiRow } from '../components/ApiTable.js';
 // ─── Code strings ─────────────────────────────────────────────────────────────
 
 const INTEGRATION_CODE = `// main.tsx
-import { createApp } from '@liteforge/runtime';
-import { devtoolsPlugin } from '@liteforge/devtools';
+import { createApp } from 'liteforge';
+import { devtoolsPlugin } from 'liteforge/devtools';
 
 await createApp({
   root: App,
@@ -26,7 +26,7 @@ await createApp({
 });`;
 
 const INSTALL_CODE = `pnpm add -D @liteforge/devtools`;
-const IMPORT_CODE = `import { devtoolsPlugin } from '@liteforge/devtools';`;
+const IMPORT_CODE = `import { devtoolsPlugin } from 'liteforge/devtools';`;
 
 const TIME_TRAVEL_CODE = `// Stores tab → click any history entry to rewind
 
@@ -43,7 +43,7 @@ const TIME_TRAVEL_CODE = `// Stores tab → click any history entry to rewind
 // Live effects and computed values re-run automatically.`;
 
 const STANDALONE_CODE = `// Attach DevTools without createApp — useful for plain scripts
-import { createDevTools } from '@liteforge/devtools';
+import { createDevTools } from 'liteforge/devtools';
 
 const dt = createDevTools({
   position: 'bottom',

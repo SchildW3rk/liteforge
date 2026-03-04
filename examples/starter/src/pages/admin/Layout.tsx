@@ -8,8 +8,8 @@
  * - Protected admin navigation
  */
 
-import { createComponent } from '@liteforge/runtime';
-import { Link, RouterOutlet } from '@liteforge/router';
+import { createComponent } from 'liteforge';
+import { Link, RouterOutlet } from 'liteforge/router';
 
 // =============================================================================
 // Component

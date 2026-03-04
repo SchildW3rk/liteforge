@@ -8,9 +8,9 @@
  * - Router navigation programmatically
  */
 
-import { createComponent, use } from '@liteforge/runtime';
-import { Link } from '@liteforge/router';
-import type { Router } from '@liteforge/router';
+import { createComponent, use } from 'liteforge';
+import { Link } from 'liteforge/router';
+import type { Router } from 'liteforge/router';
 
 // =============================================================================
 // Component

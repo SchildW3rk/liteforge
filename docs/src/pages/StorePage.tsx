@@ -1,6 +1,6 @@
-import { createComponent } from '@liteforge/runtime';
-import { defineStore } from '@liteforge/store';
-import { signal } from '@liteforge/core';
+import { createComponent } from 'liteforge';
+import { defineStore } from 'liteforge/store';
+import { signal } from 'liteforge';
 import { DocSection } from '../components/DocSection.js';
 import { CodeBlock } from '../components/CodeBlock.js';
 import { LiveExample } from '../components/LiveExample.js';
@@ -74,7 +74,7 @@ function StoreExample(): Node {
 
 // ─── Code strings ─────────────────────────────────────────────────────────────
 
-const SETUP_CODE = `import { defineStore } from '@liteforge/store';
+const SETUP_CODE = `import { defineStore } from 'liteforge/store';
 
 const userStore = defineStore('users', {
   state: {
@@ -124,7 +124,7 @@ counter.increment();
 counter.decrement();
 counter.reset();`;
 
-const PLUGINS_CODE = `import { defineStorePlugin, storeRegistry } from '@liteforge/store';
+const PLUGINS_CODE = `import { defineStorePlugin, storeRegistry } from 'liteforge/store';
 
 // Logger plugin
 const loggerPlugin = defineStorePlugin({
@@ -146,7 +146,7 @@ const myStore = defineStore('example', {
 const allStores = storeRegistry.getAll();
 const store = storeRegistry.get('example');`;
 
-const TIME_TRAVEL_CODE = `import { devtoolsPlugin } from '@liteforge/devtools';
+const TIME_TRAVEL_CODE = `import { devtoolsPlugin } from 'liteforge/devtools';
 
 // Time-travel is built into devtools:
 // 1. Integrate devtoolsPlugin() in createApp()
@@ -190,7 +190,7 @@ export const StorePage = createComponent({
             async actions in one place. Zero boilerplate — no reducers, no dispatches.
           </p>
           <CodeBlock code={`pnpm add @liteforge/store`} language="bash" />
-          <CodeBlock code={`import { defineStore } from '@liteforge/store';`} language="typescript" />
+          <CodeBlock code={`import { defineStore } from 'liteforge/store';`} language="typescript" />
         </div>
 
         <DocSection

@@ -1,5 +1,5 @@
-import { createComponent, For, Show } from '@liteforge/runtime';
-import { signal } from '@liteforge/core';
+import { createComponent, For, Show } from 'liteforge';
+import { signal } from 'liteforge';
 import { DocSection } from '../components/DocSection.js';
 import { CodeBlock } from '../components/CodeBlock.js';
 import { ApiTable } from '../components/ApiTable.js';
@@ -137,8 +137,8 @@ const RouterDemo = createComponent({
 // Prevent vite-plugin HMR transform from injecting __hmrId into demo strings
 const _cc = 'createComponent';
 
-const SETUP_CODE = `import { createRouter, createBrowserHistory } from '@liteforge/router';
-import { createApp } from '@liteforge/runtime';
+const SETUP_CODE = `import { createRouter, createBrowserHistory } from 'liteforge/router';
+import { createApp } from 'liteforge';
 import { App } from './App.js';
 
 const router = createRouter({
@@ -172,7 +172,7 @@ const LAZY_CODE = `// Routes are lazy-loaded automatically — just use inline i
   lazy: { delay: 150, timeout: 8000 },
 }`;
 
-const LINK_CODE = `import { Link, RouterOutlet } from '@liteforge/router';
+const LINK_CODE = `import { Link, RouterOutlet } from 'liteforge/router';
 
 // Renders an <a> tag — activeClass applied when route matches
 <Link href="/patients" activeClass="font-bold text-indigo-400">
@@ -205,7 +205,7 @@ const MyComponent = ${_cc}({
   },
 });`;
 
-const GUARD_CODE = `import { defineGuard } from '@liteforge/router';
+const GUARD_CODE = `import { defineGuard } from 'liteforge/router';
 
 const authGuard = defineGuard('auth', async ({ to }) => {
   if (!isAuthenticated()) {
@@ -223,7 +223,7 @@ const authGuard = defineGuard('auth', async ({ to }) => {
   children: [ ... ],
 }`;
 
-const MIDDLEWARE_CODE = `import { defineMiddleware } from '@liteforge/router';
+const MIDDLEWARE_CODE = `import { defineMiddleware } from 'liteforge/router';
 
 const titleMiddleware = defineMiddleware('title', async (ctx, next) => {
   await next();
@@ -302,7 +302,7 @@ export const RouterPage = createComponent({
             The docs app you're reading uses it right now.
           </p>
           <CodeBlock code={`pnpm add @liteforge/router`} language="bash" />
-          <CodeBlock code={`import { createRouter, createBrowserHistory, Link, RouterOutlet } from '@liteforge/router';`} language="typescript" />
+          <CodeBlock code={`import { createRouter, createBrowserHistory, Link, RouterOutlet } from 'liteforge/router';`} language="typescript" />
         </div>
 
         <DocSection

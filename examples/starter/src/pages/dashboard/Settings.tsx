@@ -9,7 +9,7 @@
  * - Reactive UI updates
  */
 
-import { createComponent, For } from '@liteforge/runtime';
+import { createComponent, For } from 'liteforge';
 import { uiStore, type Theme } from '../../stores/ui.js';
 import { authStore } from '../../stores/auth.js';
 
@@ -75,7 +75,7 @@ export const SettingsPage = createComponent({
             type="button"
             class="btn"
             onClick={async () => {
-              const { storeRegistry } = await import('@liteforge/store');
+              const { storeRegistry } = await import('liteforge/store');
               console.log('='.repeat(50));
               console.log('[Store Registry] Current State:');
               console.log('Stores:', storeRegistry.list());

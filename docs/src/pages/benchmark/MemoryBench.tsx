@@ -1,5 +1,5 @@
-import { createComponent, For, Show } from '@liteforge/runtime';
-import { signal, computed, effect } from '@liteforge/core';
+import { createComponent, For, Show } from 'liteforge';
+import { signal, computed, effect } from 'liteforge';
 import { BenchmarkCard, ConfigSelect, RunButton } from './BenchmarkCard.js';
 import { formatBytes, nextFrame, type BenchStatus, type BenchSummary } from './bench-utils.js';
 

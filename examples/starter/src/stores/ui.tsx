@@ -8,8 +8,8 @@
  * - NO singleton wrapper needed - defineStore handles it!
  */
 
-import { defineStore } from '@liteforge/store';
-import { hasTitleOverride } from '@liteforge/router';
+import { defineStore } from 'liteforge/store';
+import { hasTitleOverride } from 'liteforge/router';
 
 // =============================================================================
 // Types

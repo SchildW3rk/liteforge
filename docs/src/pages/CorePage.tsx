@@ -1,5 +1,5 @@
-import { createComponent } from '@liteforge/runtime';
-import { signal, computed } from '@liteforge/core';
+import { createComponent } from 'liteforge';
+import { signal, computed } from 'liteforge';
 import { DocSection } from '../components/DocSection.js';
 import { CodeBlock } from '../components/CodeBlock.js';
 import { LiveExample } from '../components/LiveExample.js';
@@ -63,7 +63,7 @@ const FullNameExample = createComponent({
 
 // ─── Code strings ────────────────────────────────────────────────────────────
 
-const SIGNAL_CODE = `import { signal } from '@liteforge/core';
+const SIGNAL_CODE = `import { signal } from 'liteforge';
 
 const count = signal(0);
 
@@ -71,7 +71,7 @@ count();            // read → 0
 count.set(5);       // write → 5
 count.update(n => n + 1);  // functional update → 6`;
 
-const COMPUTED_CODE = `import { signal, computed } from '@liteforge/core';
+const COMPUTED_CODE = `import { signal, computed } from 'liteforge';
 
 const firstName = signal('Anna');
 const lastName  = signal('Müller');
@@ -84,7 +84,7 @@ fullName();  // → 'Anna Müller'
 firstName.set('Maria');
 fullName();  // → 'Maria Müller' (re-computed lazily)`;
 
-const EFFECT_CODE = `import { signal, effect } from '@liteforge/core';
+const EFFECT_CODE = `import { signal, effect } from 'liteforge';
 
 const user = signal<{ name: string; role: string } | null>(null);
 
@@ -100,7 +100,7 @@ user.set({ name: 'Anna', role: 'admin' });
 
 dispose(); // stop the effect`;
 
-const BATCH_CODE = `import { signal, effect, batch } from '@liteforge/core';
+const BATCH_CODE = `import { signal, effect, batch } from 'liteforge';
 
 const firstName = signal('Anna');
 const lastName  = signal('Müller');
@@ -166,7 +166,7 @@ export const CorePage = createComponent({
             automatically — no subscriptions, no manual cleanup, no VDOM diffing.
           </p>
           <CodeBlock code={`pnpm add @liteforge/core`} language="bash" />
-          <CodeBlock code={`import { signal, computed, effect, batch } from '@liteforge/core';`} language="typescript" />
+          <CodeBlock code={`import { signal, computed, effect, batch } from 'liteforge';`} language="typescript" />
         </div>
 
         {/* Concepts */}

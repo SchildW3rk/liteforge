@@ -9,8 +9,8 @@
  * - Notification display with For
  */
 
-import { createComponent, Show, For } from '@liteforge/runtime';
-import { Link, RouterOutlet } from '@liteforge/router';
+import { createComponent, Show, For } from 'liteforge';
+import { Link, RouterOutlet } from 'liteforge/router';
 import { authStore } from './stores/auth.js';
 import { uiStore } from './stores/ui.js';
 

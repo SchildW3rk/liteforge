@@ -10,8 +10,8 @@
  * - Signals for search/filter state
  */
 
-import { signal, computed } from '@liteforge/core';
-import { createComponent, For, Show } from '@liteforge/runtime';
+import { signal, computed } from 'liteforge';
+import { createComponent, For, Show } from 'liteforge';
 
 // =============================================================================
 // Types

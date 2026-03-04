@@ -1,7 +1,7 @@
-import { createComponent } from '@liteforge/runtime';
-import { createCalendar } from '@liteforge/calendar';
-import type { CalendarEvent } from '@liteforge/calendar';
-import { signal } from '@liteforge/core';
+import { createComponent } from 'liteforge';
+import { createCalendar } from 'liteforge/calendar';
+import type { CalendarEvent } from 'liteforge/calendar';
+import { signal } from 'liteforge';
 import { DocSection } from '../components/DocSection.js';
 import { CodeBlock } from '../components/CodeBlock.js';
 import { LiveExample } from '../components/LiveExample.js';
@@ -106,8 +106,8 @@ const calendar = createCalendar({
 calendar.Toolbar()
 calendar.Root()`;
 
-const SETUP_CODE = `import { createCalendar } from '@liteforge/calendar';
-import { signal } from '@liteforge/core';
+const SETUP_CODE = `import { createCalendar } from 'liteforge/calendar';
+import { signal } from 'liteforge';
 
 interface Appointment {
   id: string;
@@ -234,7 +234,7 @@ export const CalendarPage = createComponent({
             Supports resource columns (therapists, rooms), drag & drop, event resizing, and recurring events.
           </p>
           <CodeBlock code={`pnpm add @liteforge/calendar`} language="bash" />
-          <CodeBlock code={`import { createCalendar } from '@liteforge/calendar';`} language="typescript" />
+          <CodeBlock code={`import { createCalendar } from 'liteforge/calendar';`} language="typescript" />
         </div>
 
         <DocSection

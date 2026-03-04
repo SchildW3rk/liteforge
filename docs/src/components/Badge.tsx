@@ -1,4 +1,4 @@
-import { createComponent } from '@liteforge/runtime';
+import { createComponent } from 'liteforge';
 
 export type BadgeVariant = 'default' | 'indigo' | 'green' | 'amber' | 'red' | 'neutral';
 

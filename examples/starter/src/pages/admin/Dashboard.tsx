@@ -8,8 +8,8 @@
  * - Store registry inspection
  */
 
-import { createComponent, For } from '@liteforge/runtime';
-import { storeRegistry } from '@liteforge/store';
+import { createComponent, For } from 'liteforge';
+import { storeRegistry } from 'liteforge/store';
 
 // =============================================================================
 // Types

@@ -1,5 +1,5 @@
-import { createComponent } from '@liteforge/runtime';
-import { RouterOutlet } from '@liteforge/router';
+import { createComponent } from 'liteforge';
+import { RouterOutlet } from 'liteforge/router';
 
 export const App = createComponent({
   name: 'App',

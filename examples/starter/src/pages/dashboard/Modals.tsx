@@ -8,10 +8,10 @@
  * - Dark mode via CSS variables
  */
 
-import { createComponent } from '@liteforge/runtime';
-import { signal } from '@liteforge/core';
-import { createModal, confirm, alert, prompt } from '@liteforge/modal';
-import { useTitle } from '@liteforge/router'
+import { createComponent } from 'liteforge';
+import { signal } from 'liteforge';
+import { createModal, confirm, alert, prompt } from 'liteforge/modal';
+import { useTitle } from 'liteforge/router'
 
 // =============================================================================
 // Modals Page Component

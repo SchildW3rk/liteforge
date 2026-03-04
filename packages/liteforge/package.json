@@ -1,0 +1,104 @@
+{
+  "name": "liteforge",
+  "version": "0.4.1",
+  "description": "LiteForge — signals-based frontend framework. Single meta-package re-exporting all @liteforge/* packages.",
+  "author": "SchildW3rk <contact@schildw3rk.dev>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/schildw3rk/liteforge",
+    "directory": "packages/liteforge"
+  },
+  "homepage": "https://github.com/schildw3rk/liteforge#readme",
+  "bugs": {
+    "url": "https://github.com/schildw3rk/liteforge/issues"
+  },
+  "keywords": [
+    "liteforge",
+    "signals",
+    "reactivity",
+    "framework",
+    "frontend",
+    "no-virtual-dom",
+    "jsx"
+  ],
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./router": {
+      "types": "./dist/router.d.ts",
+      "import": "./dist/router.js"
+    },
+    "./query": {
+      "types": "./dist/query.d.ts",
+      "import": "./dist/query.js"
+    },
+    "./client": {
+      "types": "./dist/client.d.ts",
+      "import": "./dist/client.js"
+    },
+    "./modal": {
+      "types": "./dist/modal.d.ts",
+      "import": "./dist/modal.js"
+    },
+    "./form": {
+      "types": "./dist/form.d.ts",
+      "import": "./dist/form.js"
+    },
+    "./table": {
+      "types": "./dist/table.d.ts",
+      "import": "./dist/table.js"
+    },
+    "./calendar": {
+      "types": "./dist/calendar.d.ts",
+      "import": "./dist/calendar.js"
+    },
+    "./devtools": {
+      "types": "./dist/devtools.d.ts",
+      "import": "./dist/devtools.js"
+    },
+    "./vite-plugin": {
+      "types": "./dist/vite-plugin.d.ts",
+      "import": "./dist/vite-plugin.js"
+    },
+    "./store": {
+      "types": "./dist/store.d.ts",
+      "import": "./dist/store.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "sideEffects": false,
+  "engines": {
+    "node": ">=18"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "dev": "tsc -p tsconfig.build.json --watch",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist *.tsbuildinfo"
+  },
+  "dependencies": {
+    "@liteforge/core": "workspace:*",
+    "@liteforge/runtime": "workspace:*",
+    "@liteforge/store": "workspace:*",
+    "@liteforge/router": "workspace:*",
+    "@liteforge/query": "workspace:*",
+    "@liteforge/client": "workspace:*",
+    "@liteforge/form": "workspace:*",
+    "@liteforge/table": "workspace:*",
+    "@liteforge/modal": "workspace:*",
+    "@liteforge/calendar": "workspace:*",
+    "@liteforge/devtools": "workspace:*",
+    "@liteforge/vite-plugin": "workspace:*"
+  }
+}

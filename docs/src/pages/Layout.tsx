@@ -1,6 +1,6 @@
-import { createComponent } from '@liteforge/runtime';
-import { RouterOutlet, Link } from '@liteforge/router';
-import { signal } from '@liteforge/core';
+import { createComponent } from 'liteforge';
+import { RouterOutlet, Link } from 'liteforge/router';
+import { signal } from 'liteforge';
 import { themeStore } from '../stores/theme.js';
 
 interface NavGroup {

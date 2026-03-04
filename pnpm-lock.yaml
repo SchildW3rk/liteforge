@@ -29,40 +29,13 @@ importers:
 
   docs:
     dependencies:
-      '@liteforge/calendar':
+      liteforge:
         specifier: workspace:*
-        version: link:../packages/calendar
-      '@liteforge/client':
-        specifier: workspace:*
-        version: link:../packages/client
-      '@liteforge/core':
-        specifier: workspace:*
-        version: link:../packages/core
-      '@liteforge/form':
-        specifier: workspace:*
-        version: link:../packages/form
-      '@liteforge/query':
-        specifier: workspace:*
-        version: link:../packages/query
-      '@liteforge/router':
-        specifier: workspace:*
-        version: link:../packages/router
-      '@liteforge/runtime':
-        specifier: workspace:*
-        version: link:../packages/runtime
-      '@liteforge/store':
-        specifier: workspace:*
-        version: link:../packages/store
-      '@liteforge/table':
-        specifier: workspace:*
-        version: link:../packages/table
+        version: link:../packages/liteforge
       zod:
         specifier: ^3.24.0
         version: 3.25.76
     devDependencies:
-      '@liteforge/vite-plugin':
-        specifier: workspace:*
-        version: link:../packages/vite-plugin
       '@tailwindcss/vite':
         specifier: ^4.1.0
         version: 4.2.1(vite@6.4.1(@types/node@25.3.2)(jiti@2.6.1)(lightningcss@1.31.1))
@@ -78,46 +51,13 @@ importers:
 
   examples/starter:
     dependencies:
-      '@liteforge/calendar':
+      liteforge:
         specifier: workspace:*
-        version: link:../../packages/calendar
-      '@liteforge/client':
-        specifier: workspace:*
-        version: link:../../packages/client
-      '@liteforge/core':
-        specifier: workspace:*
-        version: link:../../packages/core
-      '@liteforge/devtools':
-        specifier: workspace:*
-        version: link:../../packages/devtools
-      '@liteforge/form':
-        specifier: workspace:*
-        version: link:../../packages/form
-      '@liteforge/modal':
-        specifier: workspace:*
-        version: link:../../packages/modal
-      '@liteforge/query':
-        specifier: workspace:*
-        version: link:../../packages/query
-      '@liteforge/router':
-        specifier: workspace:*
-        version: link:../../packages/router
-      '@liteforge/runtime':
-        specifier: workspace:*
-        version: link:../../packages/runtime
-      '@liteforge/store':
-        specifier: workspace:*
-        version: link:../../packages/store
-      '@liteforge/table':
-        specifier: workspace:*
-        version: link:../../packages/table
+        version: link:../../packages/liteforge
       zod:
         specifier: ^3.24.0
         version: 3.25.76
     devDependencies:
-      '@liteforge/vite-plugin':
-        specifier: workspace:*
-        version: link:../../packages/vite-plugin
       typescript:
         specifier: ^5.7.2
         version: 5.9.3
@@ -162,6 +102,45 @@ importers:
       zod:
         specifier: ^3.24.1
         version: 3.25.76
+
+  packages/liteforge:
+    dependencies:
+      '@liteforge/calendar':
+        specifier: workspace:*
+        version: link:../calendar
+      '@liteforge/client':
+        specifier: workspace:*
+        version: link:../client
+      '@liteforge/core':
+        specifier: workspace:*
+        version: link:../core
+      '@liteforge/devtools':
+        specifier: workspace:*
+        version: link:../devtools
+      '@liteforge/form':
+        specifier: workspace:*
+        version: link:../form
+      '@liteforge/modal':
+        specifier: workspace:*
+        version: link:../modal
+      '@liteforge/query':
+        specifier: workspace:*
+        version: link:../query
+      '@liteforge/router':
+        specifier: workspace:*
+        version: link:../router
+      '@liteforge/runtime':
+        specifier: workspace:*
+        version: link:../runtime
+      '@liteforge/store':
+        specifier: workspace:*
+        version: link:../store
+      '@liteforge/table':
+        specifier: workspace:*
+        version: link:../table
+      '@liteforge/vite-plugin':
+        specifier: workspace:*
+        version: link:../vite-plugin
 
   packages/modal:
     devDependencies:
