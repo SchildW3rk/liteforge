@@ -17,8 +17,8 @@ function ModalExample(): Node {
     config: { title: 'Hello from LiteForge', size: 'sm', closable: true },
     component: () => (
       <div class="space-y-4">
-        <p class="text-sm text-neutral-300">
-          This modal is managed by <code class="text-indigo-400 text-xs bg-neutral-800 px-1 py-0.5 rounded">@liteforge/modal</code>.
+        <p class="text-sm text-[var(--content-secondary)]">
+          This modal is managed by <code class="text-indigo-400 text-xs bg-[var(--surface-overlay)] px-1 py-0.5 rounded">@liteforge/modal</code>.
           It lives in a portal outside your app root, and is driven by a signal.
         </p>
         <Button variant="primary" onclick={() => basicModal.close()}>Close</Button>
@@ -52,7 +52,7 @@ function ModalExample(): Node {
 
       {() => lastResult() !== ''
         ? (
-          <div class="px-3 py-2 rounded bg-neutral-800 border border-neutral-700 text-sm font-mono text-emerald-400">
+          <div class="px-3 py-2 rounded bg-[var(--surface-overlay)] border border-[var(--line-default)] text-sm font-mono text-emerald-400">
             {() => lastResult()}
           </div>
         )
@@ -179,9 +179,9 @@ export const ModalPage = createComponent({
     return (
       <div>
         <div class="mb-10">
-          <p class="text-xs font-mono text-neutral-500 mb-1">@liteforge/modal</p>
-          <h1 class="text-3xl font-bold text-white mb-2">Modal</h1>
-          <p class="text-neutral-400 leading-relaxed max-w-xl">
+          <p class="text-xs font-mono text-[var(--content-muted)] mb-1">@liteforge/modal</p>
+          <h1 class="text-3xl font-bold text-[var(--content-primary)] mb-2">Modal</h1>
+          <p class="text-[var(--content-secondary)] leading-relaxed max-w-xl">
             Portal-based modal system with focus trap, keyboard handling, and CSS transitions.
             Includes ready-made <code class="text-indigo-400 text-sm">confirm()</code>,{' '}
             <code class="text-indigo-400 text-sm">alert()</code>, and{' '}

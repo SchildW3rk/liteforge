@@ -26,17 +26,17 @@ function QueryExample(): Node {
   nav.className = 'flex items-center gap-2';
 
   const prev = document.createElement('button');
-  prev.className = 'px-3 py-1 text-sm rounded border border-neutral-700 hover:border-neutral-500 text-neutral-300 transition-colors';
+  prev.className = 'px-3 py-1 text-sm rounded border border-[var(--line-default)] hover:border-[var(--content-muted)] text-[var(--content-secondary)] transition-colors';
   prev.textContent = '← Prev';
   prev.addEventListener('click', () => postId.update(id => Math.max(1, id - 1)));
 
   const next = document.createElement('button');
-  next.className = 'px-3 py-1 text-sm rounded border border-neutral-700 hover:border-neutral-500 text-neutral-300 transition-colors';
+  next.className = 'px-3 py-1 text-sm rounded border border-[var(--line-default)] hover:border-[var(--content-muted)] text-[var(--content-secondary)] transition-colors';
   next.textContent = 'Next →';
   next.addEventListener('click', () => postId.update(id => id + 1));
 
   const label = document.createElement('span');
-  label.className = 'text-xs text-neutral-500 font-mono';
+  label.className = 'text-xs text-[var(--content-muted)] font-mono';
 
   import('@liteforge/core').then(({ effect }) => {
     effect(() => { label.textContent = `post #${postId()}`; });
@@ -45,7 +45,7 @@ function QueryExample(): Node {
     status.className = 'text-xs font-medium px-2 py-0.5 rounded-full inline-block';
 
     const content = document.createElement('div');
-    content.className = 'p-3 rounded border border-neutral-800 bg-neutral-900/50 text-sm text-neutral-300 min-h-16';
+    content.className = 'p-3 rounded border border-[var(--line-default)] bg-[var(--surface-raised)]/50 text-sm text-[var(--content-secondary)] min-h-16';
 
     effect(() => {
       if (post.isLoading()) {
@@ -187,9 +187,9 @@ export const QueryPage = createComponent({
     return (
       <div>
         <div class="mb-10">
-          <p class="text-xs font-mono text-neutral-500 mb-1">@liteforge/query</p>
-          <h1 class="text-3xl font-bold text-white mb-2">Query & Mutations</h1>
-          <p class="text-neutral-400 leading-relaxed max-w-xl">
+          <p class="text-xs font-mono text-[var(--content-muted)] mb-1">@liteforge/query</p>
+          <h1 class="text-3xl font-bold text-[var(--content-primary)] mb-2">Query & Mutations</h1>
+          <p class="text-[var(--content-secondary)] leading-relaxed max-w-xl">
             Declarative data fetching with automatic caching, loading/error states, and reactive keys.
             Mutations automatically invalidate related queries so your UI stays in sync.
           </p>

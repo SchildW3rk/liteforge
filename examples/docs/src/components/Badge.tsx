@@ -9,12 +9,12 @@ interface BadgeProps {
 }
 
 const VARIANT_CLASSES: Record<BadgeVariant, string> = {
-  default: 'bg-neutral-800 text-neutral-300 border border-neutral-700',
-  indigo:  'bg-indigo-900/50 text-indigo-300 border border-indigo-700/50',
-  green:   'bg-emerald-900/40 text-emerald-300 border border-emerald-700/40',
-  amber:   'bg-amber-900/40 text-amber-300 border border-amber-700/40',
-  red:     'bg-red-900/40 text-red-300 border border-red-700/40',
-  neutral: 'bg-neutral-800/60 text-neutral-500 border border-neutral-700/60',
+  default: 'bg-[var(--surface-overlay)] text-[var(--content-secondary)] border border-[var(--line-default)]',
+  indigo:  'bg-[var(--badge-indigo-bg)] text-[var(--badge-indigo-text)] border border-[var(--badge-indigo-border)]',
+  green:   'bg-[var(--badge-emerald-bg)] text-[var(--badge-emerald-text)] border border-[var(--badge-emerald-border)]',
+  amber:   'bg-[var(--badge-amber-bg)] text-[var(--badge-amber-text)] border border-[var(--badge-amber-border)]',
+  red:     'bg-[var(--badge-red-bg)] text-[var(--badge-red-text)] border border-[var(--badge-red-border)]',
+  neutral: 'bg-[var(--surface-overlay)] text-[var(--content-muted)] border border-[var(--line-default)]',
 };
 
 const BASE = 'inline-flex items-center px-2 py-0.5 rounded text-xs font-medium';

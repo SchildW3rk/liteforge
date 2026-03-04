@@ -54,7 +54,7 @@ function ForExample(): Node {
     list.innerHTML = '';
     for (const item of items()) {
       const li = document.createElement('li');
-      li.className = 'text-sm text-neutral-300 px-2 py-1 rounded bg-neutral-800/50';
+      li.className = 'text-sm text-[var(--content-secondary)] px-2 py-1 rounded bg-[var(--surface-overlay)]/50';
       li.textContent = item;
       list.appendChild(li);
     }
@@ -141,7 +141,34 @@ For({
   ),
 })`;
 
-const LIFECYCLE_CODE = `createComponent({
+const USE_CODE = `// Each plugin augments PluginRegistry via Declaration Merging —
+// use() return type is inferred automatically, no manual type param needed.
+
+const MyPage = ${_cc}({
+  name: 'MyPage',
+  component({ use }) {
+    const router = use('router');  // typed as Router  — via @liteforge/router
+    const modal  = use('modal');   // typed as ModalApi — via @liteforge/modal
+
+    const patientId = computed(() => router.currentRoute()?.params['id'] ?? '');
+    const openHelp  = () => modal.open(HelpDialog);
+
+    return (
+      <div>
+        <span>{() => patientId()}</span>
+        <button onclick={openHelp}>Help</button>
+      </div>
+    );
+  },
+});
+
+// Register plugins once in main.ts:
+await createApp({ root: App, target: '#app' })
+  .use(routerPlugin({ routes }))
+  .use(modalPlugin())
+  .mount();`;
+
+const LIFECYCLE_CODE = `${_cc}({
   name: 'DataTable',
   async load({ props }) {
     const data = await fetchPatients(props.clinicId);
@@ -211,9 +238,9 @@ export const RuntimePage = createComponent({
     return (
       <div>
         <div class="mb-10">
-          <p class="text-xs font-mono text-neutral-500 mb-1">@liteforge/runtime</p>
-          <h1 class="text-3xl font-bold text-white mb-2">Components & JSX</h1>
-          <p class="text-neutral-400 leading-relaxed max-w-xl">
+          <p class="text-xs font-mono text-[var(--content-muted)] mb-1">@liteforge/runtime</p>
+          <h1 class="text-3xl font-bold text-[var(--content-primary)] mb-2">Components & JSX</h1>
+          <p class="text-[var(--content-secondary)] leading-relaxed max-w-xl">
             The component model and DOM runtime. Create components with{' '}
             <code class="font-mono text-sm text-indigo-300">createComponent()</code>,
             {' '}use JSX for declarative UI, and control rendering with{' '}
@@ -274,6 +301,14 @@ export const RuntimePage = createComponent({
               code={FOR_LIVE_CODE}
             />
           </div>
+        </DocSection>
+
+        <DocSection
+          title="Plugin injection (use)"
+          id="use"
+          description="Access plugins registered with .use() via the use() function passed to component(). Fully typed via Declaration Merging."
+        >
+          <CodeBlock code={USE_CODE} language="tsx" />
         </DocSection>
 
         <DocSection

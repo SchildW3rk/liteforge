@@ -1,6 +1,7 @@
 import { createComponent } from '@liteforge/runtime';
 import { RouterOutlet, Link } from '@liteforge/router';
 import { signal } from '@liteforge/core';
+import { themeStore } from '../stores/theme.js';
 
 interface NavGroup {
   label: string;
@@ -56,39 +57,21 @@ const NAV_GROUPS: NavGroup[] = [
 export const Layout = createComponent({
   name: 'DocsLayout',
   component() {
-    const dark = signal(true);
     const mobileOpen = signal(false);
 
-    function toggleTheme() {
-      dark.update(d => {
-        const next = !d;
-        if (next) {
-          document.documentElement.classList.add('dark');
-        } else {
-          document.documentElement.classList.remove('dark');
-        }
-        return next;
-      });
-    }
-
-    function toggleMobile() {
-      mobileOpen.update(v => !v);
-    }
-
-    function closeMobile() {
-      mobileOpen.set(false);
-    }
+    const toggleMobile = () => mobileOpen.update(v => !v);
+    const closeMobile  = () => mobileOpen.set(false);
 
     const sidebar = (
-      <aside class="flex flex-col w-64 shrink-0 border-r border-neutral-800 dark:border-neutral-800 bg-neutral-950 h-screen sticky top-0 overflow-y-auto">
+      <aside class="flex flex-col w-64 shrink-0 border-r border-[var(--line-default)] bg-[var(--surface-raised)] h-screen sticky top-0 overflow-y-auto">
         {/* Logo */}
-        <div class="flex items-center gap-2 px-5 py-4 border-b border-neutral-800">
+        <div class="flex items-center gap-2 px-5 py-4 border-b border-[var(--line-default)]">
           {Link({
             href: '/',
             children: (
               <span class="flex items-center gap-2">
-                <span class="text-lg font-bold text-white tracking-tight">LiteForge</span>
-                <span class="text-xs font-medium px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-300">docs</span>
+                <span class="text-lg font-bold text-[var(--content-primary)] tracking-tight">LiteForge</span>
+                <span class="text-xs font-medium px-1.5 py-0.5 rounded bg-[var(--badge-indigo-bg)] text-[var(--badge-indigo-text)]">docs</span>
               </span>
             ),
           })}
@@ -98,7 +81,7 @@ export const Layout = createComponent({
         <nav class="flex-1 px-3 py-4 space-y-5">
           {NAV_GROUPS.map(group => (
             <div>
-              <p class="px-2 mb-1.5 text-[0.65rem] font-semibold uppercase tracking-widest text-neutral-500">
+              <p class="px-2 mb-1.5 text-[0.65rem] font-semibold uppercase tracking-widest text-[var(--content-muted)]">
                 {group.label}
               </p>
               <ul class="space-y-0.5">
@@ -107,12 +90,12 @@ export const Layout = createComponent({
                     {Link({
                       href: link.href,
                       activeClass: 'lf-nav-active',
-                      class: 'flex items-center justify-between px-2 py-1.5 rounded-md text-sm text-neutral-400 hover:text-white hover:bg-white/5 transition-colors font-mono',
+                      class: 'flex items-center justify-between px-2 py-1.5 rounded-md text-sm text-[var(--content-secondary)] hover:text-[var(--content-primary)] hover:bg-[var(--surface-overlay)] transition-colors font-mono',
                       children: (
                         <span class="flex items-center gap-2">
                           <span>{link.noPrefix === true ? link.text : `@liteforge/${link.text}`}</span>
                           {link.badge !== undefined
-                            ? <span class="text-[0.6rem] px-1 py-0.5 rounded bg-indigo-500/15 text-indigo-400">{link.badge}</span>
+                            ? <span class="text-[0.6rem] px-1 py-0.5 rounded bg-[var(--badge-indigo-bg)] text-[var(--badge-indigo-text)]">{link.badge}</span>
                             : null}
                         </span>
                       ),
@@ -125,28 +108,25 @@ export const Layout = createComponent({
         </nav>
 
         {/* Footer */}
-        <div class="px-5 py-3 border-t border-neutral-800 flex items-center justify-between">
-          <span class="text-xs text-neutral-600">MIT License</span>
+        <div class="px-5 py-3 border-t border-[var(--line-default)] flex items-center justify-between">
+          <span class="text-xs text-[var(--content-subtle)]">MIT License</span>
           <button
             type="button"
-            onclick={toggleTheme}
-            class="text-xs text-neutral-500 hover:text-neutral-300 transition-colors"
+            onclick={() => themeStore.toggle()}
+            class="text-xs text-[var(--content-muted)] hover:text-[var(--content-primary)] transition-colors"
             title="Toggle light/dark"
           >
-            {() => dark() ? '☀ Light' : '☾ Dark'}
+            {() => themeStore.label()}
           </button>
         </div>
       </aside>
     );
 
     return (
-      <div class="min-h-screen bg-neutral-950 text-neutral-100 flex">
+      <div class="min-h-screen bg-[var(--surface-base)] text-[var(--content-primary)] flex">
         {/* Mobile overlay */}
         {() => mobileOpen()
-          ? <div
-              class="fixed inset-0 z-20 bg-black/60 lg:hidden"
-              onclick={closeMobile}
-            />
+          ? <div class="fixed inset-0 z-20 bg-black/60 lg:hidden" onclick={closeMobile} />
           : null}
 
         {/* Mobile sidebar */}
@@ -162,13 +142,13 @@ export const Layout = createComponent({
         {/* Main */}
         <div class="flex-1 min-w-0">
           {/* Mobile header */}
-          <header class="lg:hidden flex items-center gap-3 px-4 py-3 border-b border-neutral-800 sticky top-0 bg-neutral-950/95 backdrop-blur z-10">
-            <button type="button" onclick={toggleMobile} class="text-neutral-400 hover:text-white">
+          <header class="lg:hidden flex items-center gap-3 px-4 py-3 border-b border-[var(--line-default)] sticky top-0 bg-[var(--surface-base)]/95 backdrop-blur z-10">
+            <button type="button" onclick={toggleMobile} class="text-[var(--content-secondary)] hover:text-[var(--content-primary)]">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" />
               </svg>
             </button>
-            <span class="font-bold text-white text-sm">LiteForge Docs</span>
+            <span class="font-bold text-[var(--content-primary)] text-sm">LiteForge Docs</span>
           </header>
 
           <main class="px-6 py-10 max-w-3xl mx-auto">

@@ -246,7 +246,7 @@ export const ComputedChainBench = createComponent<ComputedChainBenchProps>({
           {Show({
             when: () => visualChain() !== '',
             children: () => (
-              <div class="text-xs font-mono text-neutral-500 px-3 py-2 bg-neutral-800/30 rounded">
+              <div class="text-xs font-mono text-[var(--content-muted)] px-3 py-2 bg-[var(--surface-overlay)]/30 rounded">
                 {() => visualChain()}
               </div>
             ),

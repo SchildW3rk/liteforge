@@ -78,9 +78,9 @@ export const DevtoolsPage = createComponent({
     return (
       <div>
         <div class="mb-10">
-          <p class="text-xs font-mono text-neutral-500 mb-1">@liteforge/devtools</p>
-          <h1 class="text-3xl font-bold text-white mb-2">DevTools</h1>
-          <p class="text-neutral-400 leading-relaxed max-w-xl">
+          <p class="text-xs font-mono text-[var(--content-muted)] mb-1">@liteforge/devtools</p>
+          <h1 class="text-3xl font-bold text-[var(--content-primary)] mb-2">DevTools</h1>
+          <p class="text-[var(--content-secondary)] leading-relaxed max-w-xl">
             In-browser debug panel for LiteForge applications. Inspect signals,
             stores, router state, and component trees. Includes time-travel debugging
             for store history.
@@ -111,9 +111,9 @@ export const DevtoolsPage = createComponent({
           description="The panel has 5 tabs. Each tab shows a live view of a different aspect of your application."
         >
           <div>
-            <div class="p-4 rounded-lg border border-neutral-800 bg-neutral-900/60 font-mono text-xs text-neutral-400 leading-relaxed mb-4">
-              <div class="text-neutral-300 mb-2 text-[0.7rem] uppercase tracking-widest">Panel preview</div>
-              <div class="flex gap-3 border-b border-neutral-800 pb-2 mb-3 text-[0.7rem]">
+            <div class="p-4 rounded-lg border border-[var(--line-default)] bg-[var(--surface-raised)]/60 font-mono text-xs text-[var(--content-secondary)] leading-relaxed mb-4">
+              <div class="text-[var(--content-secondary)] mb-2 text-[0.7rem] uppercase tracking-widest">Panel preview</div>
+              <div class="flex gap-3 border-b border-[var(--line-default)] pb-2 mb-3 text-[0.7rem]">
                 <span class="text-indigo-400 border-b border-indigo-500 pb-1">Signals</span>
                 <span>Stores</span>
                 <span>Router</span>
@@ -122,15 +122,15 @@ export const DevtoolsPage = createComponent({
               </div>
               <div class="space-y-1">
                 <div class="flex justify-between">
-                  <span class="text-neutral-500">count</span>
+                  <span class="text-[var(--content-muted)]">count</span>
                   <span class="text-emerald-400">5</span>
                 </div>
                 <div class="flex justify-between">
-                  <span class="text-neutral-500">doubled</span>
+                  <span class="text-[var(--content-muted)]">doubled</span>
                   <span class="text-sky-400">10</span>
                 </div>
                 <div class="flex justify-between">
-                  <span class="text-neutral-500">isNegative</span>
+                  <span class="text-[var(--content-muted)]">isNegative</span>
                   <span class="text-orange-400">false</span>
                 </div>
               </div>

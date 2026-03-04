@@ -200,8 +200,8 @@ export const MountBench = createComponent<MountBenchProps>({
           />
           
           {/* Hidden mount area */}
-          <div class="border border-neutral-800 rounded-lg p-2 min-h-8">
-            <div class="text-xs text-neutral-600 mb-1">Mount area:</div>
+          <div class="border border-[var(--line-default)] rounded-lg p-2 min-h-8">
+            <div class="text-xs text-[var(--content-subtle)] mb-1">Mount area:</div>
             {Show({
               when: showComponent,
               children: () => <TestComponent />,
@@ -213,7 +213,7 @@ export const MountBench = createComponent<MountBenchProps>({
             {Show({
               when: () => !showComponent() && !showComplex(),
               children: () => (
-                <span class="text-xs text-neutral-700 italic">Empty</span>
+                <span class="text-xs text-[var(--content-subtle)] italic">Empty</span>
               ),
             })}
           </div>

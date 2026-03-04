@@ -17,6 +17,7 @@
     "@liteforge/table": "workspace:*",
     "@liteforge/client": "workspace:*",
     "@liteforge/calendar": "workspace:*",
+    "@liteforge/store": "workspace:*",
     "zod": "^3.24.0"
   },
   "devDependencies": {

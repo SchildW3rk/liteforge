@@ -15,18 +15,18 @@ export const LiveExample = createComponent<LiveExampleProps>({
   component({ props }) {
     const Component = props.component;
     return (
-      <div class="my-6 rounded-xl border border-neutral-800 overflow-hidden">
-        <div class="px-4 py-2.5 bg-neutral-900 border-b border-neutral-800 flex items-center gap-2">
+      <div class="my-6 rounded-xl border border-[var(--line-default)] overflow-hidden">
+        <div class="px-4 py-2.5 bg-[var(--surface-raised)] border-b border-[var(--line-default)] flex items-center gap-2">
           <span class="w-2.5 h-2.5 rounded-full bg-emerald-500" />
-          <span class="text-xs text-neutral-400 font-medium">{props.title}</span>
+          <span class="text-xs text-[var(--content-secondary)] font-medium">{props.title}</span>
           {props.description !== undefined
-            ? <span class="text-xs text-neutral-600 ml-1">— {props.description}</span>
+            ? <span class="text-xs text-[var(--content-subtle)] ml-1">— {props.description}</span>
             : null}
         </div>
-        <div class="p-5 bg-neutral-950/60">
+        <div class="p-5 bg-[var(--surface-sunken)]">
           <Component />
         </div>
-        <div class="border-t border-neutral-800">
+        <div class="border-t border-[var(--line-default)]">
           <CodeBlock code={props.code} language={props.language ?? 'tsx'} />
         </div>
       </div>

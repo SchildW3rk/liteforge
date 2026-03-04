@@ -50,6 +50,9 @@ importers:
       '@liteforge/runtime':
         specifier: workspace:*
         version: link:../../packages/runtime
+      '@liteforge/store':
+        specifier: workspace:*
+        version: link:../../packages/store
       '@liteforge/table':
         specifier: workspace:*
         version: link:../../packages/table

@@ -299,14 +299,14 @@ export const MemoryBench = createComponent<MemoryBenchProps>({
 
     const deltaColorClass = () => {
       const d = memoryDelta();
-      if (d === null || d < 0) return 'bg-neutral-800/50 border-neutral-700';
+      if (d === null || d < 0) return 'bg-[var(--surface-overlay)]/50 border-[var(--line-default)]';
       if (!isHighDelta()) return 'bg-emerald-500/10 border-emerald-500/30';
       return 'bg-amber-500/10 border-amber-500/30';
     };
 
     const deltaTextClass = () => {
       const d = memoryDelta();
-      if (d === null || d < 0) return 'text-neutral-400';
+      if (d === null || d < 0) return 'text-[var(--content-secondary)]';
       if (!isHighDelta()) return 'text-emerald-400';
       return 'text-amber-400';
     };
@@ -315,7 +315,7 @@ export const MemoryBench = createComponent<MemoryBenchProps>({
       const t = trendLabel();
       if (t.includes('growing')) return 'text-amber-400';
       if (t.includes('stable')) return 'text-emerald-400';
-      return 'text-neutral-400';
+      return 'text-[var(--content-secondary)]';
     };
 
     return (
@@ -362,8 +362,8 @@ export const MemoryBench = createComponent<MemoryBenchProps>({
               disabled={() => isRunning()}
               class={() => `px-3 py-1.5 rounded text-sm font-medium transition-colors ${
                 isRunning()
-                  ? 'bg-neutral-800 text-neutral-600 cursor-not-allowed'
-                  : 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 hover:bg-indigo-500/30'
+                  ? 'bg-[var(--surface-overlay)] text-[var(--content-subtle)] cursor-not-allowed'
+                  : 'bg-[var(--badge-indigo-bg)] text-[var(--badge-indigo-text)] border border-indigo-500/30 hover:bg-indigo-500/30'
               }`}
             >
               {() => `Run ${REPEAT_COUNT}× (trend)`}
@@ -374,11 +374,11 @@ export const MemoryBench = createComponent<MemoryBenchProps>({
           {Show({
             when: isRunning,
             children: () => (
-              <div class="text-sm text-neutral-400">
+              <div class="text-sm text-[var(--content-secondary)]">
                 {Show({
                   when: () => repeatProgress() !== null,
                   children: () => (
-                    <span class="text-neutral-500 text-xs mr-2">
+                    <span class="text-[var(--content-muted)] text-xs mr-2">
                       {() => {
                         const p = repeatProgress();
                         return p ? `Run ${p.current}/${p.total} —` : '';
@@ -387,7 +387,7 @@ export const MemoryBench = createComponent<MemoryBenchProps>({
                   ),
                 })}
                 {() => cyclesCompleted()} / {() => cycleCount()} cycles
-                <div class="mt-1 h-1 bg-neutral-800 rounded-full overflow-hidden">
+                <div class="mt-1 h-1 bg-[var(--surface-overlay)] rounded-full overflow-hidden">
                   <div
                     class="h-full bg-indigo-500 transition-all duration-100"
                     style={() => `width: ${(cyclesCompleted() / cycleCount()) * 100}%`}
@@ -403,15 +403,15 @@ export const MemoryBench = createComponent<MemoryBenchProps>({
             children: () => (
               <div class="space-y-2">
                 <div class="grid grid-cols-2 gap-4">
-                  <div class="px-4 py-3 rounded-lg bg-neutral-800/50 border border-neutral-800">
-                    <div class="text-xs text-neutral-500 mb-1">Memory Before</div>
-                    <div class="text-lg font-mono text-neutral-200">
+                  <div class="px-4 py-3 rounded-lg bg-[var(--surface-overlay)]/50 border border-[var(--line-default)]">
+                    <div class="text-xs text-[var(--content-muted)] mb-1">Memory Before</div>
+                    <div class="text-lg font-mono text-[var(--content-primary)]">
                       {() => memoryBefore() !== null ? formatBytes(memoryBefore()!) : 'N/A'}
                     </div>
                   </div>
-                  <div class="px-4 py-3 rounded-lg bg-neutral-800/50 border border-neutral-800">
-                    <div class="text-xs text-neutral-500 mb-1">Memory After</div>
-                    <div class="text-lg font-mono text-neutral-200">
+                  <div class="px-4 py-3 rounded-lg bg-[var(--surface-overlay)]/50 border border-[var(--line-default)]">
+                    <div class="text-xs text-[var(--content-muted)] mb-1">Memory After</div>
+                    <div class="text-lg font-mono text-[var(--content-primary)]">
                       {() => memoryAfter() !== null ? formatBytes(memoryAfter()!) : 'N/A'}
                     </div>
                   </div>
@@ -420,7 +420,7 @@ export const MemoryBench = createComponent<MemoryBenchProps>({
                 <div class={() => `px-4 py-3 rounded-lg border ${deltaColorClass()}`}>
                   <div class="flex items-center justify-between">
                     <div>
-                      <div class="text-xs text-neutral-500 mb-1">Memory Delta</div>
+                      <div class="text-xs text-[var(--content-muted)] mb-1">Memory Delta</div>
                       <div class={() => `text-lg font-mono ${deltaTextClass()}`}>
                         {() => {
                           const d = memoryDelta();
@@ -434,8 +434,8 @@ export const MemoryBench = createComponent<MemoryBenchProps>({
                       when: () => estimatedLeakPerCycle() !== null,
                       children: () => (
                         <div class="text-right">
-                          <div class="text-xs text-neutral-500 mb-1">Est. leak per cycle</div>
-                          <div class="text-sm font-mono text-neutral-400">
+                          <div class="text-xs text-[var(--content-muted)] mb-1">Est. leak per cycle</div>
+                          <div class="text-sm font-mono text-[var(--content-secondary)]">
                             {() => formatBytes(estimatedLeakPerCycle()!)}
                           </div>
                         </div>
@@ -444,7 +444,7 @@ export const MemoryBench = createComponent<MemoryBenchProps>({
                   </div>
                 </div>
 
-                <p class="text-xs text-neutral-500 italic">
+                <p class="text-xs text-[var(--content-muted)] italic">
                   Note: A negative delta means the GC ran during the test — result is inconclusive.
                   Use <strong>Run {REPEAT_COUNT}×</strong> to detect trends across multiple runs.
                 </p>
@@ -457,14 +457,14 @@ export const MemoryBench = createComponent<MemoryBenchProps>({
             when: () => repeatRuns().length > 0,
             children: () => (
               <div class="space-y-3">
-                <div class="overflow-hidden rounded-lg border border-neutral-800">
+                <div class="overflow-hidden rounded-lg border border-[var(--line-default)]">
                   <table class="w-full text-sm">
                     <thead>
-                      <tr class="border-b border-neutral-800 bg-neutral-800/40">
-                        <th class="text-left px-3 py-2 text-xs text-neutral-500 font-medium">Run</th>
-                        <th class="text-left px-3 py-2 text-xs text-neutral-500 font-medium">Delta</th>
-                        <th class="text-left px-3 py-2 text-xs text-neutral-500 font-medium">Leak / cycle</th>
-                        <th class="text-left px-3 py-2 text-xs text-neutral-500 font-medium">Status</th>
+                      <tr class="border-b border-[var(--line-default)] bg-[var(--surface-overlay)]/40">
+                        <th class="text-left px-3 py-2 text-xs text-[var(--content-muted)] font-medium">Run</th>
+                        <th class="text-left px-3 py-2 text-xs text-[var(--content-muted)] font-medium">Delta</th>
+                        <th class="text-left px-3 py-2 text-xs text-[var(--content-muted)] font-medium">Leak / cycle</th>
+                        <th class="text-left px-3 py-2 text-xs text-[var(--content-muted)] font-medium">Status</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -476,25 +476,25 @@ export const MemoryBench = createComponent<MemoryBenchProps>({
                           // Threshold: 20 KB per cycle — first run is often higher due to JIT warm-up
                           const isLarge = !isInconclusive && row.leakPerCycle !== null && row.leakPerCycle > 20 * 1024;
                           return (
-                            <tr class="border-b border-neutral-800/50 last:border-0">
-                              <td class="px-3 py-2 text-neutral-400 font-mono">#{row.run}</td>
+                            <tr class="border-b border-[var(--line-default)]/50 last:border-0">
+                              <td class="px-3 py-2 text-[var(--content-secondary)] font-mono">#{row.run}</td>
                               <td class={() => `px-3 py-2 font-mono ${
-                                isInconclusive ? 'text-neutral-500' : isLarge ? 'text-amber-400' : 'text-emerald-400'
+                                isInconclusive ? 'text-[var(--content-muted)]' : isLarge ? 'text-amber-400' : 'text-emerald-400'
                               }`}>
                                 {isInconclusive
                                   ? (row.delta !== null ? `${formatBytes(row.delta)} (GC)` : 'N/A')
                                   : `+${formatBytes(row.delta!)}`
                                 }
                               </td>
-                              <td class="px-3 py-2 font-mono text-neutral-400">
+                              <td class="px-3 py-2 font-mono text-[var(--content-secondary)]">
                                 {row.leakPerCycle !== null ? formatBytes(row.leakPerCycle) : '—'}
                               </td>
                               <td class="px-3 py-2">
                                 {isInconclusive
-                                  ? <span class="text-xs px-2 py-0.5 rounded bg-neutral-700 text-neutral-400">GC ran</span>
+                                  ? <span class="text-xs px-2 py-0.5 rounded bg-[var(--surface-overlay)] text-[var(--content-secondary)]">GC ran</span>
                                   : isLarge
-                                    ? <span class="text-xs px-2 py-0.5 rounded bg-amber-500/20 text-amber-400">high</span>
-                                    : <span class="text-xs px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400">ok</span>
+                                    ? <span class="text-xs px-2 py-0.5 rounded bg-[var(--badge-amber-bg)] text-[var(--badge-amber-text)]">high</span>
+                                    : <span class="text-xs px-2 py-0.5 rounded bg-[var(--badge-emerald-bg)] text-[var(--badge-emerald-text)]">ok</span>
                                 }
                               </td>
                             </tr>
@@ -514,13 +514,13 @@ export const MemoryBench = createComponent<MemoryBenchProps>({
                         ? 'bg-amber-500/10 border-amber-500/30'
                         : trendLabel().includes('stable')
                           ? 'bg-emerald-500/10 border-emerald-500/30'
-                          : 'bg-neutral-800/50 border-neutral-700'
+                          : 'bg-[var(--surface-overlay)]/50 border-[var(--line-default)]'
                     }`}>
                       <div class="text-xl">
                         {() => trendLabel().includes('growing') ? '⚠️' : trendLabel().includes('stable') ? '✓' : '~'}
                       </div>
                       <div>
-                        <div class="text-xs text-neutral-500 mb-0.5">Trend across {REPEAT_COUNT} runs</div>
+                        <div class="text-xs text-[var(--content-muted)] mb-0.5">Trend across {REPEAT_COUNT} runs</div>
                         <div class={() => `text-sm font-medium ${trendColorClass()}`}>
                           {() => trendLabel()}
                         </div>
@@ -529,7 +529,7 @@ export const MemoryBench = createComponent<MemoryBenchProps>({
                   ),
                 })}
 
-                <p class="text-xs text-neutral-500 italic">
+                <p class="text-xs text-[var(--content-muted)] italic">
                   A growing trend means memory increases each run — potential leak.
                   Stable means it's one-time engine overhead (normal).
                   If too many runs show "GC ran", increase cycles to 100+ for reliable results.
@@ -542,11 +542,11 @@ export const MemoryBench = createComponent<MemoryBenchProps>({
           {Show({
             when: () => status() === 'complete' && !hasMemoryAPI,
             children: () => (
-              <div class="px-4 py-3 rounded-lg bg-neutral-800/50 border border-neutral-800">
-                <p class="text-sm text-neutral-300">
+              <div class="px-4 py-3 rounded-lg bg-[var(--surface-overlay)]/50 border border-[var(--line-default)]">
+                <p class="text-sm text-[var(--content-secondary)]">
                   Completed {() => cyclesCompleted()} mount/unmount cycles.
                 </p>
-                <p class="text-xs text-neutral-500 mt-1">
+                <p class="text-xs text-[var(--content-muted)] mt-1">
                   Check Chrome DevTools Memory tab for actual memory measurements.
                 </p>
               </div>
@@ -554,13 +554,13 @@ export const MemoryBench = createComponent<MemoryBenchProps>({
           })}
 
           {/* Hidden mount area for the test component */}
-          <div class="border border-neutral-800 rounded-lg p-2 max-h-20 overflow-hidden">
-            <div class="text-xs text-neutral-600 mb-1">Mount area:</div>
+          <div class="border border-[var(--line-default)] rounded-lg p-2 max-h-20 overflow-hidden">
+            <div class="text-xs text-[var(--content-subtle)] mb-1">Mount area:</div>
             {Show({
               when: showComponent,
               children: () => <HeavyTestComponent />,
               fallback: () => (
-                <span class="text-xs text-neutral-700 italic">Empty</span>
+                <span class="text-xs text-[var(--content-subtle)] italic">Empty</span>
               ),
             })}
           </div>

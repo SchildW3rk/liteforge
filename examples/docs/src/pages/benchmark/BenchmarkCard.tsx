@@ -19,7 +19,7 @@ const StatusBadge = createComponent<{ status: Signal<BenchStatus> }>({
             Match({
               when: () => props.status() === 'idle',
               children: () => (
-                <span class="text-xs px-2 py-0.5 rounded-full bg-neutral-800 text-neutral-400">
+                <span class="text-xs px-2 py-0.5 rounded-full bg-[var(--surface-overlay)] text-[var(--content-secondary)]">
                   idle
                 </span>
               ),
@@ -27,7 +27,7 @@ const StatusBadge = createComponent<{ status: Signal<BenchStatus> }>({
             Match({
               when: () => props.status() === 'running',
               children: () => (
-                <span class="text-xs px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-400 animate-pulse">
+                <span class="text-xs px-2 py-0.5 rounded-full bg-[var(--badge-amber-bg)] text-[var(--badge-amber-text)] animate-pulse">
                   running
                 </span>
               ),
@@ -35,7 +35,7 @@ const StatusBadge = createComponent<{ status: Signal<BenchStatus> }>({
             Match({
               when: () => props.status() === 'complete',
               children: () => (
-                <span class="text-xs px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400">
+                <span class="text-xs px-2 py-0.5 rounded-full bg-[var(--badge-emerald-bg)] text-[var(--badge-emerald-text)]">
                   complete
                 </span>
               ),
@@ -59,12 +59,12 @@ export const BenchmarkCard = createComponent<BenchmarkCardProps>({
   name: 'BenchmarkCard',
   component({ props }) {
     return (
-      <div class="rounded-xl border border-neutral-800 bg-neutral-900/50 overflow-hidden mb-6">
+      <div class="rounded-xl border border-[var(--line-default)] bg-[var(--surface-raised)]/50 overflow-hidden mb-6">
         {/* Header */}
-        <div class="px-5 py-4 border-b border-neutral-800 flex items-center justify-between">
+        <div class="px-5 py-4 border-b border-[var(--line-default)] flex items-center justify-between">
           <div>
-            <h3 class="text-lg font-semibold text-white">{props.title}</h3>
-            <p class="text-sm text-neutral-400 mt-0.5">{props.description}</p>
+            <h3 class="text-lg font-semibold text-[var(--content-primary)]">{props.title}</h3>
+            <p class="text-sm text-[var(--content-secondary)] mt-0.5">{props.description}</p>
           </div>
           <StatusBadge status={props.status} />
         </div>
@@ -100,10 +100,10 @@ export const ConfigSelect = createComponent<ConfigSelectProps<number>>({
     // If this doesn't work correctly, it's a framework bug
     return (
       <div class="flex items-center gap-2">
-        <label for={selectId} class="text-xs text-neutral-500">{props.label}</label>
+        <label for={selectId} class="text-xs text-[var(--content-muted)]">{props.label}</label>
         <select
           id={selectId}
-          class="bg-neutral-800 border border-neutral-700 rounded px-2 py-1 text-sm text-white focus:border-indigo-500 focus:outline-none"
+          class="bg-[var(--surface-overlay)] border border-[var(--line-default)] rounded px-2 py-1 text-sm text-[var(--content-primary)] focus:border-indigo-500 focus:outline-none"
           value={() => String(props.value())}
           onchange={(e: Event) => {
             const val = Number((e.target as HTMLSelectElement).value);
@@ -140,8 +140,8 @@ export const RunButton = createComponent<RunButtonProps>({
         type="button"
         class={() => `px-4 py-2 rounded-md font-medium text-sm transition-colors ${
           isDisabled() 
-            ? 'bg-neutral-700 text-neutral-500 cursor-not-allowed' 
-            : 'bg-indigo-600 hover:bg-indigo-500 text-white'
+            ? 'bg-[var(--surface-overlay)] text-[var(--content-muted)] cursor-not-allowed' 
+            : 'bg-indigo-600 hover:bg-indigo-500 text-[var(--content-primary)]'
         }`}
         disabled={isDisabled()}
         onclick={props.onclick}
@@ -170,9 +170,9 @@ export const ResultsTable = createComponent<ResultsTableProps>({
           children: () => (
             <table class="w-full text-sm">
               <thead>
-                <tr class="border-b border-neutral-800">
+                <tr class="border-b border-[var(--line-default)]">
                   {props.headers.map(header => (
-                    <th class="text-left px-3 py-2 text-xs text-neutral-500 font-medium uppercase tracking-wider">
+                    <th class="text-left px-3 py-2 text-xs text-[var(--content-muted)] font-medium uppercase tracking-wider">
                       {header}
                     </th>
                   ))}
@@ -180,9 +180,9 @@ export const ResultsTable = createComponent<ResultsTableProps>({
               </thead>
               <tbody>
                 {() => props.rows().map(row => (
-                  <tr class="border-b border-neutral-800/50 last:border-0">
+                  <tr class="border-b border-[var(--line-default)]/50 last:border-0">
                     {row.map((cell, i) => (
-                      <td class={`px-3 py-2 ${i === 0 ? 'text-neutral-300' : 'font-mono text-indigo-300'}`}>
+                      <td class={`px-3 py-2 ${i === 0 ? 'text-[var(--content-secondary)]' : 'font-mono text-indigo-300'}`}>
                         {cell}
                       </td>
                     ))}
@@ -192,7 +192,7 @@ export const ResultsTable = createComponent<ResultsTableProps>({
             </table>
           ),
           fallback: () => (
-            <p class="text-sm text-neutral-500 italic">No results yet. Click "Run Benchmark" to start.</p>
+            <p class="text-sm text-[var(--content-muted)] italic">No results yet. Click "Run Benchmark" to start.</p>
           ),
         })}
       </div>

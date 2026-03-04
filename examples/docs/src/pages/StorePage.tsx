@@ -40,7 +40,7 @@ function StoreExample(): Node {
     <div class="space-y-4 max-w-sm">
       {/* Counter display */}
       <div class="flex items-center gap-3">
-        <span class="text-4xl font-bold text-white tabular-nums" style="min-width:3rem;text-align:center">
+        <span class="text-4xl font-bold text-[var(--content-primary)] tabular-nums" style="min-width:3rem;text-align:center">
           {() => String(counter.count())}
         </span>
         {() => counter.isNegative() ? <Badge variant="red">negative</Badge>     : null}
@@ -58,9 +58,9 @@ function StoreExample(): Node {
       {() => history().length > 0
         ? (
           <div class="space-y-1">
-            <p class="text-xs text-neutral-500 uppercase tracking-widest">Recent actions</p>
+            <p class="text-xs text-[var(--content-muted)] uppercase tracking-widest">Recent actions</p>
             {() => history().map((entry, i) => (
-              <div class={`flex items-center justify-between text-xs px-2 py-1 rounded ${i === 0 ? 'bg-neutral-800 text-white' : 'text-neutral-500'}`}>
+              <div class={`flex items-center justify-between text-xs px-2 py-1 rounded ${i === 0 ? 'bg-[var(--surface-overlay)] text-[var(--content-primary)]' : 'text-[var(--content-muted)]'}`}>
                 <span class="font-mono">{entry.action}</span>
                 <span>→ {entry.value}</span>
               </div>
@@ -183,9 +183,9 @@ export const StorePage = createComponent({
     return (
       <div>
         <div class="mb-10">
-          <p class="text-xs font-mono text-neutral-500 mb-1">@liteforge/store</p>
-          <h1 class="text-3xl font-bold text-white mb-2">Store</h1>
-          <p class="text-neutral-400 leading-relaxed max-w-xl">
+          <p class="text-xs font-mono text-[var(--content-muted)] mb-1">@liteforge/store</p>
+          <h1 class="text-3xl font-bold text-[var(--content-primary)] mb-2">Store</h1>
+          <p class="text-[var(--content-secondary)] leading-relaxed max-w-xl">
             Signal-based global state management. Define state, computed getters, and
             async actions in one place. Zero boilerplate — no reducers, no dispatches.
           </p>

@@ -97,11 +97,11 @@ function tokenize(code: string): Token[] {
 const TOKEN_CLASS: Record<TokenType, string> = {
   keyword: 'text-violet-400',
   string:  'text-emerald-400',
-  comment: 'text-neutral-500 italic',
+  comment: 'text-[var(--content-muted)] italic',
   number:  'text-amber-400',
   fn:      'text-sky-300',
   type:    'text-amber-300',
-  plain:   'text-neutral-200',
+  plain:   'text-[var(--content-primary)]',
 };
 
 function renderHighlighted(code: string): Node {
@@ -134,15 +134,15 @@ export const CodeBlock = createComponent<CodeBlockProps>({
     codeEl.appendChild(renderHighlighted(props.code));
 
     return (
-      <div class="relative rounded-lg overflow-hidden border border-neutral-800 bg-neutral-900 my-4">
-        <div class="flex items-center justify-between px-4 py-2 border-b border-neutral-800 bg-neutral-900">
-          <span class="text-xs text-neutral-500 font-mono">
+      <div class="relative rounded-lg overflow-hidden border border-[var(--line-default)] bg-[var(--surface-raised)] my-4">
+        <div class="flex items-center justify-between px-4 py-2 border-b border-[var(--line-default)] bg-[var(--surface-raised)]">
+          <span class="text-xs text-[var(--content-muted)] font-mono">
             {props.title ?? (props.language ?? 'typescript')}
           </span>
           <button
             type="button"
             onclick={copy}
-            class="text-xs text-neutral-500 hover:text-neutral-200 transition-colors select-none"
+            class="text-xs text-[var(--content-muted)] hover:text-[var(--content-primary)] transition-colors select-none"
           >
             {() => copied() ? '✓ Copied' : 'Copy'}
           </button>

@@ -22,20 +22,20 @@ export const ApiTable = createComponent<ApiTableProps>({
           key: 'name',
           header: 'Name',
           sortable: false,
-          cell: (v) => <span class="font-mono text-indigo-300 whitespace-nowrap">{String(v)}</span>,
+          cell: (v) => <span class="font-mono text-[var(--badge-indigo-text)] whitespace-nowrap">{String(v)}</span>,
         },
         {
           key: 'type',
           header: 'Type',
           sortable: false,
-          cell: (v) => <span class="font-mono text-emerald-400 text-xs">{String(v)}</span>,
+          cell: (v) => <span class="font-mono text-[var(--badge-emerald-text)] text-xs">{String(v)}</span>,
         },
         {
           key: 'default',
           header: 'Default',
           sortable: false,
           cell: (v) => (
-            <span class="font-mono text-amber-400 text-xs whitespace-nowrap">
+            <span class="font-mono text-[var(--badge-amber-text)] text-xs whitespace-nowrap">
               {v !== undefined ? String(v) : '—'}
             </span>
           ),
@@ -44,14 +44,14 @@ export const ApiTable = createComponent<ApiTableProps>({
           key: 'description',
           header: 'Description',
           sortable: false,
-          cell: (v) => <span class="text-neutral-300">{String(v)}</span>,
+          cell: (v) => <span class="text-[var(--content-secondary)]">{String(v)}</span>,
         },
       ],
       unstyled: true,
       classes: {
-        root:       'overflow-x-auto rounded-lg border border-neutral-800 my-4',
+        root:       'overflow-x-auto rounded-lg border border-[var(--line-default)] my-4',
         table:      'w-full text-sm text-left',
-        header:     'bg-neutral-900 text-neutral-400 text-xs uppercase tracking-wider',
+        header:     'bg-[var(--surface-raised)] text-[var(--content-muted)] text-xs uppercase tracking-wider',
         headerCell: 'px-4 py-3',
         body:       '',
         row:        '',

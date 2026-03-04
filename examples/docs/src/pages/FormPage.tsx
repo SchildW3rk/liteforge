@@ -33,7 +33,7 @@ function LoginFormExample(): Node {
   function FieldRow(f: ReturnType<typeof form.field>, type: string, label: string): Node {
     return (
       <div class="space-y-1">
-        <label class="block text-xs text-neutral-400">{label}</label>
+        <label class="block text-xs text-[var(--content-secondary)]">{label}</label>
         <input
           type={type}
           placeholder={label}
@@ -91,7 +91,7 @@ function ArrayFieldExample(): Node {
 
   return (
     <div class="space-y-3 max-w-lg">
-      <div class="grid grid-cols-[1fr_4rem_6rem_2rem] gap-2 text-xs text-neutral-500 px-1">
+      <div class="grid grid-cols-[1fr_4rem_6rem_2rem] gap-2 text-xs text-[var(--content-muted)] px-1">
         <span>Description</span>
         <span>Qty</span>
         <span>Price (€)</span>
@@ -133,7 +133,7 @@ function ArrayFieldExample(): Node {
 
       <div class="flex items-center justify-between pt-2">
         <Button variant="ghost" size="sm" onclick={() => items.append({ description: '', qty: 1, price: 0 })}>+ Add line</Button>
-        <span class="text-sm text-white font-medium">
+        <span class="text-sm text-[var(--content-primary)] font-medium">
           Total: <span class="text-indigo-300">{() => `€${total().toFixed(2)}`}</span>
         </span>
       </div>
@@ -295,9 +295,9 @@ export const FormPage = createComponent({
     return (
       <div>
         <div class="mb-10">
-          <p class="text-xs font-mono text-neutral-500 mb-1">@liteforge/form</p>
-          <h1 class="text-3xl font-bold text-white mb-2">Form Management</h1>
-          <p class="text-neutral-400 leading-relaxed max-w-xl">
+          <p class="text-xs font-mono text-[var(--content-muted)] mb-1">@liteforge/form</p>
+          <h1 class="text-3xl font-bold text-[var(--content-primary)] mb-2">Form Management</h1>
+          <p class="text-[var(--content-secondary)] leading-relaxed max-w-xl">
             Signal-based form state with Zod validation. Field-level error tracking,
             array fields, submission state — all as reactive signals.
           </p>

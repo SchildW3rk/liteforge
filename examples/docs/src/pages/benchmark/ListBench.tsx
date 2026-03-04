@@ -275,8 +275,8 @@ export const ListBench = createComponent<ListBenchProps>({
           })}
           
           {/* Visual list preview */}
-          <div class="border border-neutral-800 rounded-lg overflow-hidden">
-            <div class="px-3 py-2 bg-neutral-800/50 text-xs text-neutral-500">
+          <div class="border border-[var(--line-default)] rounded-lg overflow-hidden">
+            <div class="px-3 py-2 bg-[var(--surface-overlay)]/50 text-xs text-[var(--content-muted)]">
               {() => {
                 const total = items().length;
                 const shown = Math.min(total, PREVIEW_SIZE);
@@ -294,15 +294,15 @@ export const ListBench = createComponent<ListBenchProps>({
                 key: (item) => item.id,
                 children: (item) => (
                   <div
-                    class="text-xs px-2 py-1 text-neutral-400 border-b border-neutral-800/30 last:border-0"
+                    class="text-xs px-2 py-1 text-[var(--content-secondary)] border-b border-[var(--line-default)]/30 last:border-0"
                     data-item-id={String(item.id)}
                   >
-                    <span class="text-neutral-600 mr-2">{`#${item.id}`}</span>
+                    <span class="text-[var(--content-subtle)] mr-2">{`#${item.id}`}</span>
                     {item.label}
                   </div>
                 ),
                 fallback: () => (
-                  <div class="text-xs text-neutral-600 italic px-2 py-4 text-center">
+                  <div class="text-xs text-[var(--content-subtle)] italic px-2 py-4 text-center">
                     No items - run benchmark to populate
                   </div>
                 ),

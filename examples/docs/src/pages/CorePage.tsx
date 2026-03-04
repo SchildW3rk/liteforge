@@ -20,7 +20,7 @@ const CounterExample = createComponent({
       <div class="flex items-center gap-4">
         <button class={btnClass('primary')} onclick={() => count.update(n => n + 1)}>Increment</button>
         <button class={btnClass('secondary')} onclick={() => count.set(0)}>Reset</button>
-        <span class="text-sm text-neutral-300 font-mono">
+        <span class="text-sm text-[var(--content-secondary)] font-mono">
           {() => `count = ${count()},  doubled = ${doubled()}`}
         </span>
       </div>
@@ -38,7 +38,7 @@ const FullNameExample = createComponent({
     return (
       <div class="space-y-2">
         <div class="flex items-center gap-3">
-          <label class="text-xs text-neutral-500 w-20">First name</label>
+          <label class="text-xs text-[var(--content-muted)] w-20">First name</label>
           <input
             class={inputClass({ size: 'sm', extra: 'w-36' })}
             value={() => firstName()}
@@ -46,7 +46,7 @@ const FullNameExample = createComponent({
           />
         </div>
         <div class="flex items-center gap-3">
-          <label class="text-xs text-neutral-500 w-20">Last name</label>
+          <label class="text-xs text-[var(--content-muted)] w-20">Last name</label>
           <input
             class={inputClass({ size: 'sm', extra: 'w-36' })}
             value={() => lastName()}
@@ -159,9 +159,9 @@ export const CorePage = createComponent({
       <div>
         {/* Header */}
         <div class="mb-10">
-          <p class="text-xs font-mono text-neutral-500 mb-1">@liteforge/core</p>
-          <h1 class="text-3xl font-bold text-white mb-2">Signals & Reactivity</h1>
-          <p class="text-neutral-400 leading-relaxed max-w-xl">
+          <p class="text-xs font-mono text-[var(--content-muted)] mb-1">@liteforge/core</p>
+          <h1 class="text-3xl font-bold text-[var(--content-primary)] mb-2">Signals & Reactivity</h1>
+          <p class="text-[var(--content-secondary)] leading-relaxed max-w-xl">
             The reactive foundation of LiteForge. Fine-grained signals that track their dependencies
             automatically — no subscriptions, no manual cleanup, no VDOM diffing.
           </p>
@@ -241,11 +241,11 @@ export const CorePage = createComponent({
           <div class="space-y-4 text-sm">
             <div class="p-4 rounded-lg border border-emerald-800/40 bg-emerald-950/20">
               <p class="font-semibold text-emerald-300 mb-1">✓ Read signals inside effects/JSX expressions</p>
-              <p class="text-neutral-400">Signals are only tracked when read inside a reactive context (effect, computed, or <code class="font-mono text-xs bg-neutral-800 px-1 rounded">{'{() => signal()}'}</code> in JSX).</p>
+              <p class="text-[var(--content-secondary)]">Signals are only tracked when read inside a reactive context (effect, computed, or <code class="font-mono text-xs bg-[var(--surface-overlay)] px-1 rounded">{'{() => signal()}'}</code> in JSX).</p>
             </div>
             <div class="p-4 rounded-lg border border-red-800/40 bg-red-950/20">
               <p class="font-semibold text-red-300 mb-1">✗ Don't read signals outside reactive contexts to "cache" them</p>
-              <p class="text-neutral-400">Reading a signal outside of an effect or computed snapshot its value at that moment — changes won't be tracked.</p>
+              <p class="text-[var(--content-secondary)]">Reading a signal outside of an effect or computed snapshot its value at that moment — changes won't be tracked.</p>
             </div>
           </div>
         </DocSection>

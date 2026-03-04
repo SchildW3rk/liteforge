@@ -271,9 +271,9 @@ export const TablePage = createComponent({
     return (
       <div>
         <div class="mb-10">
-          <p class="text-xs font-mono text-neutral-500 mb-1">@liteforge/table</p>
-          <h1 class="text-3xl font-bold text-white mb-2">Data Table</h1>
-          <p class="text-neutral-400 leading-relaxed max-w-xl">
+          <p class="text-xs font-mono text-[var(--content-muted)] mb-1">@liteforge/table</p>
+          <h1 class="text-3xl font-bold text-[var(--content-primary)] mb-2">Data Table</h1>
+          <p class="text-[var(--content-secondary)] leading-relaxed max-w-xl">
             Reactive data grid with sorting, filtering, pagination, and row selection.
             Data is a signal — the table automatically re-renders when data changes.
           </p>
@@ -330,7 +330,7 @@ export const TablePage = createComponent({
           description="Three layers of styling control — from full defaults to fully custom Tailwind."
         >
           <div>
-            <p class="text-neutral-400 text-sm mb-4">
+            <p class="text-[var(--content-secondary)] text-sm mb-4">
               The table uses a 3-layer cascade. Each layer is independent and composable:
             </p>
             <ApiTable rows={[

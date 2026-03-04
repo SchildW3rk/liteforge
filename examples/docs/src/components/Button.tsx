@@ -16,11 +16,11 @@ interface ButtonProps {
 const BTN_BASE = 'inline-flex items-center justify-center rounded font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed select-none';
 
 const VARIANT_CLASSES: Record<ButtonVariant, string> = {
-  primary:   'bg-indigo-600 hover:bg-indigo-500 text-white',
-  secondary: 'border border-neutral-700 hover:border-neutral-500 text-neutral-300 hover:text-white',
-  neutral:   'bg-neutral-800 hover:bg-neutral-700 text-neutral-300 border border-neutral-700',
-  ghost:     'text-neutral-400 hover:text-neutral-200',
-  danger:    'text-neutral-400 hover:text-red-400 hover:bg-red-900/20',
+  primary:   'bg-indigo-600 hover:bg-indigo-500 text-[var(--content-primary)]',
+  secondary: 'border border-[var(--line-default)] hover:border-[var(--content-muted)] text-[var(--content-secondary)] hover:text-[var(--content-primary)]',
+  neutral:   'bg-[var(--surface-overlay)] hover:bg-[var(--surface-overlay)] text-[var(--content-secondary)] border border-[var(--line-default)]',
+  ghost:     'text-[var(--content-muted)] hover:text-[var(--content-primary)]',
+  danger:    'text-[var(--content-muted)] hover:text-red-400 hover:bg-red-900/20',
 };
 
 const SIZE_CLASSES: Record<ButtonSize, string> = {

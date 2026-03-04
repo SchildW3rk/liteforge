@@ -1,24 +1,128 @@
 @import "tailwindcss";
 
 @theme {
-  --color-primary: #6366f1;
+  --color-primary:       #6366f1;
   --color-primary-light: #818cf8;
   --font-mono: ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Consolas, monospace;
+
+  /* Semantic surface tokens — used as bg-surface-*, text-content-*, border-line-* */
+  --color-surface-base:    var(--surface-base);
+  --color-surface-raised:  var(--surface-raised);
+  --color-surface-overlay: var(--surface-overlay);
+  --color-surface-sunken:  var(--surface-sunken);
+
+  --color-content-primary:   var(--content-primary);
+  --color-content-secondary: var(--content-secondary);
+  --color-content-muted:     var(--content-muted);
+  --color-content-subtle:    var(--content-subtle);
+
+  --color-line-default: var(--line-default);
+  --color-line-subtle:  var(--line-subtle);
 }
 
-/* Nav active state — used as activeClass on Link */
+/* ─── Dark theme (default) ───────────────────────────────────────────────── */
+:root {
+  --surface-base:    #0a0a0a;
+  --surface-raised:  #171717;
+  --surface-overlay: #262626;
+  --surface-sunken:  #050505;
+
+  --content-primary:   #f5f5f5;
+  --content-secondary: #a3a3a3;
+  --content-muted:     #737373;
+  --content-subtle:    #525252;
+
+  --line-default: #262626;
+  --line-subtle:  #1a1a1a;
+
+  /* Accent badge tokens — dark: light text on tinted dark bg */
+  --badge-indigo-bg:    rgba(99, 102, 241, 0.18);
+  --badge-indigo-text:  #a5b4fc;
+  --badge-indigo-border:rgba(99, 102, 241, 0.30);
+
+  --badge-violet-bg:    rgba(139, 92, 246, 0.18);
+  --badge-violet-text:  #c4b5fd;
+  --badge-violet-border:rgba(139, 92, 246, 0.30);
+
+  --badge-blue-bg:      rgba(59, 130, 246, 0.18);
+  --badge-blue-text:    #93c5fd;
+  --badge-blue-border:  rgba(59, 130, 246, 0.30);
+
+  --badge-emerald-bg:   rgba(16, 185, 129, 0.15);
+  --badge-emerald-text: #6ee7b7;
+  --badge-emerald-border:rgba(16, 185, 129, 0.25);
+
+  --badge-amber-bg:     rgba(245, 158, 11, 0.15);
+  --badge-amber-text:   #fcd34d;
+  --badge-amber-border: rgba(245, 158, 11, 0.25);
+
+  --badge-teal-bg:      rgba(20, 184, 166, 0.15);
+  --badge-teal-text:    #5eead4;
+  --badge-teal-border:  rgba(20, 184, 166, 0.25);
+
+  --badge-red-bg:       rgba(239, 68, 68, 0.15);
+  --badge-red-text:     #fca5a5;
+  --badge-red-border:   rgba(239, 68, 68, 0.25);
+}
+
+/* ─── Light theme ────────────────────────────────────────────────────────── */
+:root:not(.dark) {
+  --surface-base:    #ffffff;
+  --surface-raised:  #f5f5f5;
+  --surface-overlay: #e5e5e5;
+  --surface-sunken:  #fafafa;
+
+  --content-primary:   #0a0a0a;
+  --content-secondary: #404040;
+  --content-muted:     #737373;
+  --content-subtle:    #a3a3a3;
+
+  --line-default: #d4d4d4;
+  --line-subtle:  #e5e5e5;
+
+  /* Accent badge tokens — light: dark text on pastel bg */
+  --badge-indigo-bg:    #eef2ff;
+  --badge-indigo-text:  #4338ca;
+  --badge-indigo-border:#c7d2fe;
+
+  --badge-violet-bg:    #f5f3ff;
+  --badge-violet-text:  #6d28d9;
+  --badge-violet-border:#ddd6fe;
+
+  --badge-blue-bg:      #eff6ff;
+  --badge-blue-text:    #1d4ed8;
+  --badge-blue-border:  #bfdbfe;
+
+  --badge-emerald-bg:   #ecfdf5;
+  --badge-emerald-text: #065f46;
+  --badge-emerald-border:#a7f3d0;
+
+  --badge-amber-bg:     #fffbeb;
+  --badge-amber-text:   #92400e;
+  --badge-amber-border: #fde68a;
+
+  --badge-teal-bg:      #f0fdfa;
+  --badge-teal-text:    #0f766e;
+  --badge-teal-border:  #99f6e4;
+
+  --badge-red-bg:       #fef2f2;
+  --badge-red-text:     #991b1b;
+  --badge-red-border:   #fecaca;
+}
+
+/* ─── Nav active state ───────────────────────────────────────────────────── */
 .lf-nav-active {
-  background: rgba(255, 255, 255, 0.10);
-  color: #fff;
+  background: rgba(99, 102, 241, 0.15);
+  color: #818cf8;
   font-weight: 600;
 }
 
-/* Smooth scroll for anchor links */
+/* ─── Smooth scroll ──────────────────────────────────────────────────────── */
 html {
   scroll-behavior: smooth;
 }
 
-/* Custom scrollbar */
+/* ─── Custom scrollbar ───────────────────────────────────────────────────── */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -27,21 +131,23 @@ html {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #374151;
+  background: var(--line-default);
   border-radius: 3px;
 }
-.dark ::-webkit-scrollbar-thumb {
-  background: #4b5563;
+
+/* ─── Modal theming ──────────────────────────────────────────────────────── */
+:root {
+  --lf-modal-backdrop:      rgba(0, 0, 0, 0.6);
+  --lf-modal-bg:            var(--surface-raised);
+  --lf-modal-shadow:        0 20px 60px rgba(0, 0, 0, 0.3);
+  --lf-modal-header-bg:     var(--surface-overlay);
+  --lf-modal-header-color:  var(--content-primary);
+  --lf-modal-body-color:    var(--content-secondary);
+  --lf-modal-close-color:   var(--content-muted);
+  --lf-modal-border-radius: 12px;
 }
 
-/* ─── Modal dark-mode override (docs uses .dark, not [data-theme="dark"]) ─── */
-html.dark {
-  --lf-modal-backdrop:      rgba(0, 0, 0, 0.75);
-  --lf-modal-bg:            #0f0f0f;
-  --lf-modal-shadow:        0 20px 60px rgba(0, 0, 0, 0.7);
-  --lf-modal-header-bg:     #171717;
-  --lf-modal-header-color:  #f5f5f5;
-  --lf-modal-body-color:    #a3a3a3;
-  --lf-modal-close-color:   #525252;
-  --lf-modal-border-radius: 12px;
+.dark {
+  --lf-modal-backdrop: rgba(0, 0, 0, 0.75);
+  --lf-modal-shadow:   0 20px 60px rgba(0, 0, 0, 0.7);
 }

@@ -20,20 +20,20 @@ function ShowLiveExample(): Node {
     <div class="space-y-3">
       <div class="flex gap-2">
         <button
-          class="px-3 py-1.5 text-sm rounded bg-indigo-600 hover:bg-indigo-500 text-white transition-colors"
+          class="px-3 py-1.5 text-sm rounded bg-indigo-600 hover:bg-indigo-500 text-[var(--content-primary)] transition-colors"
           onclick={() => isLoggedIn.update(v => !v)}
         >
           {() => isLoggedIn() ? 'Log out' : 'Log in'}
         </button>
         <button
-          class="px-3 py-1.5 text-sm rounded border border-neutral-700 hover:border-neutral-500 text-neutral-300 transition-colors"
+          class="px-3 py-1.5 text-sm rounded border border-[var(--line-default)] hover:border-[var(--content-muted)] text-[var(--content-secondary)] transition-colors"
           onclick={() => { loading.set(true); setTimeout(() => loading.set(false), 1500); }}
         >
           Simulate load
         </button>
       </div>
 
-      <div class="p-3 rounded border border-neutral-800 bg-neutral-900/50 text-sm min-h-10">
+      <div class="p-3 rounded border border-[var(--line-default)] bg-[var(--surface-raised)]/50 text-sm min-h-10">
         {Show({
           when: () => loading(),
           children: () => (
@@ -45,7 +45,7 @@ function ShowLiveExample(): Node {
               <span class="text-emerald-300 font-mono text-xs">✓ Welcome back, Dr. Fischer</span>
             ),
             fallback: () => (
-              <span class="text-neutral-500 font-mono text-xs">Please log in to continue</span>
+              <span class="text-[var(--content-muted)] font-mono text-xs">Please log in to continue</span>
             ),
           }),
         })}
@@ -74,7 +74,7 @@ function ForLiveExample(): Node {
     <div class="space-y-3">
       <div class="flex gap-2">
         <button
-          class="px-3 py-1.5 text-sm rounded bg-indigo-600 hover:bg-indigo-500 text-white transition-colors"
+          class="px-3 py-1.5 text-sm rounded bg-indigo-600 hover:bg-indigo-500 text-[var(--content-primary)] transition-colors"
           onclick={() => {
             const name = names[(nextId - 1) % names.length] ?? 'Patient';
             patients.update(ps => [...ps, { id: nextId++, name, status: 'active' }]);
@@ -83,7 +83,7 @@ function ForLiveExample(): Node {
           Add patient
         </button>
         <button
-          class="px-3 py-1.5 text-sm rounded border border-neutral-700 hover:border-neutral-500 text-neutral-300 transition-colors"
+          class="px-3 py-1.5 text-sm rounded border border-[var(--line-default)] hover:border-[var(--content-muted)] text-[var(--content-secondary)] transition-colors"
           onclick={() => patients.update(ps => ps.slice(0, -1))}
         >
           Remove last
@@ -95,18 +95,18 @@ function ForLiveExample(): Node {
           each: patients,
           key: (patient) => patient.id,
           children: (p) => (
-            <li class="flex items-center justify-between px-3 py-2 rounded border border-neutral-800 bg-neutral-900/50 text-sm">
-              <span class="text-neutral-300">{p.name}</span>
+            <li class="flex items-center justify-between px-3 py-2 rounded border border-[var(--line-default)] bg-[var(--surface-raised)]/50 text-sm">
+              <span class="text-[var(--content-secondary)]">{p.name}</span>
               <span class={p.status === 'active'
                 ? 'text-xs px-1.5 py-0.5 rounded-full bg-emerald-950 text-emerald-300'
-                : 'text-xs px-1.5 py-0.5 rounded-full bg-neutral-800 text-neutral-500'
+                : 'text-xs px-1.5 py-0.5 rounded-full bg-[var(--surface-overlay)] text-[var(--content-muted)]'
               }>
                 {p.status}
               </span>
             </li>
           ),
           fallback: () => (
-            <li class="px-3 py-2 text-neutral-500 text-sm font-mono">No patients</li>
+            <li class="px-3 py-2 text-[var(--content-muted)] text-sm font-mono">No patients</li>
           ),
         })}
       </ul>
@@ -127,10 +127,10 @@ function SwitchLiveExample(): Node {
         <Button variant="secondary" size="sm" onclick={() => status.set('error')}>error</Button>
       </div>
 
-      <div class="p-3 rounded border border-neutral-800 bg-neutral-900/50 text-sm min-h-12">
+      <div class="p-3 rounded border border-[var(--line-default)] bg-[var(--surface-raised)]/50 text-sm min-h-12">
         {Switch({
           fallback: () => (
-            <span class="text-neutral-500 font-mono text-xs">Click a status button above</span>
+            <span class="text-[var(--content-muted)] font-mono text-xs">Click a status button above</span>
           ),
           children: [
             Match({
@@ -448,7 +448,7 @@ export const ControlFlowPage = createComponent({
           key: 'situation',
           header: 'Situation',
           sortable: false,
-          cell: (v) => <span class="text-neutral-300">{String(v)}</span>,
+          cell: (v) => <span class="text-[var(--content-secondary)]">{String(v)}</span>,
         },
         {
           key: 'use',
@@ -459,9 +459,9 @@ export const ControlFlowPage = createComponent({
       ],
       unstyled: true,
       classes: {
-        root:       'overflow-x-auto rounded-lg border border-neutral-800 my-4',
+        root:       'overflow-x-auto rounded-lg border border-[var(--line-default)] my-4',
         table:      'w-full text-sm text-left',
-        header:     'bg-neutral-900 text-neutral-400 text-xs uppercase tracking-wider',
+        header:     'bg-[var(--surface-raised)] text-[var(--content-secondary)] text-xs uppercase tracking-wider',
         headerCell: 'px-4 py-3',
         body:       '',
         row:        '',
@@ -473,9 +473,9 @@ export const ControlFlowPage = createComponent({
       <div>
         {/* Header */}
         <div class="mb-10">
-          <p class="text-xs font-mono text-neutral-500 mb-1">@liteforge/runtime</p>
-          <h1 class="text-3xl font-bold text-white mb-2">Control Flow</h1>
-          <p class="text-neutral-400 leading-relaxed max-w-xl">
+          <p class="text-xs font-mono text-[var(--content-muted)] mb-1">@liteforge/runtime</p>
+          <h1 class="text-3xl font-bold text-[var(--content-primary)] mb-2">Control Flow</h1>
+          <p class="text-[var(--content-secondary)] leading-relaxed max-w-xl">
             Conditionals, lists, and reactive rendering — no virtual DOM diffing, just surgical DOM updates.
             Each reactive node updates independently when its signal changes.
           </p>
@@ -494,10 +494,10 @@ export const ControlFlowPage = createComponent({
           <div>
             <CodeBlock code={REACTIVE_EXPR_SIGNAL_CODE} language="tsx" />
             <CodeBlock code={REACTIVE_EXPR_CODE} language="tsx" />
-            <div class="mt-4 p-4 rounded-lg border border-indigo-500/20 bg-indigo-950/20 text-sm text-neutral-300 leading-relaxed">
+            <div class="mt-4 p-4 rounded-lg border border-indigo-500/20 bg-indigo-950/20 text-sm text-[var(--content-secondary)] leading-relaxed">
               <span class="font-semibold text-indigo-300">When to use inline expressions: </span>
               Simple signal reads, text interpolation, and short ternaries. For complex conditions or fallbacks, use
-              <code class="mx-1 px-1 py-0.5 rounded bg-neutral-800 text-xs font-mono text-indigo-300">Show</code>.
+              <code class="mx-1 px-1 py-0.5 rounded bg-[var(--surface-overlay)] text-xs font-mono text-indigo-300">Show</code>.
             </div>
           </div>
         </DocSection>
@@ -530,9 +530,9 @@ export const ControlFlowPage = createComponent({
           <div>
             <CodeBlock code={SWITCH_CODE} language="tsx" />
             <CodeBlock code={SWITCH_JSX_CODE} language="tsx" title="JSX tag syntax" />
-            <p class="text-xs font-semibold text-neutral-400 mb-1 mt-4">Switch</p>
+            <p class="text-xs font-semibold text-[var(--content-secondary)] mb-1 mt-4">Switch</p>
             <ApiTable rows={SWITCH_API} />
-            <p class="text-xs font-semibold text-neutral-400 mb-1 mt-4">Match</p>
+            <p class="text-xs font-semibold text-[var(--content-secondary)] mb-1 mt-4">Match</p>
             <ApiTable rows={MATCH_API} />
             <LiveExample
               title="Switch — appointment status"
@@ -572,7 +572,7 @@ export const ControlFlowPage = createComponent({
           id="patterns"
         >
           <div>
-            <p class="text-sm text-neutral-400 mb-3">Composing control flow primitives for real-world UIs:</p>
+            <p class="text-sm text-[var(--content-secondary)] mb-3">Composing control flow primitives for real-world UIs:</p>
             <CodeBlock code={NESTED_CODE} language="tsx" title="Nesting Show inside For (and vice versa)" />
             <CodeBlock code={QUERY_SHOW_CODE} language="tsx" title="Show + @liteforge/query — three-state loading UI" />
           </div>

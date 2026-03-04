@@ -308,10 +308,10 @@ export const DomPrecisionBench = createComponent<DomPrecisionBenchProps>({
                   each: testResults,
                   key: (item) => item.name,
                   children: (result) => (
-                    <div class="flex items-center justify-between px-3 py-2 rounded border border-neutral-800 bg-neutral-900/30">
-                      <span class="text-sm text-neutral-300">{result.name}</span>
+                    <div class="flex items-center justify-between px-3 py-2 rounded border border-[var(--line-default)] bg-[var(--surface-raised)]/30">
+                      <span class="text-sm text-[var(--content-secondary)]">{result.name}</span>
                       <div class="flex items-center gap-3">
-                        <span class="text-xs font-mono text-neutral-500">
+                        <span class="text-xs font-mono text-[var(--content-muted)]">
                           {`expected: ${result.expected}, actual: ${result.actual}`}
                         </span>
                         {Switch({
@@ -319,7 +319,7 @@ export const DomPrecisionBench = createComponent<DomPrecisionBenchProps>({
                             Match({
                               when: () => result.passed,
                               children: () => (
-                                <span class="text-xs px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400">
+                                <span class="text-xs px-2 py-0.5 rounded bg-[var(--badge-emerald-bg)] text-[var(--badge-emerald-text)]">
                                   PASS
                                 </span>
                               ),
@@ -340,8 +340,8 @@ export const DomPrecisionBench = createComponent<DomPrecisionBenchProps>({
           })}
           
           {/* Grid visualization */}
-          <div class="border border-neutral-800 rounded-lg overflow-hidden">
-            <div class="px-3 py-2 bg-neutral-800/50 text-xs text-neutral-500">
+          <div class="border border-[var(--line-default)] rounded-lg overflow-hidden">
+            <div class="px-3 py-2 bg-[var(--surface-overlay)]/50 text-xs text-[var(--content-muted)]">
               Test Grid ({GRID_ROWS}x{GRID_COLS} = {GRID_ROWS * GRID_COLS} cells)
             </div>
             <div 
@@ -354,7 +354,7 @@ export const DomPrecisionBench = createComponent<DomPrecisionBenchProps>({
                     <tr>
                       {row.map((cellSignal, colIdx) => (
                         <td 
-                          class="border border-neutral-800/50 px-2 py-1 text-xs font-mono text-center"
+                          class="border border-[var(--line-default)]/50 px-2 py-1 text-xs font-mono text-center"
                           data-row={rowIdx}
                           data-col={colIdx}
                         >

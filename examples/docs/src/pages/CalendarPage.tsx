@@ -227,9 +227,9 @@ export const CalendarPage = createComponent({
     return (
       <div>
         <div class="mb-10">
-          <p class="text-xs font-mono text-neutral-500 mb-1">@liteforge/calendar</p>
-          <h1 class="text-3xl font-bold text-white mb-2">Calendar</h1>
-          <p class="text-neutral-400 leading-relaxed max-w-xl">
+          <p class="text-xs font-mono text-[var(--content-muted)] mb-1">@liteforge/calendar</p>
+          <h1 class="text-3xl font-bold text-[var(--content-primary)] mb-2">Calendar</h1>
+          <p class="text-[var(--content-secondary)] leading-relaxed max-w-xl">
             Scheduling calendar with Day, Week, Month, and Agenda views.
             Supports resource columns (therapists, rooms), drag & drop, event resizing, and recurring events.
           </p>
