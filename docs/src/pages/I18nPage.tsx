@@ -5,9 +5,10 @@ import { DocSection } from '../components/DocSection.js';
 import { CodeBlock } from '../components/CodeBlock.js';
 import { LiveExample } from '../components/LiveExample.js';
 import { ApiTable } from '../components/ApiTable.js';
+import { btnClass } from '../components/Button.js';
 import type { ApiRow } from '../components/ApiTable.js';
 
-// ─── Live example ──────────────────────────────────────────────────────────────
+// ─── Translations ──────────────────────────────────────────────────────────────
 
 const EN: TranslationTree = {
   greeting: 'Hello, {name}!',
@@ -23,94 +24,78 @@ const DE: TranslationTree = {
   // 'fallback' key intentionally missing — falls back to EN
 };
 
-function I18nExample(): Node {
-  const i18n = createI18n({
-    defaultLocale: 'en',
-    fallbackLocale: 'en',
-    load: async (locale) => (locale === 'de' ? DE : EN),
-    persist: false,
-  });
+// ─── Live example ──────────────────────────────────────────────────────────────
 
-  const count = signal(1);
-
-  // Load initial translations synchronously-ish for demo
-  void i18n._load('en');
-
-  const wrap = document.createElement('div');
-  wrap.className = 'space-y-4';
-
-  // Locale toggle buttons
-  const buttons = document.createElement('div');
-  buttons.className = 'flex gap-2';
-
-  const enBtn = document.createElement('button');
-  enBtn.textContent = '🇬🇧 English';
-  enBtn.className = 'px-3 py-1 text-sm rounded border border-[var(--line-default)] text-[var(--content-secondary)] transition-colors';
-  enBtn.addEventListener('click', () => void i18n.setLocale('en'));
-
-  const deBtn = document.createElement('button');
-  deBtn.textContent = '🇩🇪 Deutsch';
-  deBtn.className = 'px-3 py-1 text-sm rounded border border-[var(--line-default)] text-[var(--content-secondary)] transition-colors';
-  deBtn.addEventListener('click', () => void i18n.setLocale('de'));
-
-  buttons.appendChild(enBtn);
-  buttons.appendChild(deBtn);
-
-  // Output rows
-  const rows = document.createElement('div');
-  rows.className = 'space-y-2 text-sm font-mono';
-
-  const makeRow = (label: string): [HTMLElement, HTMLElement] => {
-    const row = document.createElement('div');
-    row.className = 'flex gap-2 items-baseline';
-    const key = document.createElement('span');
-    key.className = 'text-[var(--content-muted)] shrink-0';
-    key.textContent = label;
-    const val = document.createElement('span');
-    val.className = 'text-[var(--content-primary)]';
-    row.appendChild(key);
-    row.appendChild(val);
-    rows.appendChild(row);
-    return [row, val];
-  };
-
-  const [, greetVal] = makeRow("t('greeting', { name: 'World' })  →");
-  const [, itemsVal] = makeRow("t('items', { count }, count)       →");
-  const [, navVal]   = makeRow("t('nav.home')                      →");
-  const [, fbVal]    = makeRow("t('fallback')  [fallback locale]   →");
-
-  // Counter row
-  const counterRow = document.createElement('div');
-  counterRow.className = 'flex items-center gap-2 pt-1';
-  const decBtn = document.createElement('button');
-  decBtn.textContent = '−';
-  decBtn.className = 'w-7 h-7 rounded border border-[var(--line-default)] text-[var(--content-secondary)] hover:border-[var(--content-muted)] transition-colors';
-  decBtn.addEventListener('click', () => count.update(n => Math.max(0, n - 1)));
-  const incBtn = document.createElement('button');
-  incBtn.textContent = '+';
-  incBtn.className = 'w-7 h-7 rounded border border-[var(--line-default)] text-[var(--content-secondary)] hover:border-[var(--content-muted)] transition-colors';
-  incBtn.addEventListener('click', () => count.update(n => n + 1));
-  const cntLabel = document.createElement('span');
-  cntLabel.className = 'text-xs text-[var(--content-muted)]';
-  counterRow.appendChild(decBtn);
-  counterRow.appendChild(incBtn);
-  counterRow.appendChild(cntLabel);
-
-  import('liteforge').then(({ effect: eff }) => {
-    eff(() => {
-      greetVal.textContent = i18n.t('greeting', { name: 'World' });
-      itemsVal.textContent = i18n.t('items', { count: count() }, count());
-      navVal.textContent   = i18n.t('nav.home');
-      fbVal.textContent    = i18n.t('fallback');
-      cntLabel.textContent = `count = ${count()}`;
+const I18nExample = createComponent({
+  name: 'I18nExample',
+  setup() {
+    const i18n = createI18n({
+      defaultLocale: 'en',
+      fallbackLocale: 'en',
+      load: async (locale) => (locale === 'de' ? DE : EN),
+      persist: false,
     });
-  });
+    const count = signal(1);
+    void i18n._load('en');
+    return { i18n, count };
+  },
+  component({ setup }) {
+    const { i18n, count } = setup;
+    const { t, locale, setLocale } = i18n;
 
-  wrap.appendChild(buttons);
-  wrap.appendChild(counterRow);
-  wrap.appendChild(rows);
-  return wrap;
-}
+    const row = (label: string, value: () => string) => (
+      <div class="flex gap-2 items-baseline text-sm font-mono">
+        <span class="text-[var(--content-muted)] shrink-0">{label}</span>
+        <span class="text-[var(--content-primary)]">{value()}</span>
+      </div>
+    );
+
+    return (
+      <div class="space-y-4">
+        {/* Locale buttons */}
+        <div class="flex gap-2">
+          <button
+            class={() => btnClass(locale() === 'en' ? 'primary' : 'secondary', 'sm')}
+            onclick={() => void setLocale('en')}
+          >
+            🇬🇧 English
+          </button>
+          <button
+            class={() => btnClass(locale() === 'de' ? 'primary' : 'secondary', 'sm')}
+            onclick={() => void setLocale('de')}
+          >
+            🇩🇪 Deutsch
+          </button>
+        </div>
+
+        {/* Counter */}
+        <div class="flex items-center gap-2">
+          <button
+            class={btnClass('secondary', 'sm', 'w-7 h-7 !px-0')}
+            onclick={() => count.update(n => Math.max(0, n - 1))}
+          >
+            −
+          </button>
+          <button
+            class={btnClass('secondary', 'sm', 'w-7 h-7 !px-0')}
+            onclick={() => count.update(n => n + 1)}
+          >
+            +
+          </button>
+          <span class="text-xs text-[var(--content-muted)] font-mono">
+            {() => `count = ${count()}`}
+          </span>
+        </div>
+
+        {/* Output rows */}
+        {row("t('greeting', { name: 'World' })  →", () => t('greeting', { name: 'World' }))}
+        {row("t('items', { count }, count)       →", () => t('items', { count: count() }, count()))}
+        {row("t('nav.home')                      →", () => t('nav.home'))}
+        {row("t('fallback')  [fallback locale]   →", () => t('fallback'))}
+      </div>
+    );
+  },
+});
 
 // ─── Code strings ──────────────────────────────────────────────────────────────
 
@@ -186,18 +171,20 @@ const { t, locale, setLocale } = i18n;
 // ─── API rows ──────────────────────────────────────────────────────────────────
 
 const OPTIONS_API: ApiRow[] = [
-  { name: 'defaultLocale', type: 'string', description: 'Locale loaded on startup (or from localStorage if persist: true)' },
-  { name: 'fallbackLocale', type: 'string', default: '—', description: 'Loaded in parallel; used when a key is missing in the current locale' },
-  { name: 'load', type: '(locale: string) => Promise<TranslationTree>', description: 'Async loader — return the raw translation object for the given locale' },
-  { name: 'persist', type: 'boolean', default: 'true', description: 'Save locale choice to localStorage; restore on next visit' },
-  { name: 'storageKey', type: 'string', default: "'lf-locale'", description: 'localStorage key used for persistence' },
+  { name: 'defaultLocale',  type: 'string',                                      description: 'Locale loaded on startup (or from localStorage if persist: true)' },
+  { name: 'fallbackLocale', type: 'string',                       default: '—',  description: 'Loaded in parallel; used when a key is missing in the current locale' },
+  { name: 'load',           type: '(locale: string) => Promise<TranslationTree>', description: 'Async loader — return the raw translation object for the given locale' },
+  { name: 'persist',        type: 'boolean',                      default: 'true', description: 'Save locale choice to localStorage; restore on next visit' },
+  { name: 'storageKey',     type: 'string',                       default: "'lf-locale'", description: 'localStorage key used for persistence' },
 ];
 
 const API_API: ApiRow[] = [
-  { name: 'locale()', type: '() => string', description: 'Signal — current locale. Auto-subscribes callers inside effects / JSX.' },
-  { name: 'setLocale(locale)', type: '(locale: string) => Promise<void>', description: 'Load translations for the new locale, update signal atomically via batch()' },
-  { name: 't(key, params?, count?)', type: 'string', description: 'Translate a dot-notation key. Supports {param} interpolation and | pipe pluralization.' },
+  { name: 'locale()',             type: '() => string',                    description: 'Signal — current locale. Auto-subscribes callers inside effects / JSX.' },
+  { name: 'setLocale(locale)',    type: '(locale: string) => Promise<void>', description: 'Load translations for the new locale, update signal atomically via batch()' },
+  { name: 't(key, params?, count?)', type: 'string',                       description: 'Translate a dot-notation key. Supports {param} interpolation and | pipe pluralization.' },
 ];
+
+// ─── Page ──────────────────────────────────────────────────────────────────────
 
 export const I18nPage = createComponent({
   name: 'I18nPage',
