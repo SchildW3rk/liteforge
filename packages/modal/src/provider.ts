@@ -125,7 +125,7 @@ function renderOverlay(entry: ModalEntry, onRemove: () => void): HTMLElement {
 
 // ─── ModalProvider ───────────────────────────────────────────
 
-export function ModalProvider(opts?: { unstyled?: boolean }): Node {
+export function ModalProvider(opts?: { unstyled?: boolean }): HTMLElement {
   if (!opts?.unstyled) {
     injectDefaultStyles();
   }
