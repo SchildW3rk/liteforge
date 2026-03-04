@@ -442,11 +442,62 @@ describe('Edge Cases', () => {
   it('handles mixed static and dynamic children', () => {
     const element = parseJsx('<div>Static {dynamic()} More Static</div>');
     const info = extractElementInfo(element);
-    
+
     const staticChildren = info.children.filter(c => c.isStatic);
     const dynamicChildren = info.children.filter(c => !c.isStatic);
-    
+
     expect(staticChildren.length).toBe(2); // "Static" and "More Static"
     expect(dynamicChildren.length).toBe(1); // {dynamic()}
+  });
+});
+
+// =============================================================================
+// Comment Marker Tests (regression: dynamic slots need placeholder nodes)
+// =============================================================================
+
+describe('generateTemplateString — comment markers for dynamic slots', () => {
+  it('emits comment marker for dynamic expression child', () => {
+    const element = parseJsx('<div><span>A</span>{expr()}<span>B</span></div>');
+    const info = extractElementInfo(element);
+    const html = generateTemplateString(info);
+
+    // The dynamic {expr()} slot must produce a comment node placeholder so that
+    // firstChild/nextSibling traversal lands on the correct DOM node.
+    expect(html).toContain('<!---->');
+    // Static siblings must still be present
+    expect(html).toContain('<span>A</span>');
+    expect(html).toContain('<span>B</span>');
+  });
+
+  it('emits comment marker for each dynamic expression child', () => {
+    const element = parseJsx('<div>{a()}{b()}</div>');
+    const info = extractElementInfo(element);
+    const html = generateTemplateString(info);
+
+    // Two dynamic slots → two comment markers
+    const markerCount = (html.match(/<!---->/g) ?? []).length;
+    expect(markerCount).toBe(2);
+  });
+
+  it('does NOT emit comment marker for static text children', () => {
+    const element = parseJsx('<div><p>Hello</p><p>World</p></div>');
+    const info = extractElementInfo(element);
+    const html = generateTemplateString(info);
+
+    expect(html).not.toContain('<!---->');
+  });
+
+  it('comment marker ensures correct nextSibling traversal', () => {
+    // Without the marker: <div><h1>Title</h1></div> — nextSibling of h1 = null
+    // With the marker:    <div><h1>Title</h1><!----></div> — nextSibling of h1 = comment
+    const element = parseJsx('<div><h1>Title</h1>{content()}</div>');
+    const info = extractElementInfo(element);
+    const html = generateTemplateString(info);
+
+    // Comment must appear AFTER the static element
+    const h1Pos = html.indexOf('<h1>');
+    const markerPos = html.indexOf('<!---->');
+    expect(h1Pos).toBeGreaterThanOrEqual(0);
+    expect(markerPos).toBeGreaterThan(h1Pos);
   });
 });

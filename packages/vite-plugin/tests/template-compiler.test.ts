@@ -299,12 +299,67 @@ describe('Edge Cases', () => {
   it('handles void elements correctly', () => {
     const result = compile('<div><input type="text" /><br /><span>Text</span></div>', 1);
     const declCode = generate(result.templateDeclaration).code;
-    
+
     // Void elements should not have closing tags
     // Babel escapes quotes in string literals
     expect(declCode).toContain('type=\\"text\\"');
     expect(declCode).toContain('<br>');
     expect(declCode).not.toContain('</input>');
     expect(declCode).not.toContain('</br>');
+  });
+});
+
+// =============================================================================
+// Regression Tests: findTargetByPath + comment marker integration
+// =============================================================================
+
+describe('findTargetByPath correctness (regression)', () => {
+  it('correctly identifies dynamic child after static sibling', () => {
+    // Bug: without comment markers, <div><h1>Title</h1>{content()}</div> had
+    // nextSibling = null in the DOM because the dynamic slot was absent from HTML.
+    const result = compile('<div><h1>Title</h1>{content()}</div>', 1);
+    const code = generateCode(result.hydratedExpression);
+
+    // Must generate _insert call for {content()} — proves findTargetByPath found it
+    expect(code).toContain('_insert');
+  });
+
+  it('correctly identifies dynamic child as first child', () => {
+    const result = compile('<div>{first()}<span>Static</span></div>', 1);
+    const code = generateCode(result.hydratedExpression);
+
+    expect(code).toContain('_insert');
+  });
+
+  it('correctly identifies two dynamic children', () => {
+    const result = compile('<div><p>A</p>{x()}<p>B</p>{y()}</div>', 1);
+    const code = generateCode(result.hydratedExpression);
+
+    // Both dynamic slots must produce _insert calls
+    const insertCount = (code.match(/_insert/g) ?? []).length;
+    expect(insertCount).toBeGreaterThanOrEqual(2);
+  });
+
+  it('template HTML contains comment markers for dynamic slots', () => {
+    const result = compile('<div><p>Static</p>{expr()}</div>', 1);
+    const declCode = generate(result.templateDeclaration).code;
+
+    // The template string must contain a comment marker for the dynamic slot
+    expect(declCode).toContain('<!---->');
+  });
+
+  it('dynamic child in nested element is correctly hydrated', () => {
+    // Path: root -> firstChild (section) -> firstChild (dynamic)
+    const result = compile(`
+      <div>
+        <section>{text()}</section>
+        <footer>Footer</footer>
+      </div>
+    `, 1);
+    const code = generateCode(result.hydratedExpression);
+
+    expect(code).toContain('_insert');
+    // Must traverse into section
+    expect(code).toContain('firstChild');
   });
 });

@@ -15,6 +15,7 @@ import { generateTemplateString } from './template-extractor.js';
 import type { DomPath, PathStep } from './path-resolver.js';
 import { resolvePaths } from './path-resolver.js';
 import { isEventHandler } from './utils.js';
+import { transformJsxElement } from './jsx-visitor.js';
 
 // =============================================================================
 // Types
@@ -154,12 +155,20 @@ function generateHydrationCode(
     const targetInfo = findTargetByPath(info, path.steps);
     if (targetInfo) {
       if (targetInfo.type === 'element' && targetInfo.elementInfo) {
-        const hydration = generateElementHydration(
-          ctx,
-          targetInfo.elementInfo,
-          path.varName
-        );
-        statements.push(...hydration);
+        if (targetInfo.elementInfo.isComponent) {
+          // Component child — insert via _insert at the comment marker
+          const insertStatement = generateChildInsert(ctx, targetInfo, path.varName);
+          if (insertStatement) {
+            statements.push(insertStatement);
+          }
+        } else {
+          const hydration = generateElementHydration(
+            ctx,
+            targetInfo.elementInfo,
+            path.varName
+          );
+          statements.push(...hydration);
+        }
       } else if (targetInfo.type === 'expression' || targetInfo.type === 'fragment') {
         // Dynamic child expression
         const insertStatement = generateChildInsert(ctx, targetInfo, path.varName);
@@ -266,78 +275,52 @@ function generateElementHydration(
     }
   }
   
-  // Handle dynamic children
-  for (const child of info.children) {
-    if (!child.isStatic) {
-      const childHydration = generateChildHydration(ctx, child, varName);
-      if (childHydration) {
-        statements.push(childHydration);
-      }
-    }
-  }
-  
+  // Dynamic children are handled by the path-based loop in generateHydrationCode,
+  // not here, because each dynamic child has a comment marker in the template HTML
+  // and requires _insert(marker.parentNode, value, marker) — not _insert(parent, value).
+
   return statements;
 }
 
-/**
- * Generate hydration for a dynamic child
- */
-function generateChildHydration(
-  ctx: CompileContext,
-  child: ChildInfo,
-  parentVar: string
-): t.Statement | null {
-  if (child.type === 'expression') {
-    // Get the expression from the original JSX node
-    if (t.isJSXExpressionContainer(child.node)) {
-      const expr = child.node.expression;
-      if (!t.isJSXEmptyExpression(expr)) {
-        ctx.requiredImports.add('_insert');
-        // Wrap in getter if it could be reactive
-        const insertValue = wrapForReactivity(expr);
-        return t.expressionStatement(
-          t.callExpression(t.identifier('_insert'), [
-            t.identifier(parentVar),
-            insertValue,
-          ])
-        );
-      }
-    }
-  }
-  
-  if (child.type === 'element' && child.elementInfo && child.elementInfo.isComponent) {
-    // Component children need h() call, not template extraction
-    // This should be handled by falling back to h() for this subtree
-    // For now, skip - components aren't extracted into templates
-  }
-  
-  return null;
-}
 
 /**
- * Generate _insert call for a dynamic child in resolved path
+ * Generate _insert call for a dynamic child at its comment marker node.
+ * The marker is the <!--→ placeholder emitted for this slot in the template HTML.
+ * _insert(marker.parentNode, value, marker) replaces the marker with the actual content.
  */
 function generateChildInsert(
   ctx: CompileContext,
   child: ChildInfo,
   varName: string
 ): t.Statement | null {
+  let insertValue: t.Expression | null = null;
+
   if (child.type === 'expression' && t.isJSXExpressionContainer(child.node)) {
     const expr = child.node.expression;
     if (!t.isJSXEmptyExpression(expr)) {
-      ctx.requiredImports.add('_insert');
-      const insertValue = wrapForReactivity(expr);
-      // _insert uses the parent of the marker node
-      return t.expressionStatement(
-        t.callExpression(t.identifier('_insert'), [
-          t.memberExpression(t.identifier(varName), t.identifier('parentNode')),
-          insertValue,
-          t.identifier(varName), // marker
-        ])
-      );
+      insertValue = wrapForReactivity(expr);
     }
+  } else if (child.type === 'element' && t.isJSXElement(child.node)) {
+    // Component (or dynamic element) child — generate h() call and insert it
+    insertValue = transformJsxElement(child.node);
+  } else if (child.type === 'fragment' && t.isJSXFragment(child.node)) {
+    // Fragments: use wrapForReactivity on the fragment expression (no-op, it's a node)
+    // Fall through — fragments are rarely inside static templates
+    return null;
   }
-  return null;
+
+  if (insertValue === null) {
+    return null;
+  }
+
+  ctx.requiredImports.add('_insert');
+  return t.expressionStatement(
+    t.callExpression(t.identifier('_insert'), [
+      t.memberExpression(t.identifier(varName), t.identifier('parentNode')),
+      insertValue,
+      t.identifier(varName), // marker comment node
+    ])
+  );
 }
 
 /**
@@ -418,7 +401,17 @@ function findSpreadExpression(element: t.JSXElement): t.Expression | null {
 }
 
 /**
- * Find a target element or child by following a path
+ * Find a target element or child by following a path.
+ *
+ * resolvePaths() emits steps with this invariant:
+ *   - 'firstChild' enters the children list of the *current node* at index 0.
+ *   - 'nextSibling' advances the index within the *current children list*.
+ *
+ * We track: which children array we are in + the current index within it.
+ * The "current node" starts as the root element (info).
+ * On 'firstChild' we descend: new list = currentChildren[index].children, index = 0.
+ * On 'nextSibling' we advance: index++.
+ * The target is currentChildren[index] after the last step.
  */
 function findTargetByPath(
   info: ElementInfo,
@@ -427,39 +420,39 @@ function findTargetByPath(
   if (steps.length === 0) {
     return null;
   }
-  
-  let currentChildren = info.children;
-  let childIndex = 0;
-  
+
+  // Start: we haven't entered any children list yet.
+  // The first step must be 'firstChild' to enter info.children.
+  let currentChildren: ChildInfo[] | null = null;
+  let index = 0;
+
   for (let i = 0; i < steps.length; i++) {
     const step = steps[i];
-    
+
     if (step === 'firstChild') {
-      childIndex = 0;
-    } else if (step === 'nextSibling') {
-      childIndex++;
-    }
-    
-    const child = currentChildren[childIndex];
-    if (!child) {
-      return null;
-    }
-    
-    // If this is the last step, return the child
-    if (i === steps.length - 1) {
-      return child;
-    }
-    
-    // If there are more steps, descend into element children
-    if (child.type === 'element' && child.elementInfo) {
-      currentChildren = child.elementInfo.children;
-      // Reset for firstChild of nested element
+      if (currentChildren === null) {
+        // Enter root's children
+        currentChildren = info.children;
+        index = 0;
+      } else {
+        // Descend into the element at current position
+        const current: ChildInfo | undefined = currentChildren[index];
+        if (!current || current.type !== 'element' || !current.elementInfo) {
+          return null;
+        }
+        currentChildren = current.elementInfo.children;
+        index = 0;
+      }
     } else {
-      return null;
+      // 'nextSibling'
+      index++;
     }
   }
-  
-  return null;
+
+  if (currentChildren === null) {
+    return null;
+  }
+  return currentChildren[index] ?? null;
 }
 
 // =============================================================================

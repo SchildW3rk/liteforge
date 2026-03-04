@@ -82,14 +82,14 @@ export function resolvePaths(info: ElementInfo): PathResolution {
       childPath.push('nextSibling');
     }
     
-    if (child.type === 'element' && child.elementInfo) {
-      // Check if this element itself needs a variable
+    if (child.type === 'element' && child.elementInfo && !child.elementInfo.isComponent) {
+      // Non-component element child: may need attribute/event binding + recurse into children
       const elemInfo = child.elementInfo;
-      const needsVar = 
+      const needsVar =
         elemInfo.dynamicAttrs.length > 0 ||
         elemInfo.eventHandlers.length > 0 ||
         elemInfo.hasSpread;
-      
+
       if (needsVar) {
         const varName = nextVar();
         paths.push({
@@ -99,11 +99,12 @@ export function resolvePaths(info: ElementInfo): PathResolution {
           attrNames: [...elemInfo.dynamicAttrs, ...elemInfo.eventHandlers],
         });
       }
-      
+
       // Process children recursively
       processElementChildren(elemInfo, childPath, nextVar);
     } else if (!child.isStatic) {
-      // Dynamic child needs a path
+      // Dynamic child (expression, fragment, or component element) needs a 'child' path.
+      // A comment marker placeholder is emitted in the HTML template for this slot.
       const childVar = nextVar();
       paths.push({
         steps: [...childPath],
@@ -140,13 +141,13 @@ export function resolvePaths(info: ElementInfo): PathResolution {
         childPath.push('nextSibling');
       }
       
-      if (child.type === 'element' && child.elementInfo) {
+      if (child.type === 'element' && child.elementInfo && !child.elementInfo.isComponent) {
         const subInfo = child.elementInfo;
-        const needsVar = 
+        const needsVar =
           subInfo.dynamicAttrs.length > 0 ||
           subInfo.eventHandlers.length > 0 ||
           subInfo.hasSpread;
-        
+
         if (needsVar) {
           const varName = getNextVar();
           paths.push({
@@ -156,10 +157,11 @@ export function resolvePaths(info: ElementInfo): PathResolution {
             attrNames: [...subInfo.dynamicAttrs, ...subInfo.eventHandlers],
           });
         }
-        
+
         // Recurse
         processElementChildren(subInfo, childPath, getNextVar);
       } else if (!child.isStatic) {
+        // Dynamic child (expression, fragment, or component element) — comment marker slot
         const childVar = getNextVar();
         paths.push({
           steps: [...childPath],

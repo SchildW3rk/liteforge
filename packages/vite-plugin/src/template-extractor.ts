@@ -520,8 +520,11 @@ export function generateTemplateString(info: ElementInfo): string {
       html += escapeHtml(child.text);
     } else if (child.type === 'element' && child.elementInfo && !child.elementInfo.isComponent) {
       html += generateTemplateString(child.elementInfo);
+    } else if (!child.isStatic) {
+      // Dynamic children and components get a comment marker so DOM traversal is correct.
+      // Without a placeholder node the firstChild/nextSibling chain would skip dynamic slots.
+      html += '<!---->';
     }
-    // Dynamic children and components are left as empty slots
   }
   
   html += `</${tag}>`;
