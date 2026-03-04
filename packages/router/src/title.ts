@@ -47,8 +47,9 @@ export function useTitle(title: string | (() => string)): void {
   const getter = typeof title === 'string' ? () => title : title;
   titleOverride.set(getter);
 
-  const router = (hasContext('router') ? use<Router>('router') : null) ?? getActiveRouterOrNull();
-  if (!router) throw new Error('[useTitle] No router found. Make sure routerPlugin is installed.');
+  const routerOrNull = (hasContext('router') ? use<Router>('router') : null) ?? getActiveRouterOrNull();
+  if (!routerOrNull) throw new Error('[useTitle] No router found. Make sure routerPlugin is installed.');
+  const router: Router = routerOrNull;
 
   // When no titleTemplate is configured, manage document.title directly via effect
   // so it stays reactive if a getter function is passed.
