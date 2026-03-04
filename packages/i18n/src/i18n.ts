@@ -16,6 +16,7 @@ export interface I18nInstance extends I18nApi {
 export function createI18n(options: I18nPluginOptions): I18nInstance {
   const {
     defaultLocale,
+    fallbackLocale,
     load,
     persist = true,
     storageKey = 'lf-locale',
@@ -53,7 +54,12 @@ export function createI18n(options: I18nPluginOptions): I18nInstance {
   }
 
   async function setLocale(locale: Locale): Promise<void> {
-    await _load(locale);
+    const loads: Promise<void>[] = [_load(locale)];
+    // Reload fallback if it differs from the new locale and is configured
+    if (fallbackLocale && fallbackLocale !== locale) {
+      loads.push(_loadFallback(fallbackLocale));
+    }
+    await Promise.all(loads);
   }
 
   function t(key: string, params?: Record<string, string | number>, count?: number): string {

@@ -16,12 +16,12 @@ export function i18nPlugin(options: I18nPluginOptions): LiteForgePlugin {
       const i18n = createI18n(options);
 
       // Load default (or persisted) locale — awaited to prevent FOUC
-      await i18n._load(i18n.locale());
-
-      // Load fallback in parallel — non-blocking
+      // Load fallback in parallel (if different) — both awaited together before mount
+      const loads: Promise<void>[] = [i18n._load(i18n.locale())];
       if (options.fallbackLocale && options.fallbackLocale !== i18n.locale()) {
-        void i18n._loadFallback(options.fallbackLocale);
+        loads.push(i18n._loadFallback(options.fallbackLocale));
       }
+      await Promise.all(loads);
 
       const api: I18nApi = {
         locale: i18n.locale,
