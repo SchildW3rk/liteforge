@@ -194,3 +194,4 @@ export interface CreateClientOptions extends ClientConfig {
 export interface CreateQueryClientOptions extends CreateClientOptions {
   query: import('./integrations/query.js').QueryIntegration;
 }
+

@@ -26,3 +26,6 @@ export type {
   HttpMethod,
 } from './types.js';
 export type { QueryIntegration } from './integrations/query.js';
+
+// Plugin
+export { clientPlugin, queryIntegration, useQueryClient } from './plugin.js';
