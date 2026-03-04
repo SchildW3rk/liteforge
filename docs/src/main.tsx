@@ -1,9 +1,9 @@
 import { createApp } from 'liteforge';
 import { createBrowserHistory, createRouter } from 'liteforge/router';
 import { ModalProvider } from 'liteforge/modal';
-import { routes } from './router.js';
-import { App } from './App.js';
-import { initTheme } from './stores/theme.js';
+import { routes } from './router';
+import { App } from './App';
+import { initTheme } from './stores/theme';
 import './styles.css';
 
 // Sync dark/light class on <html> before first render — no flash of wrong theme

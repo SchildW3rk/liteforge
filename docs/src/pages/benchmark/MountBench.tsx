@@ -1,7 +1,7 @@
 import { createComponent, Show } from 'liteforge';
 import { signal, computed, effect } from 'liteforge';
-import { BenchmarkCard, ConfigSelect, RunButton, ResultsTable } from './BenchmarkCard.js';
-import { measure, formatMs, nextFrame, type BenchStatus, type BenchSummary } from './bench-utils.js';
+import { BenchmarkCard, ConfigSelect, RunButton, ResultsTable } from './BenchmarkCard';
+import { measure, formatMs, nextFrame, type BenchStatus, type BenchSummary } from './bench-utils';
 
 const CYCLE_COUNT_OPTIONS: number[] = [100, 500, 1_000, 5_000];
 const DEFAULT_CYCLE_COUNT = 1_000;

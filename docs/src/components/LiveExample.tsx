@@ -1,6 +1,6 @@
 import { createComponent } from 'liteforge';
 import type { ComponentFactory } from 'liteforge';
-import { CodeBlock } from './CodeBlock.js';
+import { CodeBlock } from './CodeBlock';
 
 interface LiveExampleProps {
   title: string;

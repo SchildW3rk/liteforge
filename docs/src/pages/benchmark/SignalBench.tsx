@@ -1,7 +1,7 @@
 import { createComponent } from 'liteforge';
 import { signal, computed, batch } from 'liteforge';
-import { BenchmarkCard, ConfigSelect, RunButton, ResultsTable } from './BenchmarkCard.js';
-import { measure, formatMs, formatOps, type BenchStatus, type BenchSummary } from './bench-utils.js';
+import { BenchmarkCard, ConfigSelect, RunButton, ResultsTable } from './BenchmarkCard';
+import { measure, formatMs, formatOps, type BenchStatus, type BenchSummary } from './bench-utils';
 
 const SIGNAL_COUNT_OPTIONS: number[] = [1_000, 5_000, 10_000, 50_000];
 const DEFAULT_SIGNAL_COUNT = 10_000;

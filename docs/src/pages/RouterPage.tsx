@@ -139,7 +139,7 @@ const _cc = 'createComponent';
 
 const SETUP_CODE = `import { createRouter, createBrowserHistory } from 'liteforge/router';
 import { createApp } from 'liteforge';
-import { App } from './App.js';
+import { App } from './App';
 
 const router = createRouter({
   history: createBrowserHistory(),

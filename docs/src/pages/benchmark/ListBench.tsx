@@ -1,7 +1,7 @@
 import { createComponent, For, Show } from 'liteforge';
 import { signal } from 'liteforge';
-import { BenchmarkCard, ConfigSelect, RunButton, ResultsTable } from './BenchmarkCard.js';
-import { measure, formatMs, shuffleArray, uniqueId, nextFrame, type BenchStatus, type BenchSummary } from './bench-utils.js';
+import { BenchmarkCard, ConfigSelect, RunButton, ResultsTable } from './BenchmarkCard';
+import { measure, formatMs, shuffleArray, uniqueId, nextFrame, type BenchStatus, type BenchSummary } from './bench-utils';
 
 const ITEM_COUNT_OPTIONS: number[] = [50, 100, 500, 1_000, 5_000];
 const DEFAULT_ITEM_COUNT = 50;

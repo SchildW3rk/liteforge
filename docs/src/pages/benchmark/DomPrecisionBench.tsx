@@ -1,7 +1,7 @@
 import { createComponent, For, Show, Switch, Match } from 'liteforge';
 import { signal, batch } from 'liteforge';
-import { BenchmarkCard, RunButton } from './BenchmarkCard.js';
-import { nextFrame, type BenchStatus, type BenchSummary } from './bench-utils.js';
+import { BenchmarkCard, RunButton } from './BenchmarkCard';
+import { nextFrame, type BenchStatus, type BenchSummary } from './bench-utils';
 
 interface TestResult {
   name: string;

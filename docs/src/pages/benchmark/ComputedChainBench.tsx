@@ -1,7 +1,7 @@
 import { createComponent, Show } from 'liteforge';
 import { signal, computed, effect } from 'liteforge';
-import { BenchmarkCard, ConfigSelect, RunButton, ResultsTable } from './BenchmarkCard.js';
-import { formatMs, formatOps, type BenchStatus, type BenchSummary } from './bench-utils.js';
+import { BenchmarkCard, ConfigSelect, RunButton, ResultsTable } from './BenchmarkCard';
+import { formatMs, formatOps, type BenchStatus, type BenchSummary } from './bench-utils';
 
 const CHAIN_DEPTH_OPTIONS: number[] = [10, 25, 50, 100];
 const DEFAULT_CHAIN_DEPTH = 50;

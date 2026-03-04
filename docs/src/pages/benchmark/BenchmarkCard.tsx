@@ -1,6 +1,6 @@
 import { createComponent, Show, Switch, Match } from 'liteforge';
 import type { Signal } from 'liteforge';
-import type { BenchStatus } from './bench-utils.js';
+import type { BenchStatus } from './bench-utils';
 
 interface BenchmarkCardProps {
   title: string;

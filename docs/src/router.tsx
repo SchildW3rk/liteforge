@@ -1,6 +1,6 @@
 import type { RouteDefinition } from 'liteforge/router';
-import { Layout } from './pages/Layout.js';
-import { Overview } from './pages/Overview.js';
+import { Layout } from './pages/Layout';
+import { Overview } from './pages/Overview';
 
 export const routes: RouteDefinition[] = [
   {

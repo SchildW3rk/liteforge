@@ -1,12 +1,12 @@
 import { createComponent, For, Show } from 'liteforge';
 import { signal } from 'liteforge';
-import { SignalBench } from './SignalBench.js';
-import { ListBench } from './ListBench.js';
-import { MountBench } from './MountBench.js';
-import { ComputedChainBench } from './ComputedChainBench.js';
-import { DomPrecisionBench } from './DomPrecisionBench.js';
-import { MemoryBench } from './MemoryBench.js';
-import type { BenchSummary } from './bench-utils.js';
+import { SignalBench } from './SignalBench';
+import { ListBench } from './ListBench';
+import { MountBench } from './MountBench';
+import { ComputedChainBench } from './ComputedChainBench';
+import { DomPrecisionBench } from './DomPrecisionBench';
+import { MemoryBench } from './MemoryBench';
+import type { BenchSummary } from './bench-utils';
 
 interface SummaryRow {
   name: string;
