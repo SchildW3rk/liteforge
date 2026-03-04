@@ -103,18 +103,18 @@ export const BenchmarkPage = createComponent({
                   key: (row) => row.name,
                   children: (row) => (
                     <tr class="border-b border-neutral-800/50 last:border-0">
-                      <td class="px-3 py-2 text-neutral-300">{() => row().name}</td>
-                      <td class="px-3 py-2 font-mono text-indigo-300">{() => row().result}</td>
+                      <td class="px-3 py-2 text-neutral-300">{row.name}</td>
+                      <td class="px-3 py-2 font-mono text-indigo-300">{row.result}</td>
                       <td class="px-3 py-2">
                         {Show({
-                          when: () => row().status === 'pass',
+                          when: () => row.status === 'pass',
                           children: () => (
                             <span class="text-xs px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400">
                               PASS
                             </span>
                           ),
                           fallback: () => Show({
-                            when: () => row().status === 'fail',
+                            when: () => row.status === 'fail',
                             children: () => (
                               <span class="text-xs px-2 py-0.5 rounded bg-red-500/20 text-red-400">
                                 FAIL

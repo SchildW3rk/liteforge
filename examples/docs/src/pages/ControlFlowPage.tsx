@@ -96,12 +96,12 @@ function ForLiveExample(): Node {
           key: (patient) => patient.id,
           children: (p) => (
             <li class="flex items-center justify-between px-3 py-2 rounded border border-neutral-800 bg-neutral-900/50 text-sm">
-              <span class="text-neutral-300">{() => p().name}</span>
-              <span class={() => p().status === 'active'
+              <span class="text-neutral-300">{p.name}</span>
+              <span class={p.status === 'active'
                 ? 'text-xs px-1.5 py-0.5 rounded-full bg-emerald-950 text-emerald-300'
                 : 'text-xs px-1.5 py-0.5 rounded-full bg-neutral-800 text-neutral-500'
               }>
-                {() => p().status}
+                {p.status}
               </span>
             </li>
           ),

@@ -86,7 +86,7 @@ const HeavyTestComponent = createComponent({
             key: (item) => item.id,
             children: (item) => (
               <div class="list-item">
-                {() => item().value()}
+                {() => item.value()}
               </div>
             ),
           })}
@@ -471,8 +471,7 @@ export const MemoryBench = createComponent<MemoryBenchProps>({
                       {For({
                         each: repeatRuns,
                         key: (r) => r.run,
-                        children: (rowGetter) => {
-                          const row = rowGetter();
+                        children: (row) => {
                           const isInconclusive = row.delta === null || row.delta < 0;
                           // Threshold: 20 KB per cycle — first run is often higher due to JIT warm-up
                           const isLarge = !isInconclusive && row.leakPerCycle !== null && row.leakPerCycle > 20 * 1024;

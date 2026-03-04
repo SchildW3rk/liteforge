@@ -309,15 +309,15 @@ export const DomPrecisionBench = createComponent<DomPrecisionBenchProps>({
                   key: (item) => item.name,
                   children: (result) => (
                     <div class="flex items-center justify-between px-3 py-2 rounded border border-neutral-800 bg-neutral-900/30">
-                      <span class="text-sm text-neutral-300">{() => result().name}</span>
+                      <span class="text-sm text-neutral-300">{result.name}</span>
                       <div class="flex items-center gap-3">
                         <span class="text-xs font-mono text-neutral-500">
-                          {() => `expected: ${result().expected}, actual: ${result().actual}`}
+                          {`expected: ${result.expected}, actual: ${result.actual}`}
                         </span>
                         {Switch({
                           children: [
                             Match({
-                              when: () => result().passed,
+                              when: () => result.passed,
                               children: () => (
                                 <span class="text-xs px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400">
                                   PASS

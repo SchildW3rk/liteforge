@@ -293,12 +293,12 @@ export const ListBench = createComponent<ListBenchProps>({
                 each: () => items().slice(0, PREVIEW_SIZE),
                 key: (item) => item.id,
                 children: (item) => (
-                  <div 
+                  <div
                     class="text-xs px-2 py-1 text-neutral-400 border-b border-neutral-800/30 last:border-0"
-                    data-item-id={() => String(item().id)}
+                    data-item-id={String(item.id)}
                   >
-                    <span class="text-neutral-600 mr-2">{() => `#${item().id}`}</span>
-                    {() => item().label}
+                    <span class="text-neutral-600 mr-2">{`#${item.id}`}</span>
+                    {item.label}
                   </div>
                 ),
                 fallback: () => (
