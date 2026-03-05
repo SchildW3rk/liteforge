@@ -77,6 +77,34 @@ importers:
         specifier: ^6.0.0
         version: 6.4.1(@types/node@25.3.2)(jiti@2.6.1)(lightningcss@1.31.1)
 
+  packages/admin:
+    dependencies:
+      zod:
+        specifier: ^3.0.0
+        version: 3.25.76
+    devDependencies:
+      '@liteforge/client':
+        specifier: workspace:*
+        version: link:../client
+      '@liteforge/core':
+        specifier: workspace:*
+        version: link:../core
+      '@liteforge/form':
+        specifier: workspace:*
+        version: link:../form
+      '@liteforge/router':
+        specifier: workspace:*
+        version: link:../router
+      '@liteforge/runtime':
+        specifier: workspace:*
+        version: link:../runtime
+      typescript:
+        specifier: ^5.0.0
+        version: 5.9.3
+      vite:
+        specifier: ^5.0.0
+        version: 5.4.21(@types/node@25.3.2)(lightningcss@1.31.1)
+
   packages/calendar:
     devDependencies:
       '@liteforge/core':
@@ -126,6 +154,9 @@ importers:
 
   packages/liteforge:
     dependencies:
+      '@liteforge/admin':
+        specifier: workspace:*
+        version: link:../admin
       '@liteforge/calendar':
         specifier: workspace:*
         version: link:../calendar
@@ -2830,14 +2861,6 @@ snapshots:
       chai: 5.3.3
       tinyrainbow: 1.2.0
 
-  '@vitest/mocker@2.1.9(vite@5.4.21(@types/node@22.19.13)(lightningcss@1.31.1))':
-    dependencies:
-      '@vitest/spy': 2.1.9
-      estree-walker: 3.0.3
-      magic-string: 0.30.21
-    optionalDependencies:
-      vite: 5.4.21(@types/node@22.19.13)(lightningcss@1.31.1)
-
   '@vitest/mocker@2.1.9(vite@5.4.21(@types/node@25.3.2)(lightningcss@1.31.1))':
     dependencies:
       '@vitest/spy': 2.1.9
@@ -3829,7 +3852,7 @@ snapshots:
   vitest@2.1.9(@types/node@22.19.13)(happy-dom@15.11.7)(jsdom@25.0.1)(lightningcss@1.31.1):
     dependencies:
       '@vitest/expect': 2.1.9
-      '@vitest/mocker': 2.1.9(vite@5.4.21(@types/node@22.19.13)(lightningcss@1.31.1))
+      '@vitest/mocker': 2.1.9(vite@5.4.21(@types/node@25.3.2)(lightningcss@1.31.1))
       '@vitest/pretty-format': 2.1.9
       '@vitest/runner': 2.1.9
       '@vitest/snapshot': 2.1.9

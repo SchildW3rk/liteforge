@@ -1,0 +1,14 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "paths": {
+      "@liteforge/core": ["../core/src/index.ts"],
+      "@liteforge/runtime": ["../runtime/src/index.ts"],
+      "@liteforge/client": ["../client/src/index.ts"],
+      "@liteforge/router": ["../router/src/index.ts"],
+      "@liteforge/form": ["../form/src/index.ts"]
+    }
+  },
+  "include": ["src", "tests"]
+}

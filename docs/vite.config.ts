@@ -29,6 +29,7 @@ export default defineConfig({
       'liteforge/modal': path.resolve(__dirname, '../packages/liteforge/src/modal.ts'),
       'liteforge/devtools': path.resolve(__dirname, '../packages/liteforge/src/devtools.ts'),
       'liteforge/i18n': path.resolve(__dirname, '../packages/liteforge/src/i18n.ts'),
+      'liteforge/admin': path.resolve(__dirname, '../packages/liteforge/src/admin.ts'),
       'liteforge': path.resolve(__dirname, '../packages/liteforge/src/index.ts'),
       // Direct @liteforge/* aliases — injected by the Vite plugin (JSX transform)
       '@liteforge/runtime': path.resolve(__dirname, '../packages/runtime/src/index.ts'),
@@ -44,6 +45,7 @@ export default defineConfig({
       '@liteforge/devtools': path.resolve(__dirname, '../packages/devtools/src/index.ts'),
       '@liteforge/i18n': path.resolve(__dirname, '../packages/i18n/src/index.ts'),
       '@liteforge/vite-plugin': path.resolve(__dirname, '../packages/vite-plugin/src/index.ts'),
+      '@liteforge/admin': path.resolve(__dirname, '../packages/admin/src/index.ts'),
     },
   },
 });

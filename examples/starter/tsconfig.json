@@ -18,7 +18,11 @@
       "liteforge/modal": ["packages/liteforge/src/modal.ts"],
       "liteforge/calendar": ["packages/liteforge/src/calendar.ts"],
       "liteforge/devtools": ["packages/liteforge/src/devtools.ts"],
-      "liteforge/vite-plugin": ["packages/liteforge/src/vite-plugin.ts"]
+      "liteforge/vite-plugin": ["packages/liteforge/src/vite-plugin.ts"],
+      "liteforge/admin": ["packages/liteforge/src/admin.ts"],
+      "liteforge/i18n": ["packages/liteforge/src/i18n.ts"],
+      "@liteforge/admin": ["packages/admin/src/index.ts"],
+      "@liteforge/admin/*": ["packages/admin/src/*"]
     }
   },
   "include": ["src/**/*.ts", "src/**/*.tsx"]

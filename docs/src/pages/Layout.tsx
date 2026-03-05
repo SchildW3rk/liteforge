@@ -49,7 +49,8 @@ const NAV_GROUPS: NavGroup[] = [
   {
     label: 'Plugins',
     links: [
-      { href: '/i18n', text: 'i18n', badge: 'l10n' },
+      { href: '/i18n',   text: 'i18n',  badge: 'l10n'  },
+      { href: '/admin',  text: 'admin', badge: 'panel' },
     ],
   },
   {

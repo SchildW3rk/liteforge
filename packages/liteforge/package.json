@@ -71,6 +71,10 @@
     "./i18n": {
       "types": "./dist/i18n.d.ts",
       "import": "./dist/i18n.js"
+    },
+    "./admin": {
+      "types": "./dist/admin.d.ts",
+      "import": "./dist/admin.js"
     }
   },
   "files": [
@@ -104,6 +108,7 @@
     "@liteforge/calendar": "workspace:*",
     "@liteforge/devtools": "workspace:*",
     "@liteforge/vite-plugin": "workspace:*",
-    "@liteforge/i18n": "workspace:*"
+    "@liteforge/i18n": "workspace:*",
+    "@liteforge/admin": "workspace:*"
   }
 }

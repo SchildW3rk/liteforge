@@ -27,6 +27,21 @@ import { HomePage } from './pages/Home.js';
 import { LoginPage } from './pages/Login.js';
 import { NotFoundPage } from './pages/NotFound.js';
 
+// Admin panel (liteforge/admin demo)
+import { buildAdminRoutes, resourceRegistry } from 'liteforge/admin';
+import { postsResource, usersResource, createMockClient } from './pages/admin-panel/resources.js';
+
+const mockClient = createMockClient();
+void postsResource; // ensure registered
+void usersResource; // ensure registered
+const adminResources = [...resourceRegistry.values()];
+const adminRoutes = buildAdminRoutes({
+  resources: adminResources,
+  basePath: '/lf-admin',
+  client: mockClient,
+  title: 'LiteForge Admin',
+});
+
 // =============================================================================
 // Global Lazy Loading Defaults
 // =============================================================================
@@ -251,6 +266,11 @@ export const routes: RouteDefinition[] = [
       },
     ],
   },
+
+  // ==========================================================================
+  // LiteForge Admin Panel demo routes (no auth required for demo)
+  // ==========================================================================
+  ...adminRoutes,
 
   // ==========================================================================
   // Admin routes (lazy-loaded, requires admin role)

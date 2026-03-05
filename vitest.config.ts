@@ -17,6 +17,7 @@ export default defineConfig({
       '@liteforge/form': path.resolve(__dirname, 'packages/form/src/index.ts'),
       '@liteforge/devtools': path.resolve(__dirname, 'packages/devtools/src/index.ts'),
       '@liteforge/i18n': path.resolve(__dirname, 'packages/i18n/src/index.ts'),
+      '@liteforge/admin': path.resolve(__dirname, 'packages/admin/src/index.ts'),
     },
   },
   test: {
@@ -36,6 +37,7 @@ export default defineConfig({
       ['packages/modal/**', 'happy-dom'],
       ['packages/client/**', 'node'],
       ['packages/i18n/**', 'node'],
+      ['packages/admin/**', 'happy-dom'],
       ['packages/liteforge/**', 'node'],
       ['create-liteforge/**', 'node'],
     ],

@@ -105,3 +105,11 @@ describe('liteforge/i18n exports', () => {
     expect(typeof mod.createI18n).toBe('function');
   });
 });
+
+describe('liteforge/admin exports', () => {
+  it('exports adminPlugin, defineResource', async () => {
+    const mod = await import('../src/admin.ts');
+    expect(typeof mod.adminPlugin).toBe('function');
+    expect(typeof mod.defineResource).toBe('function');
+  });
+});

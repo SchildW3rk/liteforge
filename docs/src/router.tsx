@@ -87,6 +87,12 @@ export const routes: RouteDefinition[] = [
         meta: { title: 'i18n — LiteForge' },
       },
       {
+        path: '/admin',
+        component: () => import('./pages/AdminPage.js'),
+        export: 'AdminPage',
+        meta: { title: 'admin — LiteForge' },
+      },
+      {
         path: '/benchmark',
         component: () => import('./pages/benchmark/BenchmarkPage.js'),
         export: 'BenchmarkPage',

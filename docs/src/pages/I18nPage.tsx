@@ -45,8 +45,8 @@ const I18nExample = createComponent({
 
     const row = (label: string, value: () => string) => (
       <div class="flex gap-2 items-baseline text-sm font-mono">
-        <span class="text-[var(--content-muted)] shrink-0">{label}</span>
-        <span class="text-[var(--content-primary)]">{value()}</span>
+        <span class="text-[--content-muted] shrink-0">{label}</span>
+        <span class="text-[--content-primary]">{value()}</span>
       </div>
     );
 
@@ -71,18 +71,18 @@ const I18nExample = createComponent({
         {/* Counter */}
         <div class="flex items-center gap-2">
           <button
-            class={btnClass('secondary', 'sm', 'w-7 h-7 !px-0')}
+            class={btnClass('secondary', 'sm', 'w-7 h-7 px-0!')}
             onclick={() => count.update(n => Math.max(0, n - 1))}
           >
             −
           </button>
           <button
-            class={btnClass('secondary', 'sm', 'w-7 h-7 !px-0')}
+            class={btnClass('secondary', 'sm', 'w-7 h-7 px-0!')}
             onclick={() => count.update(n => n + 1)}
           >
             +
           </button>
-          <span class="text-xs text-[var(--content-muted)] font-mono">
+          <span class="text-xs text-[--content-muted] font-mono">
             {() => `count = ${count()}`}
           </span>
         </div>
@@ -192,9 +192,9 @@ export const I18nPage = createComponent({
     return (
       <div>
         <div class="mb-10">
-          <p class="text-xs font-mono text-[var(--content-muted)] mb-1">@liteforge/i18n</p>
-          <h1 class="text-3xl font-bold text-[var(--content-primary)] mb-2">Internationalization</h1>
-          <p class="text-[var(--content-secondary)] leading-relaxed max-w-xl">
+          <p class="text-xs font-mono text-[--content-muted] mb-1">@liteforge/i18n</p>
+          <h1 class="text-3xl font-bold text-[--content-primary] mb-2">Internationalization</h1>
+          <p class="text-[--content-secondary] leading-relaxed max-w-xl">
             Signals-based i18n plugin. Lazy-loaded locale files, dot-notation keys,
             interpolation, pipe-based pluralization, fallback locale, and localStorage persistence.
             No re-render on locale switch — only the text nodes that read <code class="text-xs font-mono">t()</code> update.

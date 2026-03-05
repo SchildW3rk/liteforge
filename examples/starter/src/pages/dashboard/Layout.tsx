@@ -92,6 +92,11 @@ export const DashboardLayout = createComponent({
               children: 'i18n',
               activeClass: 'active',
             })}
+            {Link({
+              href: '/lf-admin',
+              children: 'LF Admin',
+              activeClass: 'active',
+            })}
             {Show({
               when: () => authStore.isAdmin(),
               children: () => Link({

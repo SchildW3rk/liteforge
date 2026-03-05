@@ -15,6 +15,7 @@ import { modalPlugin } from 'liteforge/modal';
 import { devtoolsPlugin } from 'liteforge/devtools';
 import { i18nPlugin } from 'liteforge/i18n';
 import type { TranslationTree } from 'liteforge/i18n';
+import { adminPlugin } from 'liteforge/admin';
 
 // Import app components
 import { App } from './App.js';
@@ -60,6 +61,7 @@ const app = await createApp({
     persist: true,
     storageKey: 'lf-demo-locale',
   }))
+  .use(adminPlugin({ basePath: '/lf-admin' }))
   .use(devtoolsPlugin({
     shortcut: 'ctrl+shift+d',
     position: 'right',
