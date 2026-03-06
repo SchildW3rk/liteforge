@@ -4,7 +4,7 @@
  * Bootstraps the LiteForge application using the plugin system:
  * - .use(routerPlugin)   → router lifecycle managed by plugin
  * - .use(modalPlugin)    → modal container inserted next to #app
- * - .use(devtoolsPlugin) → DevTools panel inserted next to #app
+ * - .useDev(devtoolsPlugin) → DevTools only in dev, tree-shaken from prod
  */
 
 import { createApp } from 'liteforge';
@@ -12,7 +12,6 @@ import { routerPlugin } from 'liteforge/router';
 import { clientPlugin, queryIntegration } from 'liteforge/client';
 import { queryPlugin } from 'liteforge/query';
 import { modalPlugin } from 'liteforge/modal';
-import { devtoolsPlugin } from 'liteforge/devtools';
 import { i18nPlugin } from 'liteforge/i18n';
 import type { TranslationTree } from 'liteforge/i18n';
 import { adminPlugin } from 'liteforge/admin';
@@ -64,15 +63,13 @@ const app = await createApp({
   }))
   .use(toastPlugin({ position: 'bottom-right' }))
   .use(adminPlugin({ basePath: '/lf-admin' }))
-  .use(devtoolsPlugin({
+  .useDev(() => import('liteforge/devtools').then(m => m.devtoolsPlugin({
     shortcut: 'ctrl+shift+d',
     position: 'right',
     defaultTab: 'signals',
     width: 400,
     maxEvents: 500,
-  }))
+  })))
   .mount();
-
-console.log('[LiteForge] App mounted. Press Ctrl+Shift+D to open DevTools.');
 
 export { app };

@@ -157,6 +157,23 @@ export interface LiteForgePlugin {
 export interface AppBuilder {
   /** Register a new-style plugin. Chainable. Throws after mount() is called. */
   use(plugin: LiteForgePlugin): AppBuilder;
+  /**
+   * Register a dev-only plugin via a factory that returns a Promise<LiteForgePlugin>.
+   * The factory is only called in development — Vite's dead-code elimination removes
+   * the entire branch (including the dynamic import) from production builds.
+   *
+   * @example
+   * ```ts
+   * createApp({ root: App, target: '#app' })
+   *   .use(routerPlugin(createAppRouter()))
+   *   .useDev(() => import('liteforge/devtools').then(m => m.devtoolsPlugin({
+   *     shortcut: 'ctrl+shift+d',
+   *     position: 'right',
+   *   })))
+   *   .mount();
+   * ```
+   */
+  useDev(factory: () => Promise<LiteForgePlugin>): AppBuilder;
   /** Bootstrap and mount the application. Returns the AppInstance. */
   mount(): Promise<AppInstance>;
   /**

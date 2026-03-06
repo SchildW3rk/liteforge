@@ -62,6 +62,7 @@ interface DebugUtilities {
  */
 export function createApp(config: AppConfig): AppBuilder {
   const newStylePlugins: LiteForgePlugin[] = [];
+  const pendingDevPlugins: Array<Promise<LiteForgePlugin>> = [];
   let mountCalled = false;
 
   const builder: AppBuilder = {
@@ -75,12 +76,27 @@ export function createApp(config: AppConfig): AppBuilder {
       return builder;
     },
 
+    useDev(factory: () => Promise<LiteForgePlugin>): AppBuilder {
+      if (mountCalled) {
+        throw new Error('[LiteForge] Cannot call .useDev() after .mount().');
+      }
+      // import.meta.env.DEV is statically replaced by Vite to `true`/`false`.
+      // The optional chain guards against non-Vite environments (Node, Vitest).
+      const isDev = (import.meta.env as { DEV?: boolean } | undefined)?.DEV !== false;
+      if (isDev) {
+        pendingDevPlugins.push(factory());
+      }
+      return builder;
+    },
+
     mount(): Promise<AppInstance> {
       if (mountCalled) {
         throw new Error('[LiteForge] .mount() has already been called.');
       }
       mountCalled = true;
-      return installAndMount(config, newStylePlugins);
+      return Promise.all(pendingDevPlugins).then(devPlugins => {
+        return installAndMount(config, [...newStylePlugins, ...devPlugins]);
+      });
     },
 
     then<TResult1 = AppInstance, TResult2 = never>(
