@@ -29,14 +29,16 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
-    }
+    },
+    "./styles": "./css/styles.css"
   },
   "files": [
     "dist",
+    "css",
     "README.md",
     "LICENSE"
   ],
-  "sideEffects": false,
+  "sideEffects": ["css/*.css"],
   "engines": {
     "node": ">=18"
   },

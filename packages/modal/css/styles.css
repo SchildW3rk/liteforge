@@ -1,0 +1,119 @@
+/* ─── CSS Variables (Customizable) ─────────────────────────── */
+/* Default values reference @liteforge/theme semantic tokens.    */
+/* Dark mode cascades automatically through the theme selectors. */
+
+:root {
+  --lf-modal-backdrop:     var(--lf-color-bg-overlay, rgba(0, 0, 0, 0.5));
+  --lf-modal-bg:           var(--lf-color-surface, #ffffff);
+  --lf-modal-border-radius: 10px;
+  --lf-modal-shadow:       var(--lf-shadow-xl, 0 20px 60px rgba(0, 0, 0, 0.3));
+  --lf-modal-header-bg:    var(--lf-color-bg-subtle, #f8fafc);
+  --lf-modal-header-color: var(--lf-color-text, #1e293b);
+  --lf-modal-body-color:   var(--lf-color-text, #374151);
+  --lf-modal-close-color:  var(--lf-color-text-muted, #6b7280);
+  --lf-modal-z-index:      var(--lf-z-modal, 1000);
+}
+
+/* ─── Provider ─────────────────────────────────────────────── */
+
+.lf-modal-provider {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: var(--lf-modal-z-index);
+}
+
+/* ─── Overlay ──────────────────────────────────────────────── */
+
+.lf-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--lf-modal-backdrop);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: all;
+  opacity: 0;
+  transition: opacity var(--lf-transition-base, 0.2s ease);
+  padding: var(--lf-space-4, 16px);
+  box-sizing: border-box;
+}
+
+.lf-modal-overlay--open {
+  opacity: 1;
+}
+
+/* ─── Size Variants ────────────────────────────────────────── */
+
+.lf-modal-overlay--sm .lf-modal { max-width: 400px; }
+.lf-modal-overlay--md .lf-modal { max-width: 560px; }
+.lf-modal-overlay--lg .lf-modal { max-width: 720px; }
+.lf-modal-overlay--xl .lf-modal { max-width: 1000px; }
+.lf-modal-overlay--full .lf-modal { max-width: 100vw; margin: 0; border-radius: 0; }
+
+/* ─── Modal ────────────────────────────────────────────────── */
+
+.lf-modal {
+  background: var(--lf-modal-bg);
+  border-radius: var(--lf-modal-border-radius);
+  box-shadow: var(--lf-modal-shadow);
+  width: 100%;
+  max-height: calc(100vh - 32px);
+  display: flex;
+  flex-direction: column;
+  transform: translateY(-8px);
+  transition: transform var(--lf-transition-base, 0.2s ease);
+  overflow: hidden;
+  font-family: var(--lf-font-sans, system-ui, -apple-system, sans-serif);
+}
+
+.lf-modal-overlay--open .lf-modal {
+  transform: translateY(0);
+}
+
+/* ─── Header ───────────────────────────────────────────────── */
+
+.lf-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--lf-space-4, 16px) var(--lf-space-5, 20px);
+  background: var(--lf-modal-header-bg);
+  border-bottom: 1px solid var(--lf-color-border, rgba(0, 0, 0, 0.08));
+  flex-shrink: 0;
+}
+
+.lf-modal-title {
+  font-size: var(--lf-text-md, 16px);
+  font-weight: var(--lf-font-semibold, 600);
+  color: var(--lf-modal-header-color);
+  line-height: 1.4;
+}
+
+.lf-modal-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--lf-modal-close-color);
+  font-size: 18px;
+  padding: 4px 8px;
+  border-radius: var(--lf-radius-sm, 4px);
+  line-height: 1;
+  transition: background-color var(--lf-transition-fast, 0.15s), color var(--lf-transition-fast, 0.15s);
+  flex-shrink: 0;
+}
+
+.lf-modal-close:hover {
+  background: var(--lf-color-bg-muted, rgba(0, 0, 0, 0.06));
+  color: var(--lf-modal-header-color);
+}
+
+/* ─── Body ─────────────────────────────────────────────────── */
+
+.lf-modal-body {
+  padding: var(--lf-space-5, 20px);
+  color: var(--lf-modal-body-color);
+  font-size: var(--lf-text-base, 14px);
+  line-height: 1.6;
+  overflow-y: auto;
+}

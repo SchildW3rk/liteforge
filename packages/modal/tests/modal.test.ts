@@ -196,21 +196,21 @@ describe('ModalProvider', () => {
 // ─── Styles ────────────────────────────────────────────────
 
 describe('injectDefaultStyles', () => {
-  it('injects <style id="lf-modal-styles"> into document head', () => {
+  it('injects <link data-lf-modal> into document head', () => {
     ModalProvider();
-    expect(document.getElementById('lf-modal-styles')).not.toBeNull();
+    expect(document.querySelector('link[data-lf-modal]')).not.toBeNull();
   });
 
   it('injects styles only once on repeated calls', () => {
     ModalProvider();
     ModalProvider();
-    const tags = document.querySelectorAll('#lf-modal-styles');
+    const tags = document.querySelectorAll('link[data-lf-modal]');
     expect(tags.length).toBe(1);
   });
 
   it('skips CSS injection when unstyled: true', () => {
     ModalProvider({ unstyled: true });
-    expect(document.getElementById('lf-modal-styles')).toBeNull();
+    expect(document.querySelector('link[data-lf-modal]')).toBeNull();
   });
 });
 

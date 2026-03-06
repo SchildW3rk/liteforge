@@ -1,0 +1,791 @@
+/* ─── Light-mode defaults ──────────────────────────────────── */
+
+:root {
+  /* Sidebar — brand-specific navy, no theme token equivalent */
+  --lf-admin-sidebar-bg:            #1e3a5f;
+  --lf-admin-sidebar-color:         #e8f4fd;
+  --lf-admin-sidebar-active-bg:     var(--lf-color-accent, #2563eb);
+  --lf-admin-sidebar-active-color:  var(--lf-color-text-on-accent, #ffffff);
+  --lf-admin-sidebar-hover-bg:      #1e4080;
+  --lf-admin-sidebar-width:         240px;
+
+  /* Header — brand-specific navy */
+  --lf-admin-header-bg:             #1a3050;
+  --lf-admin-header-color:          #e8f4fd;
+  --lf-admin-header-height:         56px;
+
+  /* Content area */
+  --lf-admin-content-bg:            #dde3ea;
+  --lf-admin-content-color:         var(--lf-color-text, #1e293b);
+
+  /* Shared */
+  --lf-admin-accent:                var(--lf-color-accent, #2563eb);
+  --lf-admin-border:                #c8d3de;
+  --lf-admin-table-row-hover:       var(--lf-color-bg-muted, #f1f5f9);
+  --lf-admin-badge-bg:              #dde3ea;
+  --lf-admin-badge-color:           var(--lf-color-text-muted, #475569);
+  --lf-admin-input-bg:              var(--lf-color-surface, #ffffff);
+  --lf-admin-input-border:          #c8d3de;
+  --lf-admin-input-focus:           var(--lf-color-accent, #2563eb);
+  --lf-admin-button-primary-bg:     var(--lf-color-accent, #2563eb);
+  --lf-admin-button-primary-color:  var(--lf-color-text-on-accent, #ffffff);
+  --lf-admin-button-danger-bg:      var(--lf-color-danger, #dc2626);
+  --lf-admin-button-danger-color:   var(--lf-color-text-on-accent, #ffffff);
+  --lf-admin-overlay-bg:            var(--lf-color-bg-overlay, rgba(0,0,0,0.6));
+  --lf-admin-card-bg:               var(--lf-color-surface, #ffffff);
+  --lf-admin-radius:                var(--lf-radius-md, 6px);
+  --lf-admin-font:                  var(--lf-font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif);
+}
+
+/* ─── Dark mode overrides ──────────────────────────────────── */
+
+.dark,
+[data-theme="dark"] {
+  /* Sidebar — mocha dark palette */
+  --lf-admin-sidebar-bg:            var(--lf-color-surface, #1e1e2e);
+  --lf-admin-sidebar-color:         var(--lf-color-text, #cdd6f4);
+  --lf-admin-sidebar-active-bg:     var(--lf-color-surface-raised, #313244);
+  --lf-admin-sidebar-active-color:  var(--lf-color-accent, #89b4fa);
+  --lf-admin-sidebar-hover-bg:      var(--lf-color-surface-raised, #313244);
+
+  /* Header */
+  --lf-admin-header-bg:             var(--lf-color-bg-subtle, #181825);
+  --lf-admin-header-color:          var(--lf-color-text, #cdd6f4);
+
+  /* Content area */
+  --lf-admin-content-bg:            var(--lf-color-bg, #11111b);
+
+  /* Shared */
+  --lf-admin-border:                var(--lf-color-border, #313244);
+  --lf-admin-table-row-hover:       var(--lf-color-surface, #1e1e2e);
+  --lf-admin-badge-bg:              var(--lf-color-surface-raised, #313244);
+  --lf-admin-badge-color:           var(--lf-color-text, #cdd6f4);
+  --lf-admin-input-bg:              var(--lf-color-bg-subtle, #181825);
+  --lf-admin-input-border:          var(--lf-color-border, #313244);
+  --lf-admin-card-bg:               var(--lf-color-surface, #1e1e2e);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --lf-admin-sidebar-bg:            var(--lf-color-surface, #1e1e2e);
+    --lf-admin-sidebar-color:         var(--lf-color-text, #cdd6f4);
+    --lf-admin-sidebar-active-bg:     var(--lf-color-surface-raised, #313244);
+    --lf-admin-sidebar-active-color:  var(--lf-color-accent, #89b4fa);
+    --lf-admin-sidebar-hover-bg:      var(--lf-color-surface-raised, #313244);
+    --lf-admin-header-bg:             var(--lf-color-bg-subtle, #181825);
+    --lf-admin-header-color:          var(--lf-color-text, #cdd6f4);
+    --lf-admin-content-bg:            var(--lf-color-bg, #11111b);
+    --lf-admin-border:                var(--lf-color-border, #313244);
+    --lf-admin-table-row-hover:       var(--lf-color-surface, #1e1e2e);
+    --lf-admin-badge-bg:              var(--lf-color-surface-raised, #313244);
+    --lf-admin-badge-color:           var(--lf-color-text, #cdd6f4);
+    --lf-admin-input-bg:              var(--lf-color-bg-subtle, #181825);
+    --lf-admin-input-border:          var(--lf-color-border, #313244);
+    --lf-admin-card-bg:               var(--lf-color-surface, #1e1e2e);
+  }
+}
+
+/* ─── Explicit light override (wins over system dark preference) */
+
+[data-theme="light"] {
+  --lf-admin-sidebar-bg:            #1e3a5f;
+  --lf-admin-sidebar-color:         #e8f4fd;
+  --lf-admin-sidebar-active-bg:     var(--lf-color-accent, #2563eb);
+  --lf-admin-sidebar-active-color:  var(--lf-color-text-on-accent, #ffffff);
+  --lf-admin-sidebar-hover-bg:      #1e4080;
+  --lf-admin-header-bg:             #1a3050;
+  --lf-admin-header-color:          #e8f4fd;
+  --lf-admin-content-bg:            #dde3ea;
+  --lf-admin-border:                #c8d3de;
+  --lf-admin-table-row-hover:       var(--lf-color-bg-muted, #f1f5f9);
+  --lf-admin-badge-bg:              #dde3ea;
+  --lf-admin-badge-color:           var(--lf-color-text-muted, #475569);
+  --lf-admin-input-bg:              var(--lf-color-surface, #ffffff);
+  --lf-admin-input-border:          #c8d3de;
+  --lf-admin-card-bg:               var(--lf-color-surface, #ffffff);
+}
+
+/* Layout */
+.lf-admin {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+  font-family: var(--lf-admin-font);
+  font-size: var(--lf-text-base, 14px);
+  color: var(--lf-admin-content-color);
+  background: var(--lf-admin-content-bg);
+}
+
+.lf-admin-sidebar {
+  width: var(--lf-admin-sidebar-width);
+  background: var(--lf-admin-sidebar-bg);
+  color: var(--lf-admin-sidebar-color);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  overflow-y: auto;
+  border-right: 1px solid var(--lf-admin-border);
+}
+
+.lf-admin-sidebar__logo {
+  padding: 20px 16px;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--lf-admin-sidebar-color);
+  border-bottom: 1px solid var(--lf-admin-border);
+  text-decoration: none;
+  display: block;
+}
+
+.lf-admin-sidebar__nav {
+  padding: 8px 0;
+  flex: 1;
+}
+
+.lf-admin-sidebar__link {
+  display: block;
+  padding: 10px 16px;
+  color: var(--lf-admin-sidebar-color);
+  text-decoration: none;
+  border-radius: 0;
+  transition: background var(--lf-transition-fast, 0.15s);
+  cursor: pointer;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+  font-size: var(--lf-text-base, 14px);
+}
+
+.lf-admin-sidebar__link:hover {
+  background: var(--lf-admin-sidebar-hover-bg);
+}
+
+.lf-admin-sidebar__link--active {
+  background: var(--lf-admin-sidebar-active-bg);
+  color: var(--lf-admin-sidebar-active-color);
+}
+
+/* Header */
+.lf-admin-header {
+  height: var(--lf-admin-header-height);
+  background: var(--lf-admin-header-bg);
+  color: var(--lf-admin-header-color);
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  border-bottom: 1px solid var(--lf-admin-border);
+  flex-shrink: 0;
+}
+
+.lf-admin-header__breadcrumb {
+  font-size: var(--lf-text-base, 14px);
+  opacity: 0.8;
+}
+
+/* Content */
+.lf-admin-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.lf-admin-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px;
+  background: var(--lf-admin-content-bg);
+}
+
+/* Table */
+.lf-admin-table-wrap {
+  background: var(--lf-admin-card-bg);
+  border: 1px solid var(--lf-admin-border);
+  border-radius: var(--lf-admin-radius);
+  overflow: hidden;
+}
+
+.lf-admin-toolbar {
+  display: flex;
+  gap: 12px;
+  padding: 16px;
+  border-bottom: 1px solid var(--lf-admin-border);
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.lf-admin-toolbar__title {
+  font-size: 18px;
+  font-weight: var(--lf-font-semibold, 600);
+  flex: 1;
+}
+
+.lf-admin-search {
+  padding: 6px 12px;
+  border: 1px solid var(--lf-admin-input-border);
+  border-radius: var(--lf-admin-radius);
+  background: var(--lf-admin-input-bg);
+  color: var(--lf-admin-content-color);
+  font-size: var(--lf-text-base, 14px);
+  outline: none;
+}
+
+.lf-admin-search:focus {
+  border-color: var(--lf-admin-input-focus);
+}
+
+.lf-admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--lf-text-base, 14px);
+}
+
+.lf-admin-table th {
+  text-align: left;
+  padding: 12px 16px;
+  background: var(--lf-admin-sidebar-bg);
+  color: var(--lf-admin-sidebar-color);
+  font-weight: var(--lf-font-semibold, 600);
+  border-bottom: 1px solid var(--lf-admin-border);
+  white-space: nowrap;
+  user-select: none;
+}
+
+.lf-admin-table__th--sortable {
+  cursor: pointer;
+}
+
+.lf-admin-table__th--sortable:hover {
+  background: var(--lf-admin-sidebar-hover-bg);
+}
+
+.lf-admin-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--lf-admin-border);
+  vertical-align: middle;
+}
+
+.lf-admin-table__row:hover td {
+  background: var(--lf-admin-table-row-hover);
+}
+
+.lf-admin-table__row:last-child td {
+  border-bottom: none;
+}
+
+.lf-admin-table__actions {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+/* Badge */
+.lf-admin-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 12px;
+  background: var(--lf-admin-badge-bg);
+  color: var(--lf-admin-badge-color);
+  font-size: var(--lf-text-sm, 12px);
+  font-weight: var(--lf-font-medium, 500);
+}
+
+/* Pagination */
+.lf-admin-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  padding: 12px 16px;
+  border-top: 1px solid var(--lf-admin-border);
+}
+
+.lf-admin-pagination__info {
+  margin-right: auto;
+  font-size: var(--lf-text-sm, 13px);
+  opacity: 0.7;
+}
+
+/* Buttons */
+.lf-admin-btn {
+  padding: 6px 14px;
+  border: none;
+  border-radius: var(--lf-admin-radius);
+  cursor: pointer;
+  font-size: var(--lf-text-sm, 13px);
+  font-weight: var(--lf-font-medium, 500);
+  transition: opacity var(--lf-transition-fast, 0.15s);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.lf-admin-btn:hover {
+  opacity: 0.85;
+}
+
+.lf-admin-btn--primary {
+  background: var(--lf-admin-button-primary-bg);
+  color: var(--lf-admin-button-primary-color);
+}
+
+.lf-admin-btn--danger {
+  background: var(--lf-admin-button-danger-bg);
+  color: var(--lf-admin-button-danger-color);
+}
+
+.lf-admin-btn--ghost {
+  background: transparent;
+  color: var(--lf-admin-content-color);
+  border: 1px solid var(--lf-admin-border);
+}
+
+.lf-admin-btn--sm {
+  padding: 4px 10px;
+  font-size: var(--lf-text-xs, 12px);
+}
+
+.lf-admin-btn--page {
+  min-width: 32px;
+  height: 32px;
+  padding: 0 8px;
+  background: transparent;
+  border: 1px solid var(--lf-admin-border);
+  color: var(--lf-admin-content-color);
+  border-radius: var(--lf-admin-radius);
+  cursor: pointer;
+  font-size: var(--lf-text-sm, 13px);
+}
+
+.lf-admin-btn--page.active {
+  background: var(--lf-admin-button-primary-bg);
+  color: var(--lf-admin-button-primary-color);
+  border-color: transparent;
+}
+
+/* Form */
+.lf-admin-form {
+  max-width: 800px;
+}
+
+.lf-admin-form__header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.lf-admin-form__title {
+  font-size: var(--lf-text-xl, 20px);
+  font-weight: var(--lf-font-semibold, 600);
+}
+
+.lf-admin-form__grid {
+  display: grid;
+  gap: 20px;
+}
+
+.lf-admin-form__grid--two-column {
+  grid-template-columns: 1fr 1fr;
+}
+
+.lf-admin-form__field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.lf-admin-form__field--full {
+  grid-column: span 2;
+}
+
+.lf-admin-form__label {
+  font-size: var(--lf-text-sm, 13px);
+  font-weight: var(--lf-font-medium, 500);
+  color: var(--lf-admin-content-color);
+}
+
+.lf-admin-form__label--required::after {
+  content: ' *';
+  color: var(--lf-admin-button-danger-bg);
+}
+
+.lf-admin-form__input,
+.lf-admin-form__select,
+.lf-admin-form__textarea {
+  padding: 8px 12px;
+  border: 1px solid var(--lf-admin-input-border);
+  border-radius: var(--lf-admin-radius);
+  background: var(--lf-admin-input-bg);
+  color: var(--lf-admin-content-color);
+  font-size: var(--lf-text-base, 14px);
+  outline: none;
+  width: 100%;
+  box-sizing: border-box;
+  font-family: var(--lf-admin-font);
+}
+
+.lf-admin-form__input:focus,
+.lf-admin-form__select:focus,
+.lf-admin-form__textarea:focus {
+  border-color: var(--lf-admin-input-focus);
+}
+
+.lf-admin-form__textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.lf-admin-form__error {
+  font-size: var(--lf-text-xs, 12px);
+  color: var(--lf-admin-button-danger-bg);
+}
+
+.lf-admin-form__actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+/* Detail view */
+.lf-admin-detail {
+  max-width: 800px;
+}
+
+.lf-admin-detail__header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.lf-admin-detail__title {
+  font-size: var(--lf-text-xl, 20px);
+  font-weight: var(--lf-font-semibold, 600);
+  flex: 1;
+}
+
+.lf-admin-detail__card {
+  background: var(--lf-admin-card-bg);
+  border: 1px solid var(--lf-admin-border);
+  border-radius: var(--lf-admin-radius);
+  padding: 24px;
+}
+
+.lf-admin-detail__dl {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: 16px 24px;
+  margin: 0;
+  padding: 0;
+}
+
+.lf-admin-detail__dt {
+  font-weight: var(--lf-font-semibold, 600);
+  color: var(--lf-admin-sidebar-color);
+  font-size: var(--lf-text-sm, 13px);
+}
+
+.lf-admin-detail__dd {
+  margin: 0;
+  word-break: break-word;
+}
+
+/* Confirm Dialog */
+.lf-admin-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--lf-admin-overlay-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.lf-admin-dialog {
+  background: var(--lf-admin-card-bg);
+  border: 1px solid var(--lf-admin-border);
+  border-radius: var(--lf-admin-radius);
+  padding: 24px;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: var(--lf-shadow-xl, 0 20px 60px rgba(0,0,0,0.5));
+}
+
+.lf-admin-dialog__title {
+  font-size: var(--lf-text-md, 16px);
+  font-weight: var(--lf-font-semibold, 600);
+  margin: 0 0 12px;
+}
+
+.lf-admin-dialog__message {
+  font-size: var(--lf-text-base, 14px);
+  margin: 0 0 20px;
+  opacity: 0.8;
+}
+
+.lf-admin-dialog__actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+/* Loading / Error states */
+.lf-admin-loading {
+  text-align: center;
+  padding: 48px;
+  opacity: 0.6;
+}
+
+.lf-admin-error {
+  padding: 16px;
+  background: var(--lf-color-danger-bg, rgba(243, 139, 168, 0.1));
+  border: 1px solid var(--lf-admin-button-danger-bg);
+  border-radius: var(--lf-admin-radius);
+  color: var(--lf-admin-button-danger-bg);
+  margin-bottom: 16px;
+}
+
+/* Filter select */
+.lf-admin-filter {
+  padding: 6px 12px;
+  border: 1px solid var(--lf-admin-input-border);
+  border-radius: var(--lf-admin-radius);
+  background: var(--lf-admin-input-bg);
+  color: var(--lf-admin-content-color);
+  font-size: var(--lf-text-sm, 13px);
+  outline: none;
+}
+
+/* Relation autocomplete */
+.lf-admin-relation {
+  position: relative;
+}
+
+.lf-admin-relation__dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: var(--lf-z-dropdown, 100);
+  background: var(--lf-admin-input-bg);
+  border: 1px solid var(--lf-admin-input-focus);
+  border-top: none;
+  border-radius: 0 0 var(--lf-admin-radius) var(--lf-admin-radius);
+  list-style: none;
+  margin: 0;
+  padding: 4px 0;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.lf-admin-relation__option {
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: var(--lf-text-base, 14px);
+}
+
+.lf-admin-relation__option:hover {
+  background: var(--lf-admin-table-row-hover);
+}
+
+.lf-admin-relation__empty {
+  padding: 8px 12px;
+  opacity: 0.5;
+  font-size: var(--lf-text-sm, 13px);
+}
+
+/* Bulk action bar */
+.lf-admin-bulk-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  background: var(--lf-admin-sidebar-active-bg);
+  border-bottom: 1px solid var(--lf-admin-border);
+  flex-wrap: wrap;
+}
+
+.lf-admin-bulk-bar__count {
+  font-size: var(--lf-text-sm, 13px);
+  font-weight: var(--lf-font-semibold, 600);
+  flex: 1;
+  color: var(--lf-admin-sidebar-active-color);
+}
+
+/* Dashboard */
+.lf-admin-dashboard__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.lf-admin-dashboard__widget {
+  background: var(--lf-admin-card-bg);
+  border: 1px solid var(--lf-admin-border);
+  border-radius: var(--lf-admin-radius);
+  padding: 20px;
+}
+
+.lf-admin-dashboard__widget-label {
+  font-size: var(--lf-text-xs, 12px);
+  opacity: 0.6;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.lf-admin-dashboard__widget-value {
+  font-size: 40px;
+  font-weight: var(--lf-font-bold, 700);
+  color: var(--lf-admin-accent);
+  line-height: 1;
+}
+
+.lf-admin-dashboard__widget--list ul {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+}
+
+.lf-admin-dashboard__widget--list li {
+  padding: 6px 0;
+  border-bottom: 1px solid var(--lf-admin-border);
+  font-size: var(--lf-text-sm, 13px);
+}
+
+.lf-admin-dashboard__widget--list li:last-child {
+  border-bottom: none;
+}
+
+/* Theme Toggle */
+.lf-admin-theme-toggle {
+  margin-left: auto;
+  background: transparent;
+  border: 1px solid var(--lf-admin-border);
+  color: var(--lf-admin-header-color);
+  border-radius: var(--lf-admin-radius);
+  padding: 4px 10px;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+}
+
+.lf-admin-theme-toggle:hover {
+  opacity: 0.8;
+}
+
+/* Export Dropdown */
+.lf-admin-export-menu {
+  position: relative;
+  display: inline-block;
+}
+
+.lf-admin-export-dropdown {
+  position: absolute;
+  right: 0;
+  top: 100%;
+  z-index: 50;
+  background: var(--lf-admin-input-bg);
+  border: 1px solid var(--lf-admin-border);
+  border-radius: var(--lf-admin-radius);
+  min-width: 120px;
+  padding: 4px 0;
+  box-shadow: var(--lf-shadow-md, 0 4px 12px rgba(0,0,0,0.2));
+}
+
+.lf-admin-export-dropdown button {
+  display: block;
+  width: 100%;
+  padding: 8px 14px;
+  text-align: left;
+  background: none;
+  border: none;
+  color: var(--lf-admin-content-color);
+  font-size: var(--lf-text-sm, 13px);
+  cursor: pointer;
+}
+
+.lf-admin-export-dropdown button:hover {
+  background: var(--lf-admin-table-row-hover);
+}
+
+/* Activity Log */
+.lf-admin-activity {
+  max-width: 800px;
+}
+
+.lf-admin-activity__title {
+  font-size: var(--lf-text-xl, 20px);
+  font-weight: var(--lf-font-semibold, 600);
+}
+
+.lf-admin-activity__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.lf-admin-activity__item {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--lf-admin-border);
+}
+
+.lf-admin-activity__item:last-child {
+  border-bottom: none;
+}
+
+.lf-admin-activity__icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--lf-text-base, 14px);
+  flex-shrink: 0;
+}
+
+.lf-admin-activity__icon--create {
+  background: var(--lf-color-success-bg, rgba(166,227,161,0.2));
+  color: var(--lf-color-success, #a6e3a1);
+}
+
+.lf-admin-activity__icon--update {
+  background: var(--lf-color-accent-subtle, rgba(137,180,250,0.2));
+  color: var(--lf-color-accent, #89b4fa);
+}
+
+.lf-admin-activity__icon--delete {
+  background: var(--lf-color-danger-bg, rgba(243,139,168,0.2));
+  color: var(--lf-color-danger, #f38ba8);
+}
+
+.lf-admin-activity__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.lf-admin-activity__label {
+  font-size: var(--lf-text-sm, 13px);
+  font-weight: var(--lf-font-medium, 500);
+}
+
+.lf-admin-activity__meta {
+  font-size: var(--lf-text-xs, 12px);
+  opacity: 0.5;
+  margin-top: 2px;
+}
+
+.lf-admin-activity__empty {
+  text-align: center;
+  padding: 48px;
+  opacity: 0.5;
+  font-size: var(--lf-text-base, 14px);
+}
