@@ -440,12 +440,12 @@ export const CalendarPage = createComponent({
 
           .calendar-header h1 {
             margin: 0 0 8px 0;
-            color: #1e293b;
+            color: var(--lf-color-text, #1e293b);
             font-size: 24px;
           }
 
           .page-description {
-            color: #64748b;
+            color: var(--lf-color-text-muted, #64748b);
             margin: 0;
           }
 
@@ -455,8 +455,8 @@ export const CalendarPage = createComponent({
             align-items: center;
             margin-bottom: 16px;
             padding: 12px 16px;
-            background: #f8fafc;
-            border-radius: 8px;
+            background: var(--lf-color-bg-subtle, #f8fafc);
+            border-radius: var(--lf-radius-lg, 8px);
           }
 
           .nav-buttons,
@@ -477,7 +477,7 @@ export const CalendarPage = createComponent({
             gap: 6px;
             cursor: pointer;
             font-size: 14px;
-            color: #475569;
+            color: var(--lf-color-text-subtle, #475569);
           }
 
           .resource-filter input[type="checkbox"] {
@@ -496,37 +496,38 @@ export const CalendarPage = createComponent({
 
           .btn {
             padding: 8px 16px;
-            border: 1px solid #e2e8f0;
-            border-radius: 6px;
-            background: white;
+            border: 1px solid var(--lf-color-border, #e2e8f0);
+            border-radius: var(--lf-radius-md, 6px);
+            background: var(--lf-color-surface, #ffffff);
+            color: var(--lf-color-text, #374151);
             cursor: pointer;
             font-size: 14px;
             transition: all 0.15s;
           }
 
           .btn:hover {
-            background: #f1f5f9;
+            background: var(--lf-color-bg-muted, #f1f5f9);
           }
 
           .btn-nav {
-            color: #475569;
+            color: var(--lf-color-text-subtle, #475569);
           }
 
           .btn-view {
-            color: #64748b;
+            color: var(--lf-color-text-muted, #64748b);
           }
 
           .btn-view.active {
-            background: #3b82f6;
+            background: var(--lf-color-accent, #3b82f6);
             color: white;
-            border-color: #3b82f6;
+            border-color: var(--lf-color-accent, #3b82f6);
           }
 
           .calendar-container {
             flex: 1;
             min-height: 500px;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
+            border: 1px solid var(--lf-color-border, #e2e8f0);
+            border-radius: var(--lf-radius-lg, 8px);
             overflow: hidden;
           }
 
@@ -537,7 +538,7 @@ export const CalendarPage = createComponent({
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
+            background: var(--lf-color-bg-overlay, rgba(0,0,0,0.5));
             display: flex;
             align-items: center;
             justify-content: center;
@@ -545,11 +546,11 @@ export const CalendarPage = createComponent({
           }
 
           .modal {
-            background: white;
-            border-radius: 12px;
+            background: var(--lf-color-surface, #ffffff);
+            border-radius: var(--lf-radius-lg, 12px);
             width: 100%;
             max-width: 400px;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            box-shadow: var(--lf-shadow-xl, 0 20px 25px -5px rgba(0,0,0,0.1));
           }
 
           .modal-header {
@@ -557,27 +558,27 @@ export const CalendarPage = createComponent({
             justify-content: space-between;
             align-items: center;
             padding: 16px 20px;
-            border-bottom: 1px solid #e2e8f0;
+            border-bottom: 1px solid var(--lf-color-border, #e2e8f0);
           }
 
           .modal-header h3 {
             margin: 0;
             font-size: 18px;
-            color: #1e293b;
+            color: var(--lf-color-text, #1e293b);
           }
 
           .close-btn {
             background: none;
             border: none;
             font-size: 24px;
-            color: #64748b;
+            color: var(--lf-color-text-muted, #64748b);
             cursor: pointer;
             padding: 0;
             line-height: 1;
           }
 
           .close-btn:hover {
-            color: #1e293b;
+            color: var(--lf-color-text, #1e293b);
           }
 
           .modal-body {
@@ -586,7 +587,7 @@ export const CalendarPage = createComponent({
 
           .modal-body p {
             margin: 0 0 12px 0;
-            color: #475569;
+            color: var(--lf-color-text-subtle, #475569);
           }
 
           .modal-body p:last-child {
@@ -598,26 +599,27 @@ export const CalendarPage = createComponent({
             justify-content: flex-end;
             gap: 12px;
             padding: 16px 20px;
-            border-top: 1px solid #e2e8f0;
+            border-top: 1px solid var(--lf-color-border, #e2e8f0);
           }
 
           .btn-danger {
-            background: #ef4444;
+            background: var(--lf-color-danger, #ef4444);
             color: white;
-            border-color: #ef4444;
+            border-color: var(--lf-color-danger, #ef4444);
           }
 
           .btn-danger:hover {
-            background: #dc2626;
+            opacity: 0.85;
           }
 
           .btn-secondary {
-            background: #f1f5f9;
-            color: #475569;
+            background: var(--lf-color-bg-muted, #f1f5f9);
+            color: var(--lf-color-text-subtle, #475569);
+            border-color: var(--lf-color-border, #e2e8f0);
           }
 
           .btn-secondary:hover {
-            background: #e2e8f0;
+            background: var(--lf-color-bg-subtle, #e2e8f0);
           }
         `}</style>
       </div>

@@ -6,6 +6,18 @@
     <meta name="description" content="LiteForge - A modern, lightweight frontend framework" />
     <title>LiteForge Demo</title>
     
+    <!-- Prevent theme flash: apply stored theme before first paint -->
+    <script>
+      (function() {
+        var stored = localStorage.getItem('liteforge_theme');
+        if (stored === 'dark' || stored === 'light') {
+          document.documentElement.dataset.theme = stored;
+        } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.dataset.theme = 'dark';
+        }
+      })();
+    </script>
+
     <!-- Prevent flash of unstyled content -->
     <style>
       #app:empty::before {

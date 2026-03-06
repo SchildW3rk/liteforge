@@ -146,15 +146,11 @@ export const ModalsPage = createComponent({
           .modals-page h1 {
             margin: 0 0 8px;
             font-size: 24px;
-            color: #1e293b;
-          }
-
-          [data-theme="dark"] .modals-page h1 {
-            color: #cdd6f4;
+            color: var(--lf-color-text, #1e293b);
           }
 
           .page-description {
-            color: #64748b;
+            color: var(--lf-color-text-muted, #64748b);
             margin: 0 0 32px;
             font-size: 14px;
           }
@@ -162,28 +158,19 @@ export const ModalsPage = createComponent({
           .demo-section {
             margin-bottom: 40px;
             padding: 24px;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            background: #fff;
-          }
-
-          [data-theme="dark"] .demo-section {
-            border-color: #313244;
-            background: #1e1e2e;
+            border: 1px solid var(--lf-color-border, #e2e8f0);
+            border-radius: var(--lf-radius-lg, 8px);
+            background: var(--lf-color-surface, #ffffff);
           }
 
           .demo-section h2 {
             margin: 0 0 6px;
             font-size: 18px;
-            color: #1e293b;
-          }
-
-          [data-theme="dark"] .demo-section h2 {
-            color: #cdd6f4;
+            color: var(--lf-color-text, #1e293b);
           }
 
           .demo-description {
-            color: #64748b;
+            color: var(--lf-color-text-muted, #64748b);
             margin: 0 0 20px;
             font-size: 14px;
           }
@@ -197,53 +184,36 @@ export const ModalsPage = createComponent({
 
           .demo-btn {
             padding: 8px 16px;
-            border: 1px solid #d1d5db;
-            border-radius: 6px;
-            background: #f8fafc;
-            color: #374151;
+            border: 1px solid var(--lf-color-border-strong, #d1d5db);
+            border-radius: var(--lf-radius-md, 6px);
+            background: var(--lf-color-bg-subtle, #f8fafc);
+            color: var(--lf-color-text, #374151);
             cursor: pointer;
             font-size: 14px;
             transition: background-color 0.15s;
           }
 
           .demo-btn:hover {
-            background: #f1f5f9;
-          }
-
-          [data-theme="dark"] .demo-btn {
-            background: #313244;
-            border-color: #45475a;
-            color: #cdd6f4;
-          }
-
-          [data-theme="dark"] .demo-btn:hover {
-            background: #45475a;
+            background: var(--lf-color-bg-muted, #f1f5f9);
           }
 
           .demo-btn--primary {
-            background: #3b82f6;
-            border-color: #3b82f6;
+            background: var(--lf-color-accent, #3b82f6);
+            border-color: var(--lf-color-accent, #3b82f6);
             color: #fff;
           }
 
           .demo-btn--primary:hover {
-            background: #2563eb;
-            border-color: #2563eb;
+            opacity: 0.9;
           }
 
           .demo-status {
             font-size: 13px;
-            color: #64748b;
+            color: var(--lf-color-text-muted, #64748b);
             padding: 8px 12px;
-            background: #f8fafc;
-            border-radius: 4px;
-            border: 1px solid #e2e8f0;
-          }
-
-          [data-theme="dark"] .demo-status {
-            background: #181825;
-            border-color: #313244;
-            color: #a6adc8;
+            background: var(--lf-color-bg-subtle, #f8fafc);
+            border-radius: var(--lf-radius-sm, 4px);
+            border: 1px solid var(--lf-color-border, #e2e8f0);
           }
 
           .modal-full-content {

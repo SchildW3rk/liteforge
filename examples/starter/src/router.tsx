@@ -29,7 +29,7 @@ import { NotFoundPage } from './pages/NotFound.js';
 
 // Admin panel (liteforge/admin demo)
 import { buildAdminRoutes, resourceRegistry } from 'liteforge/admin';
-import { postsResource, usersResource, createMockClient } from './pages/admin-panel/resources.js';
+import { postsResource, usersResource, adminDashboard, createMockClient } from './pages/admin-panel/resources.js';
 
 const mockClient = createMockClient();
 void postsResource; // ensure registered
@@ -40,6 +40,8 @@ const adminRoutes = buildAdminRoutes({
   basePath: '/lf-admin',
   client: mockClient,
   title: 'LiteForge Admin',
+  dashboard: adminDashboard,
+  showActivityLog: true,
 });
 
 // =============================================================================

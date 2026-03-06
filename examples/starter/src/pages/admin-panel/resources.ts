@@ -1,4 +1,4 @@
-import { defineResource, registerResource } from 'liteforge/admin';
+import { defineResource, defineDashboard, registerResource } from 'liteforge/admin';
 import type { Client, ListResponse } from 'liteforge/client';
 
 // ─── Resource Types ────────────────────────────────────────────────────────────
@@ -191,12 +191,27 @@ export const postsResource = defineResource<Post>({
       },
     ],
   },
+  permissions: {
+    canDestroy: (record) => record.status === 'draft',
+  },
   hooks: {
     beforeCreate: (data) => ({
       ...data,
       createdAt: new Date().toISOString(),
     }),
   },
+  bulkActions: [
+    {
+      label: 'Publish selected',
+      action: async (ids) => {
+        for (const id of ids) {
+          const store = postsStore;
+          const idx = store.findIndex(i => String(i['id']) === String(id));
+          if (idx !== -1) store[idx] = { ...store[idx], status: 'published' };
+        }
+      },
+    },
+  ],
 });
 
 export const usersResource = defineResource<User>({
@@ -204,6 +219,9 @@ export const usersResource = defineResource<User>({
   label: 'Users',
   endpoint: '/api/users',
   actions: ['index', 'show', 'create', 'edit'],
+  permissions: {
+    canCreate: false,
+  },
   list: {
     columns: [
       { field: 'id',     label: 'ID'                      },
@@ -234,3 +252,26 @@ export const usersResource = defineResource<User>({
 // Register
 registerResource(postsResource);
 registerResource(usersResource);
+
+// ─── Dashboard ─────────────────────────────────────────────────────────────────
+
+export const adminDashboard = defineDashboard({
+  widgets: [
+    {
+      type: 'count',
+      label: 'Total Posts',
+      resource: postsResource,
+    },
+    {
+      type: 'count',
+      label: 'Total Users',
+      resource: usersResource,
+    },
+    {
+      type: 'list',
+      label: 'Recent Posts',
+      resource: postsResource,
+      limit: 5,
+    },
+  ],
+});

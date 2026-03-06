@@ -207,11 +207,7 @@ export const TablesPage = createComponent({
           children: () => (
             <div>
               <div class="table-info">
-                <p>
-                  <strong>{() => table.selectedCount()}</strong> user(s) selected
-                  {' | '}
-                  Showing {() => table.filteredRows()} of {() => table.totalRows()} users
-                </p>
+                <p>{() => `${table.selectedCount()} user(s) selected | Showing ${table.filteredRows()} of ${table.totalRows()} users`}</p>
                 {Show({
                   when: () => table.selectedCount() > 0,
                   children: () => (
@@ -237,12 +233,12 @@ export const TablesPage = createComponent({
 
           .tables-page h1 {
             margin: 0 0 8px 0;
-            color: #1e293b;
+            color: var(--lf-color-text, #1e293b);
             font-size: 24px;
           }
 
           .page-description {
-            color: #64748b;
+            color: var(--lf-color-text-muted, #64748b);
             margin: 0 0 24px 0;
           }
 
@@ -258,8 +254,8 @@ export const TablesPage = createComponent({
           .spinner {
             width: 32px;
             height: 32px;
-            border: 3px solid #e2e8f0;
-            border-top-color: #3b82f6;
+            border: 3px solid var(--lf-color-border, #e2e8f0);
+            border-top-color: var(--lf-color-accent, #3b82f6);
             border-radius: 50%;
             animation: spin 1s linear infinite;
           }
@@ -269,15 +265,15 @@ export const TablesPage = createComponent({
           }
 
           .error-state {
-            color: #dc2626;
+            color: var(--lf-color-danger, #dc2626);
           }
 
           .error-state button {
             padding: 8px 16px;
-            background: #dc2626;
+            background: var(--lf-color-danger, #dc2626);
             color: white;
             border: none;
-            border-radius: 6px;
+            border-radius: var(--lf-radius-md, 6px);
             cursor: pointer;
           }
 
@@ -287,59 +283,60 @@ export const TablesPage = createComponent({
             gap: 16px;
             margin-bottom: 16px;
             padding: 12px 16px;
-            background: #f8fafc;
-            border-radius: 8px;
+            background: var(--lf-color-bg-subtle, #f8fafc);
+            border-radius: var(--lf-radius-lg, 8px);
           }
 
           .table-info p {
             margin: 0;
-            color: #64748b;
+            color: var(--lf-color-text-muted, #64748b);
           }
 
           .clear-selection-btn {
             padding: 6px 12px;
-            background: #ef4444;
+            background: var(--lf-color-danger, #ef4444);
             color: white;
             border: none;
-            border-radius: 4px;
+            border-radius: var(--lf-radius-sm, 4px);
             cursor: pointer;
             font-size: 13px;
           }
 
           .clear-selection-btn:hover {
-            background: #dc2626;
+            opacity: 0.85;
           }
 
           .action-btn {
             padding: 4px 10px;
-            border: 1px solid #e2e8f0;
-            border-radius: 4px;
-            background: white;
+            border: 1px solid var(--lf-color-border, #e2e8f0);
+            border-radius: var(--lf-radius-sm, 4px);
+            background: var(--lf-color-surface, #ffffff);
+            color: var(--lf-color-text, #374151);
             cursor: pointer;
             font-size: 12px;
             transition: all 0.15s;
           }
 
           .action-btn:hover {
-            background: #f1f5f9;
+            background: var(--lf-color-bg-muted, #f1f5f9);
           }
 
           .action-btn-view {
-            color: #3b82f6;
-            border-color: #3b82f6;
+            color: var(--lf-color-accent, #3b82f6);
+            border-color: var(--lf-color-accent, #3b82f6);
           }
 
           .action-btn-view:hover {
-            background: #eff6ff;
+            background: var(--lf-color-accent-subtle, #eff6ff);
           }
 
           .action-btn-edit {
-            color: #f59e0b;
-            border-color: #f59e0b;
+            color: var(--lf-color-warning, #f59e0b);
+            border-color: var(--lf-color-warning, #f59e0b);
           }
 
           .action-btn-edit:hover {
-            background: #fffbeb;
+            background: var(--lf-color-warning-bg, #fffbeb);
           }
         `}</style>
       </div>

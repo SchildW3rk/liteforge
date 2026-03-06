@@ -1,28 +1,32 @@
 /**
  * LiteForge Demo App Styles
- * 
+ *
  * A clean, minimal design to demonstrate the framework without
  * overwhelming with CSS complexity.
  */
+
+/* @liteforge/theme — design token foundation (--lf-color-*, --lf-radius-*, etc.) */
+@import '@liteforge/theme/css';
 
 /* =============================================================================
    CSS Variables & Theme
    ============================================================================= */
 
 :root {
-  /* Colors - Light Theme */
-  --color-bg: #ffffff;
-  --color-bg-secondary: #f5f5f5;
-  --color-bg-tertiary: #e8e8e8;
-  --color-text: #1a1a1a;
-  --color-text-secondary: #666666;
-  --color-text-muted: #999999;
-  --color-primary: #3b82f6;
-  --color-primary-hover: #2563eb;
-  --color-success: #22c55e;
-  --color-warning: #f59e0b;
-  --color-error: #ef4444;
-  --color-border: #e0e0e0;
+  /* App color aliases — all point to @liteforge/theme tokens.
+     Dark mode cascades automatically via [data-theme="dark"] in the theme CSS. */
+  --color-bg:            var(--lf-color-bg);
+  --color-bg-secondary:  var(--lf-color-bg-subtle);
+  --color-bg-tertiary:   var(--lf-color-bg-muted);
+  --color-text:          var(--lf-color-text);
+  --color-text-secondary: var(--lf-color-text-subtle);
+  --color-text-muted:    var(--lf-color-text-muted);
+  --color-primary:       var(--lf-color-accent);
+  --color-primary-hover: var(--lf-color-accent-hover);
+  --color-success:       var(--lf-color-success);
+  --color-warning:       var(--lf-color-warning);
+  --color-error:         var(--lf-color-danger);
+  --color-border:        var(--lf-color-border);
 
   /* Spacing */
   --spacing-xs: 0.25rem;
@@ -33,32 +37,18 @@
   --spacing-2xl: 3rem;
 
   /* Border radius */
-  --radius-sm: 4px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
+  --radius-sm: var(--lf-radius-sm);
+  --radius-md: var(--lf-radius-md);
+  --radius-lg: var(--lf-radius-lg);
 
   /* Shadows */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
-  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+  --shadow-sm: var(--lf-shadow-sm);
+  --shadow-md: var(--lf-shadow-md);
+  --shadow-lg: var(--lf-shadow-lg);
 
   /* Layout */
   --header-height: 60px;
   --sidebar-width: 250px;
-}
-
-/* Dark Theme */
-[data-theme="dark"] {
-  --color-bg: #1a1a1a;
-  --color-bg-secondary: #2a2a2a;
-  --color-bg-tertiary: #3a3a3a;
-  --color-text: #f0f0f0;
-  --color-text-secondary: #b0b0b0;
-  --color-text-muted: #808080;
-  --color-border: #404040;
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2);
-  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.3);
-  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.3);
 }
 
 /* =============================================================================
@@ -156,6 +146,22 @@ input, select {
 
 .main-nav a.active {
   color: var(--color-primary);
+}
+
+.theme-toggle-btn {
+  margin-left: var(--spacing-md);
+  padding: 4px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  color: inherit;
+}
+
+.theme-toggle-btn:hover {
+  background: var(--color-bg-tertiary);
 }
 
 .app-content {
