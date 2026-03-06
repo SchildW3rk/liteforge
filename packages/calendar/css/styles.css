@@ -294,6 +294,7 @@
 
 .lf-cal-body {
   display: flex;
+  align-items: flex-start;
   overflow-y: scroll;
   flex: 1;
   min-height: 0;
