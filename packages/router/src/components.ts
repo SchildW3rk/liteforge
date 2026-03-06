@@ -192,14 +192,11 @@ export function RouterOutlet(config: RouterOutletConfig = {}): Node {
 
       try {
         currentInstance = (component as unknown as ComponentFactoryInternal)(props);
-        const tempContainer = document.createElement('div');
-        currentInstance.mount(tempContainer);
-
-        const mountedNode = tempContainer.firstChild;
-        if (mountedNode) {
-          parentNode.insertBefore(mountedNode, placeholder.nextSibling);
-          currentNode = mountedNode;
-        }
+        // Mount directly into the real DOM after the placeholder.
+        // Using a tempContainer would leave parentElement pointing at the temp div,
+        // causing async load() → renderComponent() to insert into the invisible container.
+        currentInstance.mount(parentNode as Element, placeholder.nextSibling);
+        currentNode = currentInstance.getNode();
       } catch (error) {
         handleOutletError(error, currentRoute, 'render');
       } finally {
@@ -404,31 +401,13 @@ export function RouterOutlet(config: RouterOutletConfig = {}): Node {
   // Set up effect to watch route changes
   // We need to defer this until the placeholder is in the DOM
   const originalPlaceholder = placeholder;
-  
-  // Use MutationObserver to detect when we're added to DOM
-  if (typeof MutationObserver !== 'undefined') {
-    const observer = new MutationObserver(() => {
-      if (originalPlaceholder.parentNode) {
-        observer.disconnect();
-        setupRouteWatcher();
-      }
-    });
-    
-    // Observe the document for changes
-    observer.observe(document, { childList: true, subtree: true });
-    
-    // Also check immediately in case we're already in DOM
-    if (originalPlaceholder.parentNode) {
-      observer.disconnect();
-      // Use setTimeout to ensure context is properly set up
-      setTimeout(setupRouteWatcher, 0);
-    }
-  } else {
-    // Fallback for environments without MutationObserver
-    setTimeout(setupRouteWatcher, 0);
-  }
 
   function setupRouteWatcher(): void {
+    // Dispose any previous effect before creating a new one (guards against double-call)
+    if (cleanupEffect) {
+      cleanupEffect();
+      cleanupEffect = null;
+    }
     cleanupEffect = effect(() => {
       const matched = router.matched();
       const preloadedData = router.preloadedData();
@@ -462,6 +441,30 @@ export function RouterOutlet(config: RouterOutletConfig = {}): Node {
 
       renderComponent(route, component, componentProps);
     });
+  }
+
+  // Use MutationObserver to detect when placeholder is added to the DOM,
+  // then start the route watcher. The observerFired flag prevents the
+  // MutationObserver microtask queue from triggering setupRouteWatcher twice
+  // (pending mutations can fire after disconnect() in the same microtask batch).
+  if (typeof MutationObserver !== 'undefined') {
+    if (originalPlaceholder.parentNode) {
+      // Already in DOM — defer to next tick so context is fully set up
+      setTimeout(setupRouteWatcher, 0);
+    } else {
+      let observerFired = false;
+      const observer = new MutationObserver(() => {
+        if (observerFired) return;
+        if (originalPlaceholder.parentNode) {
+          observerFired = true;
+          observer.disconnect();
+          setTimeout(setupRouteWatcher, 0);
+        }
+      });
+      observer.observe(document, { childList: true, subtree: true });
+    }
+  } else {
+    setTimeout(setupRouteWatcher, 0);
   }
 
   // Return a node that cleans up when removed

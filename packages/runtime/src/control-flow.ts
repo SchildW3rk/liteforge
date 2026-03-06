@@ -91,12 +91,16 @@ export function Show<T>(config: ShowConfig<T>): Node {
   let lastValue: T | undefined;
   let hasRendered = false;
 
-  // Resolve the condition to a function
+  // Resolve the condition to a function.
+  // Handles two cases:
+  //   when: signal           → vite-plugin compiles to () => signal, getValue returns signal fn
+  //   when: () => signal()   → getValue returns boolean/value directly
+  // If the result is itself a function (i.e. a signal was passed through a getter),
+  // call it once more to get the actual value.
   const getValue = (): T => {
-    if (typeof when === 'function') {
-      return (when as () => T)();
-    }
-    return when;
+    let val: T = typeof when === 'function' ? (when as () => T)() : when;
+    if (typeof val === 'function') val = (val as () => T)();
+    return val;
   };
 
   // Update content based on condition

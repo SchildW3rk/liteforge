@@ -1,6 +1,6 @@
 {
   "name": "@liteforge/router",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "SPA router with nested routes, guards, middleware, lazy loading, and code splitting.",
   "author": "SchildW3rk <contact@schildw3rk.dev>",
   "license": "MIT",

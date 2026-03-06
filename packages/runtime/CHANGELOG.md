@@ -1,5 +1,11 @@
 # @liteforge/runtime
 
+## 0.6.1
+
+### Patch Changes
+
+- Fix RouterOutlet mounting async components into detached containers — components with `load()` now render into the real DOM instead of a temporary `div`, preventing invisible async output. Fix `<Show>` double-signal unwrap — when the vite-plugin passes a signal reference through a getter, the condition is now unwrapped twice if needed, so `<Show when={mySignal}>` works correctly without manual `() => mySignal()` wrapping.
+
 ## 0.6.0
 
 ### Minor Changes
