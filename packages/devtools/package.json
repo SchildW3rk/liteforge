@@ -1,6 +1,6 @@
 {
   "name": "@liteforge/devtools",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "description": "DevTools panel for debugging signals, stores, router, and components with time-travel debugging.",
   "author": "SchildW3rk <contact@schildw3rk.dev>",
   "license": "MIT",
@@ -52,7 +52,7 @@
   },
   "peerDependencies": {
     "@liteforge/core": ">=0.1.0",
-    "@liteforge/runtime": ">=0.5.0"
+    "@liteforge/runtime": ">=0.6.0"
   },
   "peerDependenciesMeta": {
     "@liteforge/runtime": {

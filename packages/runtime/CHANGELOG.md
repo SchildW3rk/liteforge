@@ -1,5 +1,30 @@
 # @liteforge/runtime
 
+## 0.6.0
+
+### Minor Changes
+
+- Add `jsx-runtime` for `jsxImportSource` support; remove HMR console logs
+
+  **`@liteforge/runtime`**
+
+  - Add `jsx-runtime` entry point — re-exports `h` as `jsx`/`jsxs`/`jsxDEV` and `Fragment` for the `react-jsx` transform target
+  - Export `./jsx-runtime` and `./jsx-dev-runtime` in `package.json`
+  - Remove all `[LiteForge HMR]` console.log statements from `hmr.ts` and `app.ts`
+
+  **`liteforge`**
+
+  - Add `liteforge/jsx-runtime` barrel that re-exports from `@liteforge/runtime/jsx-runtime`
+  - Export `./jsx-runtime` and `./jsx-dev-runtime` in `package.json`
+
+  Users can now configure `tsconfig.json` with:
+
+  ```json
+  { "compilerOptions": { "jsx": "react-jsx", "jsxImportSource": "liteforge" } }
+  ```
+
+  No manual `h`/`Fragment` imports needed, no TypeScript errors.
+
 ## 0.5.0
 
 ### Minor Changes
