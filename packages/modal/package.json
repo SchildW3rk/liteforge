@@ -1,6 +1,6 @@
 {
   "name": "@liteforge/modal",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Signal-based modal system. createModal, ModalProvider, confirm/alert/prompt presets.",
   "author": "SchildW3rk <contact@schildw3rk.dev>",
   "license": "MIT",
@@ -38,7 +38,9 @@
     "README.md",
     "LICENSE"
   ],
-  "sideEffects": ["css/*.css"],
+  "sideEffects": [
+    "css/*.css"
+  ],
   "engines": {
     "node": ">=18"
   },
@@ -53,7 +55,7 @@
   },
   "peerDependencies": {
     "@liteforge/core": ">=0.1.0",
-    "@liteforge/runtime": ">=0.4.2"
+    "@liteforge/runtime": ">=0.4.3"
   },
   "peerDependenciesMeta": {
     "@liteforge/runtime": {

@@ -1,5 +1,20 @@
 # @liteforge/vite-plugin
 
+## 0.4.2
+
+### Patch Changes
+
+- Fix Show() unmount race and template path-resolver traversal
+
+  - `runtime`: `Show()` now uses `marker.isConnected` instead of `marker.parentNode`
+    so the deferred `requestAnimationFrame` is a no-op when the router unmounts
+    the outlet before the frame fires — eliminates stale-content flashes on fast
+    route transitions
+  - `vite-plugin`: introduce `toDomChildren()` in path-resolver to correctly handle
+    mixed static/dynamic child sequences; fixes off-by-one `nextSibling` traversal
+    that caused null-ref crashes in template-extracted components with adjacent
+    text nodes and reactive expressions
+
 ## 0.4.0
 
 ### Minor Changes

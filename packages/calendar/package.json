@@ -1,6 +1,6 @@
 {
   "name": "@liteforge/calendar",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Full scheduling calendar with day/week/month/agenda views, drag & drop, resize, and resource columns.",
   "author": "SchildW3rk <contact@schildw3rk.dev>",
   "license": "MIT",
@@ -41,7 +41,9 @@
     "README.md",
     "LICENSE"
   ],
-  "sideEffects": ["css/*.css"],
+  "sideEffects": [
+    "css/*.css"
+  ],
   "engines": {
     "node": ">=18"
   },

@@ -1,6 +1,6 @@
 {
   "name": "@liteforge/admin",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Signals-based admin panel for LiteForge",
   "main": "dist/index.js",
   "module": "dist/index.js",
@@ -19,7 +19,9 @@
     "README.md",
     "LICENSE"
   ],
-  "sideEffects": ["css/*.css"],
+  "sideEffects": [
+    "css/*.css"
+  ],
   "scripts": {
     "build": "vite build",
     "typecheck": "tsc -p tsconfig.build.json --noEmit"
@@ -33,10 +35,18 @@
     "zod": "^3.0.0"
   },
   "peerDependenciesMeta": {
-    "@liteforge/client": { "optional": true },
-    "@liteforge/router": { "optional": true },
-    "@liteforge/form": { "optional": true },
-    "zod": { "optional": true }
+    "@liteforge/client": {
+      "optional": true
+    },
+    "@liteforge/router": {
+      "optional": true
+    },
+    "@liteforge/form": {
+      "optional": true
+    },
+    "zod": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@liteforge/core": "workspace:*",

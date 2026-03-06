@@ -1,5 +1,24 @@
 # liteforge
 
+## 0.5.1
+
+### Patch Changes
+
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+  - @liteforge/admin@0.2.0
+  - @liteforge/modal@1.1.0
+  - @liteforge/table@0.2.0
+  - @liteforge/calendar@0.2.0
+  - @liteforge/runtime@0.4.3
+  - @liteforge/vite-plugin@0.4.2
+  - @liteforge/client@1.0.0
+  - @liteforge/devtools@1.0.0
+  - @liteforge/i18n@0.2.0
+  - @liteforge/query@1.0.0
+  - @liteforge/router@0.3.0
+
 ## 0.5.0
 
 ### Minor Changes

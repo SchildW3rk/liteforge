@@ -21,9 +21,6 @@ import { effect } from 'liteforge';
 
 export const App = createComponent({
   name: 'App',
-  mounted() {
-    uiStore.initialize();
-  },
   component() {
     // Keep data-theme in sync with uiStore so all --lf-* tokens react
     effect(() => {

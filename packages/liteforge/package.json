@@ -1,6 +1,6 @@
 {
   "name": "liteforge",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "LiteForge — signals-based frontend framework. Single meta-package re-exporting all @liteforge/* packages.",
   "author": "SchildW3rk <contact@schildw3rk.dev>",
   "license": "MIT",
