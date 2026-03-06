@@ -9,7 +9,7 @@ import { Dashboard } from '../components/Dashboard.js';
 import { ActivityLogView } from '../components/ActivityLogView.js';
 
 export interface BuildAdminRoutesOptions {
-  resources: ResourceDefinition[];
+  resources: ResourceDefinition<unknown>[];
   basePath: string;
   client: Client;
   title?: string;

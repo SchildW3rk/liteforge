@@ -9,7 +9,7 @@ import { ConfirmDialog } from './ConfirmDialog.js';
 import type { UseListOptions } from '../hooks/useList.js';
 
 export interface DataTableProps {
-  resource: ResourceDefinition;
+  resource: ResourceDefinition<unknown>;
   client: Client;
   basePath: string;
 }

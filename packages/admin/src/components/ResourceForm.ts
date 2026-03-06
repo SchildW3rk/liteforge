@@ -16,7 +16,7 @@ function evalPerm<T>(
 }
 
 export interface ResourceFormProps {
-  resource: ResourceDefinition;
+  resource: ResourceDefinition<unknown>;
   client: Client;
   mode: 'create' | 'edit';
   basePath: string;

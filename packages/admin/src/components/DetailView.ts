@@ -15,7 +15,7 @@ function evalPerm<T>(
 }
 
 export interface DetailViewProps {
-  resource: ResourceDefinition;
+  resource: ResourceDefinition<unknown>;
   client: Client;
   basePath: string;
 }

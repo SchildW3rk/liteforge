@@ -159,7 +159,7 @@ export interface DefineResourceOptions<T = Record<string, unknown>> {
 
 export interface AdminApi {
   navigate: (path: string) => void;
-  registry: Map<string, ResourceDefinition>;
+  registry: Map<string, ResourceDefinition<unknown>>;
 }
 
 export interface AdminPluginOptions {

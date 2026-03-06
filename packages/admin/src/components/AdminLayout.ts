@@ -5,7 +5,7 @@ import type { Router } from '@liteforge/router';
 import type { ResourceDefinition } from '../types.js';
 
 export interface AdminLayoutProps {
-  resources: ResourceDefinition[];
+  resources: ResourceDefinition<unknown>[];
   basePath: string;
   title?: string;
   logo?: string | (() => Node);
