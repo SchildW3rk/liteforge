@@ -3,6 +3,7 @@ import type { Client } from '@liteforge/client';
 import type { AdminApi, AdminPluginOptions } from './types.js';
 import { resourceRegistry } from './core/registry.js';
 import { injectAdminStyles } from './styles.js';
+import { configureActivityLog } from './core/activityLog.js';
 
 export function adminPlugin(options?: AdminPluginOptions): LiteForgePlugin {
   return {
@@ -33,6 +34,10 @@ export function adminPlugin(options?: AdminPluginOptions): LiteForgePlugin {
 
       if (!options?.unstyled) {
         injectAdminStyles();
+      }
+
+      if (options?.logEndpoint) {
+        configureActivityLog({ logEndpoint: options.logEndpoint });
       }
 
       const adminApi: AdminApi = {

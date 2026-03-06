@@ -1,6 +1,7 @@
 import { signal } from '@liteforge/core';
 import type { ResourceDefinition, UseResourceResult } from '../types.js';
 import type { Client } from '@liteforge/client';
+import { logActivity } from '../core/activityLog.js';
 
 export interface UseResourceOptions<T> {
   resource: ResourceDefinition<T>;
@@ -26,6 +27,13 @@ export function useResource<T>(options: UseResourceOptions<T>): UseResourceResul
       if (resource.hooks?.afterCreate) {
         resource.hooks.afterCreate(result);
       }
+      logActivity({
+        resourceName: resource.name,
+        resourceLabel: resource.label,
+        action: 'create',
+        recordId: (result as Record<string, unknown>)['id'] as string | number ?? '',
+        data: result as Record<string, unknown>,
+      });
       return result;
     } catch (err) {
       const e = err instanceof Error ? err : new Error(String(err));
@@ -48,6 +56,13 @@ export function useResource<T>(options: UseResourceOptions<T>): UseResourceResul
       if (resource.hooks?.afterEdit) {
         resource.hooks.afterEdit(result);
       }
+      logActivity({
+        resourceName: resource.name,
+        resourceLabel: resource.label,
+        action: 'update',
+        recordId: id,
+        data: result as Record<string, unknown>,
+      });
       return result;
     } catch (err) {
       const e = err instanceof Error ? err : new Error(String(err));
@@ -70,6 +85,12 @@ export function useResource<T>(options: UseResourceOptions<T>): UseResourceResul
       if (resource.hooks?.afterDestroy) {
         resource.hooks.afterDestroy(id);
       }
+      logActivity({
+        resourceName: resource.name,
+        resourceLabel: resource.label,
+        action: 'delete',
+        recordId: id,
+      });
     } catch (err) {
       const e = err instanceof Error ? err : new Error(String(err));
       error.set(e);

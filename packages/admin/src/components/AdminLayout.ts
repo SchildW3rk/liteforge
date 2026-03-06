@@ -1,4 +1,4 @@
-import { effect } from '@liteforge/core';
+import { effect, signal } from '@liteforge/core';
 import { h, use } from '@liteforge/runtime';
 import { RouterOutlet } from '@liteforge/router';
 import type { Router } from '@liteforge/router';
@@ -9,10 +9,24 @@ export interface AdminLayoutProps {
   basePath: string;
   title?: string;
   logo?: string | (() => Node);
+  extraNavLinks?: Array<{ label: string; path: string }>;
+}
+
+export function setAdminTheme(theme: 'light' | 'dark'): void {
+  document.documentElement.dataset.theme = theme;
+  try { localStorage.setItem('lf-admin-theme', theme); } catch { /* no-op */ }
+}
+
+function readStoredTheme(): 'light' | 'dark' {
+  try {
+    const stored = localStorage.getItem('lf-admin-theme');
+    if (stored === 'light' || stored === 'dark') return stored;
+  } catch { /* no-op */ }
+  return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
 }
 
 export function AdminLayout(props: AdminLayoutProps): Node {
-  const { resources, basePath, title = 'Admin', logo } = props;
+  const { resources, basePath, title = 'Admin', logo, extraNavLinks } = props;
 
   let router: Router | undefined;
   try {
@@ -20,6 +34,10 @@ export function AdminLayout(props: AdminLayoutProps): Node {
   } catch {
     // no-op
   }
+
+  // Theme
+  const theme = signal(readStoredTheme());
+  effect(() => { setAdminTheme(theme()); });
 
   // Logo child: either the logo() Node, a logo string, or the title string
   const logoChild: Node | string = logo
@@ -52,7 +70,26 @@ export function AdminLayout(props: AdminLayoutProps): Node {
     return btn;
   });
 
+  // Extra nav links (e.g. Activity Log)
+  for (const extra of extraNavLinks ?? []) {
+    const btn = h('button', {
+      class: 'lf-admin-sidebar__link',
+      onclick: () => {
+        if (router) void router.navigate(extra.path);
+      },
+    }, extra.label) as HTMLElement;
+    links.push({ el: btn, path: extra.path });
+    navChildren.push(btn);
+  }
+
   const breadcrumb = h('span', { class: 'lf-admin-header__breadcrumb' }, title);
+
+  // Theme toggle button
+  const toggleBtn = h('button', {
+    class: 'lf-admin-theme-toggle',
+    onclick: () => theme.update(t => t === 'dark' ? 'light' : 'dark'),
+  }, '') as HTMLButtonElement;
+  effect(() => { toggleBtn.textContent = theme() === 'light' ? '🌙' : '☀️'; });
 
   const root = h('div', { class: 'lf-admin' },
     h('aside', { class: 'lf-admin-sidebar' },
@@ -62,6 +99,7 @@ export function AdminLayout(props: AdminLayoutProps): Node {
     h('div', { class: 'lf-admin-body' },
       h('header', { class: 'lf-admin-header' },
         breadcrumb,
+        toggleBtn,
       ),
       h('main', { class: 'lf-admin-content' },
         RouterOutlet(),
@@ -83,7 +121,12 @@ export function AdminLayout(props: AdminLayoutProps): Node {
 
       // Update breadcrumb
       const active = resources.find(r => path.startsWith(`${basePath}/${r.name}`));
-      breadcrumb.textContent = active ? `${title} / ${active.label}` : title;
+      if (active) {
+        breadcrumb.textContent = `${title} / ${active.label}`;
+      } else {
+        const extraActive = extraNavLinks?.find(e => path.startsWith(e.path));
+        breadcrumb.textContent = extraActive ? `${title} / ${extraActive.label.replace(/^[^\w]+\s*/, '')}` : title;
+      }
     });
   }
 

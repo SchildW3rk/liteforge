@@ -1,10 +1,12 @@
 import type { RouteDefinition } from '@liteforge/router';
 import type { Client } from '@liteforge/client';
-import type { ResourceDefinition } from '../types.js';
+import type { ResourceDefinition, DashboardConfig } from '../types.js';
 import { DataTable } from '../components/DataTable.js';
 import { DetailView } from '../components/DetailView.js';
 import { ResourceForm } from '../components/ResourceForm.js';
 import { AdminLayout } from '../components/AdminLayout.js';
+import { Dashboard } from '../components/Dashboard.js';
+import { ActivityLogView } from '../components/ActivityLogView.js';
 
 export interface BuildAdminRoutesOptions {
   resources: ResourceDefinition[];
@@ -13,6 +15,8 @@ export interface BuildAdminRoutesOptions {
   title?: string;
   logo?: string | (() => Node);
   unstyled?: boolean;
+  dashboard?: DashboardConfig;
+  showActivityLog?: boolean;
 }
 
 export function buildAdminRoutes(opts: BuildAdminRoutesOptions): RouteDefinition[] {
@@ -20,13 +24,20 @@ export function buildAdminRoutes(opts: BuildAdminRoutesOptions): RouteDefinition
 
   const childRoutes: RouteDefinition[] = [];
 
-  // Default index redirect
-  const firstResource = resources[0];
-  if (firstResource) {
+  // Index route: dashboard or redirect to first resource
+  if (opts.dashboard) {
     childRoutes.push({
       path: '/',
-      redirect: `${basePath}/${firstResource.name}`,
+      component: () => Dashboard({ config: opts.dashboard!, client, basePath }),
     });
+  } else {
+    const firstResource = resources[0];
+    if (firstResource) {
+      childRoutes.push({
+        path: '/',
+        redirect: `${basePath}/${firstResource.name}`,
+      });
+    }
   }
 
   for (const resource of resources) {
@@ -65,12 +76,22 @@ export function buildAdminRoutes(opts: BuildAdminRoutesOptions): RouteDefinition
     void base;
   }
 
+  if (opts.showActivityLog) {
+    childRoutes.push({
+      path: '/activity',
+      component: () => ActivityLogView(),
+    });
+  }
+
   const layoutProps: import('../components/AdminLayout.js').AdminLayoutProps = {
     resources,
     basePath,
   };
   if (title) layoutProps.title = title;
   if (logo) layoutProps.logo = logo;
+  if (opts.showActivityLog) {
+    layoutProps.extraNavLinks = [{ label: '📋 Activity Log', path: `${basePath}/activity` }];
+  }
 
   return [
     {

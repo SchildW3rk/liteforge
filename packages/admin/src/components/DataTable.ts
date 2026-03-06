@@ -1,4 +1,4 @@
-import { effect } from '@liteforge/core';
+import { effect, signal, onCleanup } from '@liteforge/core';
 import { h, use } from '@liteforge/runtime';
 import type { Router } from '@liteforge/router';
 import type { Client } from '@liteforge/client';
@@ -12,6 +12,23 @@ export interface DataTableProps {
   resource: ResourceDefinition;
   client: Client;
   basePath: string;
+}
+
+function evalPerm<T>(
+  perm: boolean | ((record: T) => boolean) | undefined,
+  record: T,
+): boolean {
+  if (perm === undefined) return true;
+  if (typeof perm === 'boolean') return perm;
+  return perm(record);
+}
+
+function triggerDownload(content: string, filename: string, mime: string): void {
+  const blob = new Blob([content], { type: mime });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename; a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 function formatCellValue(value: unknown, col: ColumnConfig): Node {
@@ -62,6 +79,31 @@ export function DataTable(props: DataTableProps): Node {
   } catch { /* no-op */ }
 
   const res = useResource({ resource, client });
+  const columns = resource.list.columns;
+
+  // ── Export helpers ────────────────────────────────────────────────────────────
+
+  function exportCurrentPage(format: 'csv' | 'json', data: Record<string, unknown>[]): void {
+    if (format === 'json') {
+      triggerDownload(JSON.stringify(data, null, 2), `${resource.name}.json`, 'application/json');
+    } else {
+      const header = columns.map(c => JSON.stringify(c.label)).join(',');
+      const rows = data.map(row =>
+        columns.map(c => {
+          const v = row[c.field];
+          return v == null ? '' : JSON.stringify(String(v));
+        }).join(','),
+      );
+      triggerDownload([header, ...rows].join('\n'), `${resource.name}.csv`, 'text/csv');
+    }
+  }
+
+  // ── Bulk selection state ──────────────────────────────────────────────────────
+
+  const selectedIds = signal<(string | number)[]>([]);
+  const hasBulkFeature =
+    resource.actions.includes('destroy') ||
+    (resource.bulkActions !== undefined && resource.bulkActions.length > 0);
 
   const listOptions: UseListOptions<Record<string, unknown>> = {
     fetchFn: (params) => client.resource<Record<string, unknown>>(resource.endpoint).getList(params),
@@ -102,13 +144,39 @@ export function DataTable(props: DataTableProps): Node {
     toolbarChildren.push(sel);
   }
 
-  if (resource.actions.includes('create')) {
+  const canCreate = evalPerm(resource.permissions?.canCreate as boolean | (() => boolean) | undefined, {} as Record<string, unknown>);
+  if (resource.actions.includes('create') && canCreate) {
     toolbarChildren.push(
       h('button', {
         class: 'lf-admin-btn lf-admin-btn--primary',
         onclick: () => { if (router) void router.navigate(`${basePath}/${resource.name}/new`); },
       }, `+ New ${resource.label}`),
     );
+  }
+
+  // Export dropdown
+  if (columns.length > 0) {
+    const exportOpen = signal(false);
+
+    const exportDropdown = h('div', { class: 'lf-admin-export-dropdown', style: 'display:none' },
+      h('button', { onclick: () => { exportCurrentPage('csv', list.data()); exportOpen.set(false); } }, 'Export CSV'),
+      h('button', { onclick: () => { exportCurrentPage('json', list.data()); exportOpen.set(false); } }, 'Export JSON'),
+    ) as HTMLElement;
+
+    effect(() => {
+      exportDropdown.style.display = exportOpen() ? 'block' : 'none';
+    });
+
+    const exportToggleBtn = h('button', {
+      class: 'lf-admin-btn lf-admin-btn--ghost lf-admin-btn--sm',
+      onclick: (e: Event) => { e.stopPropagation(); exportOpen.update(v => !v); },
+    }, '↓ Export');
+
+    const clickAway = (): void => exportOpen.set(false);
+    document.addEventListener('click', clickAway);
+    onCleanup(() => document.removeEventListener('click', clickAway));
+
+    toolbarChildren.push(h('div', { class: 'lf-admin-export-menu' }, exportToggleBtn, exportDropdown));
   }
 
   const toolbar = h('div', { class: 'lf-admin-toolbar' }, ...toolbarChildren);
@@ -124,14 +192,45 @@ export function DataTable(props: DataTableProps): Node {
 
   // ── Table header ─────────────────────────────────────────────────────────────
 
-  const columns = resource.list.columns;
   const hasRowActions =
     resource.actions.includes('show') ||
     resource.actions.includes('edit') ||
     resource.actions.includes('destroy') ||
     (resource.rowActions && resource.rowActions.length > 0);
 
-  const headerCells: Node[] = columns.map(col => {
+  const headerCells: Node[] = [];
+
+  // Master checkbox
+  if (hasBulkFeature) {
+    const masterCb = h('input', { type: 'checkbox', style: 'cursor:pointer' }) as HTMLInputElement;
+    effect(() => {
+      const data = list.data();
+      const selected = selectedIds();
+      if (data.length === 0) {
+        masterCb.indeterminate = false;
+        masterCb.checked = false;
+      } else if (selected.length === data.length) {
+        masterCb.indeterminate = false;
+        masterCb.checked = true;
+      } else if (selected.length > 0) {
+        masterCb.indeterminate = true;
+        masterCb.checked = false;
+      } else {
+        masterCb.indeterminate = false;
+        masterCb.checked = false;
+      }
+    });
+    masterCb.addEventListener('change', () => {
+      if (masterCb.checked) {
+        selectedIds.set(list.data().map(r => r['id'] as string | number));
+      } else {
+        selectedIds.set([]);
+      }
+    });
+    headerCells.push(h('th', { style: 'width:40px;text-align:center' }, masterCb));
+  }
+
+  headerCells.push(...columns.map(col => {
     if (!col.sortable) return h('th', null, col.label);
 
     const sortIcon = h('span', { style: 'margin-left:4px' }, ' ↕');
@@ -147,7 +246,7 @@ export function DataTable(props: DataTableProps): Node {
       onclick: () => list.setSort(col.field),
     }, col.label, sortIcon);
     return th;
-  });
+  }));
 
   if (hasRowActions) {
     headerCells.push(h('th', { style: 'text-align:right' }, 'Actions'));
@@ -162,6 +261,73 @@ export function DataTable(props: DataTableProps): Node {
 
   const loadingEl = h('div', { class: 'lf-admin-loading' }, 'Loading...') as HTMLElement;
 
+  // ── Bulk bar ─────────────────────────────────────────────────────────────────
+
+  const bulkBar = hasBulkFeature ? (() => {
+    const countEl = h('span', { class: 'lf-admin-bulk-bar__count' }, '0 selected') as HTMLElement;
+
+    const actionBtns: Node[] = [];
+
+    if (resource.actions.includes('destroy')) {
+      const deleteBtn = h('button', {
+        class: 'lf-admin-btn lf-admin-btn--danger lf-admin-btn--sm',
+        onclick: () => {
+          const ids = selectedIds();
+          const dialog = ConfirmDialog({
+            message: `Delete ${ids.length} selected item(s)? This cannot be undone.`,
+            onConfirm: async () => {
+              for (const id of ids) await res.destroy(id);
+              selectedIds.set([]);
+              list.refresh();
+            },
+            onCancel: () => {},
+          });
+          document.body.appendChild(dialog);
+        },
+      }, 'Delete selected');
+      actionBtns.push(deleteBtn);
+    }
+
+    for (const bulkAction of resource.bulkActions ?? []) {
+      const btn = h('button', {
+        class: 'lf-admin-btn lf-admin-btn--ghost lf-admin-btn--sm',
+        onclick: () => {
+          const ids = selectedIds();
+          void bulkAction.action(ids).then(() => {
+            selectedIds.set([]);
+            list.refresh();
+          });
+        },
+      }, bulkAction.label);
+      actionBtns.push(btn);
+    }
+
+    const clearBtn = h('button', {
+      class: 'lf-admin-btn lf-admin-btn--ghost lf-admin-btn--sm',
+      onclick: () => selectedIds.set([]),
+    }, 'Clear');
+
+    const bar = h('div', { class: 'lf-admin-bulk-bar', style: 'display:none' },
+      countEl, ...actionBtns, clearBtn,
+    ) as HTMLElement;
+
+    effect(() => {
+      const count = selectedIds().length;
+      bar.style.display = count > 0 ? 'flex' : 'none';
+      countEl.textContent = `${count} selected`;
+    });
+
+    return bar;
+  })() : null;
+
+  // Reset selection on page change
+  if (hasBulkFeature) {
+    effect(() => {
+      list.page(); // track page signal
+      selectedIds.set([]);
+    });
+  }
+
   effect(() => {
     const loading = list.loading();
     const data = list.data();
@@ -174,29 +340,45 @@ export function DataTable(props: DataTableProps): Node {
     tbody.innerHTML = '';
 
     for (const record of data) {
-      const cells: Node[] = columns.map(col =>
+      const id = record['id'] as string | number;
+      const cells: Node[] = [];
+
+      // Row checkbox
+      if (hasBulkFeature) {
+        const rowCb = h('input', { type: 'checkbox', style: 'cursor:pointer' }) as HTMLInputElement;
+        rowCb.checked = selectedIds().includes(id);
+        rowCb.addEventListener('change', () => {
+          if (rowCb.checked) {
+            selectedIds.update(ids => [...ids, id]);
+          } else {
+            selectedIds.update(ids => ids.filter(x => x !== id));
+          }
+        });
+        cells.push(h('td', { style: 'width:40px;text-align:center' }, rowCb));
+      }
+
+      cells.push(...columns.map(col =>
         h('td', null, formatCellValue(record[col.field], col)),
-      );
+      ));
 
       if (hasRowActions) {
-        const id = record['id'] as string | number;
         const actionBtns: Node[] = [];
 
-        if (resource.actions.includes('show') && router) {
+        if (resource.actions.includes('show') && router && evalPerm(resource.permissions?.canView, record)) {
           actionBtns.push(h('button', {
             class: 'lf-admin-btn lf-admin-btn--ghost lf-admin-btn--sm',
             onclick: () => void router!.navigate(`${basePath}/${resource.name}/${id}`),
           }, 'View'));
         }
 
-        if (resource.actions.includes('edit') && router) {
+        if (resource.actions.includes('edit') && router && evalPerm(resource.permissions?.canEdit, record)) {
           actionBtns.push(h('button', {
             class: 'lf-admin-btn lf-admin-btn--ghost lf-admin-btn--sm',
             onclick: () => void router!.navigate(`${basePath}/${resource.name}/${id}/edit`),
           }, 'Edit'));
         }
 
-        if (resource.actions.includes('destroy')) {
+        if (resource.actions.includes('destroy') && evalPerm(resource.permissions?.canDestroy, record)) {
           actionBtns.push(h('button', {
             class: 'lf-admin-btn lf-admin-btn--danger lf-admin-btn--sm',
             onclick: () => {
@@ -277,10 +459,9 @@ export function DataTable(props: DataTableProps): Node {
     h('div', { style: 'display:flex;gap:4px' }, prevBtn, pageButtonsContainer, nextBtn),
   );
 
-  return h('div', { class: 'lf-admin-table-wrap' },
-    toolbar,
-    errorEl,
-    tableEl,
-    pagination,
-  );
+  const wrapChildren: Node[] = [toolbar];
+  if (bulkBar) wrapChildren.push(bulkBar);
+  wrapChildren.push(errorEl, tableEl, pagination);
+
+  return h('div', { class: 'lf-admin-table-wrap' }, ...wrapChildren);
 }

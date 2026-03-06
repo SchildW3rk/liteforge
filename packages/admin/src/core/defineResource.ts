@@ -21,6 +21,8 @@ export function defineResource<T = Record<string, unknown>>(
     form: options.form ?? undefined,
     hooks: options.hooks ?? undefined,
     rowActions: options.rowActions ?? undefined,
+    bulkActions: options.bulkActions ?? undefined,
+    permissions: options.permissions ?? undefined,
   };
   return Object.freeze(def);
 }

@@ -1,10 +1,19 @@
 import { effect, signal } from '@liteforge/core';
 import { h, use } from '@liteforge/runtime';
 import type { Router } from '@liteforge/router';
-import type { Client } from '@liteforge/client';
+import type { Client, ListResponse } from '@liteforge/client';
 import type { ResourceDefinition, FormFieldConfig } from '../types.js';
 import { useRecord } from '../hooks/useRecord.js';
 import { useResource } from '../hooks/useResource.js';
+
+function evalPerm<T>(
+  perm: boolean | ((record: T) => boolean) | undefined,
+  record: T,
+): boolean {
+  if (perm === undefined) return true;
+  if (typeof perm === 'boolean') return perm;
+  return perm(record);
+}
 
 export interface ResourceFormProps {
   resource: ResourceDefinition;
@@ -18,6 +27,7 @@ function buildFieldNode(
   getValue: () => unknown,
   setValue: (v: unknown) => void,
   getError: () => string | null,
+  client?: Client,
 ): Node {
   const wrapperClass = 'lf-admin-form__field' +
     (fieldCfg.span === 'full' ? ' lf-admin-form__field--full' : '');
@@ -105,6 +115,95 @@ function buildFieldNode(
       break;
     }
 
+    case 'relation': {
+      const relationCfg = fieldCfg.relation;
+      if (!relationCfg || !client) {
+        // Fallback: plain text input if no config or client
+        const inp = h('input', { type: 'text', class: 'lf-admin-form__input' }) as HTMLInputElement;
+        inp.value = String(getValue() ?? '');
+        inp.addEventListener('input', () => setValue(inp.value));
+        effect(() => { inp.value = String(getValue() ?? ''); });
+        inputEl = inp;
+        break;
+      }
+
+      const labelField = relationCfg.labelField;
+      const relEndpoint = relationCfg.resource;
+
+      const displayValue = signal('');
+      const dropdownItems = signal<Record<string, unknown>[]>([]);
+      const dropdownOpen = signal(false);
+
+      // Init display from current value
+      const currentId = getValue();
+      if (currentId != null && currentId !== '') {
+        void client.resource<Record<string, unknown>>(relEndpoint)
+          .getOne(currentId as string | number)
+          .then(rec => { displayValue.set(String(rec[labelField] ?? '')); })
+          .catch(() => {});
+      }
+
+      const inp = h('input', {
+        type: 'text',
+        class: 'lf-admin-form__input',
+        autocomplete: 'off',
+      }) as HTMLInputElement;
+
+      effect(() => { inp.value = displayValue(); });
+
+      const dropdown = h('ul', { class: 'lf-admin-relation__dropdown', style: 'display:none' }) as HTMLElement;
+
+      effect(() => {
+        const items = dropdownItems();
+        const open = dropdownOpen();
+        dropdown.style.display = open && items.length > 0 ? 'block' : 'none';
+        dropdown.innerHTML = '';
+        if (items.length === 0 && open) {
+          dropdown.appendChild(h('li', { class: 'lf-admin-relation__empty' }, 'No results'));
+          dropdown.style.display = 'block';
+        }
+        for (const item of items) {
+          const li = h('li', { class: 'lf-admin-relation__option' }, String(item[labelField] ?? ''));
+          li.addEventListener('mousedown', (e) => {
+            e.preventDefault();
+            setValue(item['id']);
+            displayValue.set(String(item[labelField] ?? ''));
+            dropdownOpen.set(false);
+            dropdownItems.set([]);
+          });
+          dropdown.appendChild(li);
+        }
+      });
+
+      let searchTimer: ReturnType<typeof setTimeout> | null = null;
+      inp.addEventListener('input', () => {
+        const v = inp.value;
+        displayValue.set(v);
+        if (searchTimer) clearTimeout(searchTimer);
+        searchTimer = setTimeout(() => {
+          void client.resource<Record<string, unknown>>(relEndpoint)
+            .getList({ search: v, pageSize: 10 })
+            .then((res: ListResponse<Record<string, unknown>>) => {
+              dropdownItems.set(res.data);
+              dropdownOpen.set(true);
+            })
+            .catch(() => {});
+        }, 300);
+      });
+
+      inp.addEventListener('focus', () => {
+        if (dropdownItems().length > 0) dropdownOpen.set(true);
+      });
+
+      inp.addEventListener('blur', () => {
+        // Slight delay so mousedown on li fires first
+        setTimeout(() => dropdownOpen.set(false), 150);
+      });
+
+      inputEl = h('div', { class: 'lf-admin-relation' }, inp, dropdown);
+      break;
+    }
+
     default: {
       const inp = h('input', {
         type: fieldCfg.type === 'image' ? 'url' : 'text',
@@ -147,6 +246,17 @@ export function ResourceForm(props: ResourceFormProps): Node {
   const formError = signal<string | null>(null);
   const recordLoaded = signal<boolean>(mode === 'create');
 
+  // Permission denied placeholder
+  const permDenied = signal<string | null>(null);
+
+  // In create mode — check canCreate immediately
+  if (mode === 'create') {
+    const canCreate = evalPerm(resource.permissions?.canCreate as boolean | (() => boolean) | undefined, {} as Record<string, unknown>);
+    if (!canCreate) {
+      permDenied.set(`No permission to create ${resource.label}.`);
+    }
+  }
+
   // In edit mode, load existing record before showing form
   if (mode === 'edit') {
     const { record, loading } = useRecord<Record<string, unknown>>(() =>
@@ -156,6 +266,9 @@ export function ResourceForm(props: ResourceFormProps): Node {
       const rec = record();
       const isLoading = loading();
       if (!isLoading && rec) {
+        if (!evalPerm(resource.permissions?.canEdit, rec)) {
+          permDenied.set(`No permission to edit ${resource.label}.`);
+        }
         fieldValues.set(buildInitialValues(rec));
         recordLoaded.set(true);
       }
@@ -201,6 +314,7 @@ export function ResourceForm(props: ResourceFormProps): Node {
         fieldErrors.update((errs: Record<string, string | null>) => ({ ...errs, [fieldCfg.field]: null }));
       },
       () => fieldErrors()[fieldCfg.field] ?? null,
+      client,
     ),
   );
 
@@ -232,9 +346,10 @@ export function ResourceForm(props: ResourceFormProps): Node {
   effect(() => {
     if (mode === 'edit') {
       const loaded = recordLoaded();
-      (loadingEl as HTMLElement).style.display = loaded ? 'none' : 'block';
-      (grid as HTMLElement).style.display = loaded ? 'grid' : 'none';
-      (actionsEl as HTMLElement).style.display = loaded ? 'flex' : 'none';
+      const denied = permDenied();
+      (loadingEl as HTMLElement).style.display = !loaded && !denied ? 'block' : 'none';
+      (grid as HTMLElement).style.display = loaded && !denied ? 'grid' : 'none';
+      (actionsEl as HTMLElement).style.display = loaded && !denied ? 'flex' : 'none';
     }
   });
 
@@ -289,8 +404,22 @@ export function ResourceForm(props: ResourceFormProps): Node {
     }
   });
 
+  // Permission denied message (shown instead of form)
+  const permDeniedEl = h('div', { class: 'lf-admin-error', style: 'display:none' }) as HTMLElement;
+  effect(() => {
+    const msg = permDenied();
+    permDeniedEl.style.display = msg ? 'block' : 'none';
+    if (msg) permDeniedEl.textContent = msg;
+    // For create mode hide form when denied (edit mode handled by its own effect)
+    if (mode === 'create') {
+      (grid as HTMLElement).style.display = msg ? 'none' : 'grid';
+      (actionsEl as HTMLElement).style.display = msg ? 'none' : 'flex';
+    }
+  });
+
   return h('div', { class: 'lf-admin-form' },
     formHeader,
+    permDeniedEl,
     formErrorEl,
     ...(mode === 'edit' ? [loadingEl] : []),
     grid,

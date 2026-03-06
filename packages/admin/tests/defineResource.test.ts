@@ -103,4 +103,20 @@ describe('defineResource', () => {
     expect(resource.rowActions).toHaveLength(1);
     expect(resource.rowActions![0]).toBe(rowAction);
   });
+
+  it('permissions field is passed through correctly', () => {
+    const resource = defineResource({
+      name: 'posts',
+      endpoint: '/posts',
+      list: { columns: [] },
+      permissions: { canCreate: false, canDestroy: (r: Record<string, unknown>) => r['status'] === 'draft' },
+    });
+    expect(resource.permissions?.canCreate).toBe(false);
+    expect(typeof resource.permissions?.canDestroy).toBe('function');
+  });
+
+  it('permissions field is undefined when not provided', () => {
+    const resource = defineResource({ name: 'posts', endpoint: '/posts', list: { columns: [] } });
+    expect(resource.permissions).toBeUndefined();
+  });
 });

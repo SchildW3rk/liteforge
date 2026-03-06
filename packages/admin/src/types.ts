@@ -6,6 +6,31 @@ export type { ListResponse };
 
 export type AdminAction = 'index' | 'show' | 'create' | 'edit' | 'destroy';
 
+// ── Permissions ───────────────────────────────────────────────────────────────
+
+export type PermissionValue<T> = boolean | ((record: T) => boolean);
+
+export interface ResourcePermissions<T = Record<string, unknown>> {
+  canView?: PermissionValue<T>;
+  canCreate?: boolean | (() => boolean);
+  canEdit?: PermissionValue<T>;
+  canDestroy?: PermissionValue<T>;
+}
+
+// ── Activity Log ──────────────────────────────────────────────────────────────
+
+export type ActivityAction = 'create' | 'update' | 'delete';
+
+export interface ActivityEntry {
+  id: string;
+  resourceName: string;
+  resourceLabel: string;
+  action: ActivityAction;
+  recordId: string | number;
+  timestamp: Date;
+  data?: Record<string, unknown>;
+}
+
 export type FieldType =
   | 'text'
   | 'textarea'
@@ -81,6 +106,27 @@ export interface RowAction<T> {
   action: (record: T) => Promise<void> | void;
 }
 
+export interface BulkAction<T = Record<string, unknown>> {
+  label: string;
+  icon?: string;
+  show?: (selectedIds: (string | number)[]) => boolean;
+  action: (ids: (string | number)[], records?: T[]) => Promise<void>;
+}
+
+export type DashboardWidgetType = 'count' | 'list' | 'custom';
+
+export interface DashboardWidgetConfig<T = Record<string, unknown>> {
+  type: DashboardWidgetType;
+  label: string;
+  resource?: ResourceDefinition<T>;
+  limit?: number;
+  render?: () => Node;
+}
+
+export interface DashboardConfig {
+  widgets: DashboardWidgetConfig[];
+}
+
 export interface ResourceDefinition<T = Record<string, unknown>> {
   name: string;
   label: string;
@@ -92,6 +138,8 @@ export interface ResourceDefinition<T = Record<string, unknown>> {
   form: FormConfig | undefined;
   hooks: ResourceHooks<T> | undefined;
   rowActions: RowAction<T>[] | undefined;
+  bulkActions: BulkAction<T>[] | undefined;
+  permissions: ResourcePermissions<T> | undefined;
 }
 
 export interface DefineResourceOptions<T = Record<string, unknown>> {
@@ -105,6 +153,8 @@ export interface DefineResourceOptions<T = Record<string, unknown>> {
   form?: FormConfig;
   hooks?: ResourceHooks<T>;
   rowActions?: RowAction<T>[];
+  bulkActions?: BulkAction<T>[];
+  permissions?: ResourcePermissions<T>;
 }
 
 export interface AdminApi {
@@ -117,6 +167,7 @@ export interface AdminPluginOptions {
   title?: string;
   logo?: string | (() => Node);
   unstyled?: boolean;
+  logEndpoint?: string;
 }
 
 export interface ListParams {

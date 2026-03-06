@@ -5,6 +5,15 @@ import type { Client } from '@liteforge/client';
 import type { ResourceDefinition, ColumnConfig } from '../types.js';
 import { useRecord } from '../hooks/useRecord.js';
 
+function evalPerm<T>(
+  perm: boolean | ((record: T) => boolean) | undefined,
+  record: T,
+): boolean {
+  if (perm === undefined) return true;
+  if (typeof perm === 'boolean') return perm;
+  return perm(record);
+}
+
 export interface DetailViewProps {
   resource: ResourceDefinition;
   client: Client;
@@ -81,14 +90,8 @@ export function DetailView(props: DetailViewProps): Node {
     h('h2', { class: 'lf-admin-detail__title' }, resource.label),
   ];
 
-  if (resource.actions.includes('edit') && router) {
-    headerChildren.push(
-      h('button', {
-        class: 'lf-admin-btn lf-admin-btn--primary',
-        onclick: () => void router!.navigate(`${basePath}/${resource.name}/${getId()}/edit`),
-      }, 'Edit'),
-    );
-  }
+  // Edit button — added reactively after record loads to support row-level canEdit
+  const editBtnContainer = h('span', null) as HTMLElement;
 
   // ── Error ─────────────────────────────────────────────────────────────────────
 
@@ -114,6 +117,17 @@ export function DetailView(props: DetailViewProps): Node {
 
     (loadingEl as HTMLElement).style.display = isLoading ? 'block' : 'none';
     (card as HTMLElement).style.display = !isLoading && rec ? 'block' : 'none';
+
+    // Update edit button based on loaded record + permissions
+    editBtnContainer.innerHTML = '';
+    if (!isLoading && rec && resource.actions.includes('edit') && router) {
+      if (evalPerm(resource.permissions?.canEdit, rec)) {
+        editBtnContainer.appendChild(h('button', {
+          class: 'lf-admin-btn lf-admin-btn--primary',
+          onclick: () => void router!.navigate(`${basePath}/${resource.name}/${getId()}/edit`),
+        }, 'Edit'));
+      }
+    }
 
     if (!rec) return;
 
@@ -146,7 +160,7 @@ export function DetailView(props: DetailViewProps): Node {
   });
 
   return h('div', { class: 'lf-admin-detail' },
-    h('div', { class: 'lf-admin-detail__header' }, ...headerChildren),
+    h('div', { class: 'lf-admin-detail__header' }, ...headerChildren, editBtnContainer),
     errorEl,
     loadingEl,
     card,

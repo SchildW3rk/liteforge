@@ -10,8 +10,16 @@
       "import": "./dist/index.js",
       "require": "./dist/index.cjs",
       "types": "./dist/index.d.ts"
-    }
+    },
+    "./styles": "./css/styles.css"
   },
+  "files": [
+    "dist",
+    "css",
+    "README.md",
+    "LICENSE"
+  ],
+  "sideEffects": ["css/*.css"],
   "scripts": {
     "build": "vite build",
     "typecheck": "tsc -p tsconfig.build.json --noEmit"
