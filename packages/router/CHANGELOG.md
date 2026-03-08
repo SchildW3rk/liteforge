@@ -1,5 +1,36 @@
 # @liteforge/router
 
+## 0.7.0
+
+### Minor Changes
+
+- **Typed Routes (Phase 1) — path-safe `navigate()` via `createRouter<T>`**
+
+  `createRouter` is now generic. With `as const` on your routes array, `navigate()` only accepts paths that match a known route — typos and wrong paths become TypeScript errors at compile time.
+
+  ```ts
+  const routes = [
+    { path: "/", component: Home },
+    { path: "/users/:id", component: UserDetail },
+  ] as const;
+
+  const router = createRouter({ routes, history });
+
+  router.navigate("/users/42"); // ✓
+  router.navigate("/usr/42"); // TS Error — no match
+  router.navigate("/"); // ✓
+  ```
+
+  **Opt-in, fully non-breaking:** Without `as const`, TypeScript widens paths to `string` and `navigate()` accepts any string — identical to the previous behavior. No existing code needs changes.
+
+  **Three new type utilities exported:**
+
+  - `FillParams<P>` — replaces `:param` segments with `${string}`
+  - `ExtractRoutePaths<T>` — extracts all path literals from a routes array (recursively includes children)
+  - `TypedNavigationTarget<T>` — the composed type used in `navigate()` overloads
+
+  **Phase 2 (coming):** Named route navigation with fully-typed params — `navigate('user-detail', { params: { id: '42' } })`.
+
 ## 0.6.0
 
 ### Minor Changes
