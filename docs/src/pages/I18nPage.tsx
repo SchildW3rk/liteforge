@@ -127,6 +127,21 @@ t('nav.home')                        // dot-notation for nested keys
 locale()                             // 'en' — signal, auto-tracks
 setLocale('de')                      // async, loads translations`;
 
+const INTERPOLATION_CODE = `// Translation strings with placeholders
+const en = {
+  greeting:  'Hello, {name}!',
+  itemCount: 'Showing {from}–{to} of {total} results',
+  perfNote:  'Run {cmd} and navigate to {path} for live results.',
+}
+
+// Usage — second argument is the params object
+t('greeting',  { name: 'René' })           // → 'Hello, René!'
+t('itemCount', { from: 1, to: 20, total: 847 })  // → 'Showing 1–20 of 847 results'
+t('perfNote',  { cmd: 'pnpm dev', path: '/benchmark' })
+
+// Unknown placeholders are left as-is
+t('greeting', { wrong: 'x' })  // → 'Hello, {name}!'`;
+
 const PLURAL_CODE = `// en.ts
 export default {
   items: '{count} item | {count} items',          // 2-part: singular | plural
@@ -140,6 +155,28 @@ t('messages', { count: 0 }, 0)  // 'No messages'
 t('messages', { count: 1 }, 1)  // '1 message'
 t('messages', { count: 7 }, 7)  // '7 messages'`;
 
+const PLURAL_DETAIL_CODE = `// Two-part: "singular | plural"  (1 → singular, else → plural)
+const en = {
+  item:      'item | items',
+  message:   '{count} message | {count} messages',
+}
+
+t('item', {}, 1)   // → 'item'
+t('item', {}, 5)   // → 'items'
+
+// Combine with interpolation
+t('message', { count: 1 }, 1)   // → '1 message'
+t('message', { count: 5 }, 5)   // → '5 messages'
+
+// Three-part: "zero | one | many"  (0, 1, else)
+const en2 = {
+  results: 'No results | One result | {count} results',
+}
+
+t('results', { count: 0 }, 0)   // → 'No results'
+t('results', { count: 1 }, 1)   // → 'One result'
+t('results', { count: 42 }, 42) // → '42 results'`;
+
 const FALLBACK_CODE = `// de.ts — 'nav.home' is missing
 export default { greeting: 'Hallo, {name}!' };
 
@@ -149,6 +186,19 @@ export default { greeting: 'Hello, {name}!', nav: { home: 'Home' } };
 // When locale is 'de':
 t('nav.home')   // → 'Home' (falls back to en)
 t('greeting')   // → 'Hallo, {name}!'  (found in de)`;
+
+const FALLBACK_DETAIL_CODE = `const i18n = createI18n({
+  defaultLocale: 'en',
+  fallbackLocale: 'en',   // used when a key is missing in the current locale
+  load: async (locale) => {
+    if (locale === 'de') return (await import('./locales/de.js')).default;
+    return (await import('./locales/en.js')).default;
+  },
+})
+
+// de.ts is missing 'beta.feature' — en.ts has it
+// → t('beta.feature') returns the English string, not undefined or the key
+// → No runtime errors, no visible breakage`;
 
 const LOCALE_FILE_CODE = `// locales/en.ts
 export default {
@@ -243,6 +293,35 @@ export const I18nPage = createComponent({
         >
           <CodeBlock code={FALLBACK_CODE} language="typescript" />
         </DocSection>
+
+        <DocSection
+          title={() => t('i18n.interpolation')}
+          id="interpolation"
+          description={() => t('i18n.interpolationDesc')}
+        >
+          <CodeBlock code={INTERPOLATION_CODE} language="typescript" />
+        </DocSection>
+
+        <DocSection
+          title={() => t('i18n.pluralization')}
+          id="pluralization-detail"
+          description={() => t('i18n.pluralizationDesc')}
+        >
+          <CodeBlock code={PLURAL_DETAIL_CODE} language="typescript" />
+        </DocSection>
+
+        <DocSection
+          title={() => t('i18n.fallback')}
+          id="fallback-detail"
+          description={() => t('i18n.fallbackDesc')}
+        >
+          <CodeBlock code={FALLBACK_DETAIL_CODE} language="typescript" />
+        </DocSection>
+
+        <div class="mt-8 p-4 border border-[var(--line-default)] bg-[var(--surface-raised)]/50" style="border-radius: var(--lf-radius)">
+          <p class="text-xs font-semibold text-[var(--content-secondary)] uppercase tracking-wider mb-2">{() => t('i18n.vsParaglide')}</p>
+          <p class="text-sm text-[var(--content-muted)]">{() => t('i18n.vsParaglideDesc')}</p>
+        </div>
 
         <DocSection
           title={() => t('i18n.live')}
