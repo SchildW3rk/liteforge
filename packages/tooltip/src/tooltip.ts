@@ -109,7 +109,11 @@ export function tooltip(el: HTMLElement, input: TooltipInput): () => void {
   let timer: ReturnType<typeof setTimeout> | null = null;
 
   const doShow = () => {
-    if (opts.showWhen && !opts.showWhen()) return;
+    try {
+      if (opts.showWhen && !opts.showWhen()) return;
+    } catch {
+      return; // showWhen threw — treat as false, never show
+    }
 
     tooltipEl = createTooltipElement(opts);
     document.body.appendChild(tooltipEl);
@@ -141,6 +145,7 @@ export function tooltip(el: HTMLElement, input: TooltipInput): () => void {
   el.addEventListener('pointerleave', hide);
   el.addEventListener('focus', show);
   el.addEventListener('blur', hide);
+  el.addEventListener('click', hide);
 
   return () => {
     hide();
@@ -148,5 +153,6 @@ export function tooltip(el: HTMLElement, input: TooltipInput): () => void {
     el.removeEventListener('pointerleave', hide);
     el.removeEventListener('focus', show);
     el.removeEventListener('blur', hide);
+    el.removeEventListener('click', hide);
   };
 }

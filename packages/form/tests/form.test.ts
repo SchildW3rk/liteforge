@@ -871,4 +871,91 @@ describe('createForm', () => {
       expect(form.errors()).toEqual({});
     });
   });
+
+  describe('unhappy path / error cases', () => {
+    it('onSubmit that throws async — isSubmitting resets to false', async () => {
+      const form = createForm({
+        schema: z.object({ name: z.string().min(1) }),
+        initial: { name: 'Alice' },
+        onSubmit: async () => { throw new Error('server error'); },
+      });
+
+      await form.submit().catch(() => {});
+
+      expect(form.isSubmitting()).toBe(false);
+    });
+
+    it('onSubmit that throws sync — isSubmitting resets to false', async () => {
+      const form = createForm({
+        schema: z.object({ name: z.string().min(1) }),
+        initial: { name: 'Alice' },
+        onSubmit: () => { throw new Error('sync error'); },
+      });
+
+      await form.submit().catch(() => {});
+
+      expect(form.isSubmitting()).toBe(false);
+    });
+
+    it('array field remove() with out-of-bounds index is a no-op', () => {
+      const form = createForm({
+        schema: z.object({ tags: z.array(z.string()) }),
+        initial: { tags: ['a', 'b'] },
+        onSubmit: vi.fn(),
+      });
+
+      const tags = form.array('tags');
+      expect(() => tags.remove(99)).not.toThrow();
+      expect(tags.fields().length).toBe(2); // unchanged
+    });
+
+    it('reset() during submission is safe and clears submitting state', async () => {
+      let resolveSubmit!: () => void;
+      const form = createForm({
+        schema: z.object({ name: z.string().min(1) }),
+        initial: { name: 'Alice' },
+        onSubmit: () => new Promise<void>(r => { resolveSubmit = r; }),
+      });
+
+      const submitPromise = form.submit();
+      expect(form.isSubmitting()).toBe(true);
+
+      form.reset(); // reset mid-flight
+      resolveSubmit();
+      await submitPromise;
+
+      expect(form.isSubmitting()).toBe(false);
+      expect(form.field('name').value()).toBe('Alice'); // reset to initial
+    });
+
+    it('field() for non-existent key returns a field without throwing', () => {
+      const form = createForm({
+        schema: z.object({ name: z.string() }),
+        initial: { name: 'test' },
+        onSubmit: vi.fn(),
+      });
+
+      // Accessing a path that wasn't in the schema — should not throw
+      expect(() => {
+        // @ts-expect-error intentional invalid key
+        form.field('nonExistent');
+      }).not.toThrow();
+    });
+
+    it('validate() with custom refine that throws is treated as validation failure', () => {
+      const form = createForm({
+        schema: z.object({
+          name: z.string().refine(
+            () => { throw new Error('refine exploded'); },
+            'should not reach this message'
+          ),
+        }),
+        initial: { name: 'test' },
+        onSubmit: vi.fn(),
+      });
+
+      // Should not propagate the throw — treat as invalid
+      expect(() => form.validate()).not.toThrow();
+    });
+  });
 });

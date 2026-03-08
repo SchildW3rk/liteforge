@@ -279,8 +279,10 @@ export const MemoryBench = createComponent<MemoryBenchProps>({
       const n = xs.length;
       const meanX = xs.reduce((a, b) => a + b, 0) / n;
       const meanY = ys.reduce((a, b) => a + b, 0) / n;
-      const slope = xs.reduce((acc, x, i) => acc + (x - meanX) * (ys[i]! - meanY), 0)
-                  / xs.reduce((acc, x) => acc + (x - meanX) ** 2, 0);
+      const denom = xs.reduce((acc, x) => acc + (x - meanX) ** 2, 0);
+      const slope = denom === 0
+        ? 0
+        : xs.reduce((acc, x, i) => acc + (x - meanX) * (ys[i]! - meanY), 0) / denom;
 
       // slope is bytes/run
       if (slope > 10 * 1024) {

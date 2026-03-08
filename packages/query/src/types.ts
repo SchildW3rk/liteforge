@@ -61,8 +61,8 @@ export interface ResolvedQueryOptions {
 export interface QueryResult<T> {
   /** Current data (undefined while loading or on error) */
   data: () => T | undefined;
-  /** Current error (undefined if no error) */
-  error: () => Error | undefined;
+  /** Current error (null if no error) */
+  error: () => Error | null;
   /** Whether the query is currently fetching */
   isLoading: () => boolean;
   /** Whether the cached data is stale */
@@ -118,8 +118,8 @@ export interface MutationResult<TData, TVariables> {
   mutate: (variables: TVariables) => Promise<TData>;
   /** Whether the mutation is currently running */
   isLoading: () => boolean;
-  /** Current error (undefined if no error) */
-  error: () => Error | undefined;
+  /** Current error (null if no error) */
+  error: () => Error | null;
   /** Data from the last successful mutation */
   data: () => TData | undefined;
   /** Reset all signals to initial state */
@@ -179,7 +179,7 @@ export interface QueryCacheInterface {
  */
 export interface QueryState<T> {
   data: T | undefined;
-  error: Error | undefined;
+  error: Error | null;
   isLoading: boolean;
   isFetched: boolean;
   fetchedAt: number;

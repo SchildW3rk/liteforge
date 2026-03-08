@@ -1,25 +1,27 @@
-/* ─── CSS Variables ─────────────────────────────────────────── */
-:root {
-  --lf-tooltip-bg: #1e1e2e;
-  --lf-tooltip-color: #cdd6f4;
-  --lf-tooltip-radius: 6px;
-  --lf-tooltip-font-size: 12px;
-  --lf-tooltip-max-width: 240px;
-  --lf-tooltip-arrow-size: 5px;
-  --lf-tooltip-padding: 5px 10px;
-  --lf-tooltip-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
-  --lf-tooltip-z: 99999;
-}
+/* ─── CSS Variables (in @layer so user overrides always win) ─── */
+@layer lf-tooltip-defaults {
+  :root {
+    --lf-tooltip-bg: #1e1e2e;
+    --lf-tooltip-color: #cdd6f4;
+    --lf-tooltip-radius: 6px;
+    --lf-tooltip-font-size: 12px;
+    --lf-tooltip-max-width: 240px;
+    --lf-tooltip-arrow-size: 5px;
+    --lf-tooltip-padding: 5px 10px;
+    --lf-tooltip-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    --lf-tooltip-z: 99999;
+  }
 
-[data-theme="light"] {
-  --lf-tooltip-bg: #313244;
-  --lf-tooltip-color: #cdd6f4;
-}
-
-@media (prefers-color-scheme: light) {
-  :root:not([data-theme="dark"]) {
+  [data-theme="light"] {
     --lf-tooltip-bg: #313244;
     --lf-tooltip-color: #cdd6f4;
+  }
+
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+      --lf-tooltip-bg: #313244;
+      --lf-tooltip-color: #cdd6f4;
+    }
   }
 }
 

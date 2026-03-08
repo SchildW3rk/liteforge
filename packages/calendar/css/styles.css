@@ -1,50 +1,52 @@
 /* ─── CSS Variables ─────────────────────────────────────── */
 
-:root {
-  --lf-cal-bg:               var(--lf-color-surface, #ffffff);
-  --lf-cal-border:           var(--lf-color-border, #e2e8f0);
-  --lf-cal-border-radius:    var(--lf-radius-lg, 8px);
-  --lf-cal-slot-height:      40px;
-  --lf-cal-header-bg:        var(--lf-color-bg-subtle, #f8fafc);
-  --lf-cal-header-color:     var(--lf-color-text, #374151);
-  --lf-cal-header-font-weight: var(--lf-font-semibold, 600);
-  --lf-cal-today-bg:         var(--lf-color-accent-subtle, #eff6ff);
-  --lf-cal-weekend-bg:       var(--lf-color-bg-subtle, #fafafa);
-  --lf-cal-now-color:        rgba(239, 68, 68, 0.55);
-  --lf-cal-now-dot-color:    rgba(239, 68, 68, 0.75);
-  --lf-cal-now-width:        1px;
-  --lf-cal-event-radius:     var(--lf-radius-sm, 4px);
-  --lf-cal-event-font-size:  var(--lf-text-xs, 12px);
-  --lf-cal-event-padding:    2px 6px;
-  --lf-cal-event-default-bg: var(--lf-color-accent, #3b82f6);
-  --lf-cal-event-default-color: var(--lf-color-text-on-accent, #ffffff);
-  --lf-cal-selection-bg:     var(--lf-color-accent-subtle, rgba(59, 130, 246, 0.15));
-  --lf-cal-selection-border: var(--lf-color-accent, #3b82f6);
-  --lf-cal-drag-opacity:     0.3;
-  --lf-cal-time-color:       var(--lf-color-text-subtle, #94a3b8);
-  --lf-cal-time-font-size:   var(--lf-text-xs, 11px);
-  --lf-cal-time-width:       60px;
-  /* Scrollbar */
-  --lf-cal-scrollbar-size:   6px;
-  --lf-cal-scrollbar-thumb:  var(--lf-color-border-strong, #cbd5e1);
-  --lf-cal-scrollbar-track:  transparent;
-}
+@layer lf-calendar-defaults {
+  :root {
+    --lf-cal-bg:               var(--lf-color-surface, #ffffff);
+    --lf-cal-border:           var(--lf-color-border, #e2e8f0);
+    --lf-cal-border-radius:    var(--lf-radius-lg, 8px);
+    --lf-cal-slot-height:      40px;
+    --lf-cal-header-bg:        var(--lf-color-bg-subtle, #f8fafc);
+    --lf-cal-header-color:     var(--lf-color-text, #374151);
+    --lf-cal-header-font-weight: var(--lf-font-semibold, 600);
+    --lf-cal-today-bg:         var(--lf-color-accent-subtle, #eff6ff);
+    --lf-cal-weekend-bg:       var(--lf-color-bg-subtle, #fafafa);
+    --lf-cal-now-color:        rgba(239, 68, 68, 0.55);
+    --lf-cal-now-dot-color:    rgba(239, 68, 68, 0.75);
+    --lf-cal-now-width:        1px;
+    --lf-cal-event-radius:     var(--lf-radius-sm, 4px);
+    --lf-cal-event-font-size:  var(--lf-text-xs, 12px);
+    --lf-cal-event-padding:    2px 6px;
+    --lf-cal-event-default-bg: var(--lf-color-accent, #3b82f6);
+    --lf-cal-event-default-color: var(--lf-color-text-on-accent, #ffffff);
+    --lf-cal-selection-bg:     var(--lf-color-accent-subtle, rgba(59, 130, 246, 0.15));
+    --lf-cal-selection-border: var(--lf-color-accent, #3b82f6);
+    --lf-cal-drag-opacity:     0.3;
+    --lf-cal-time-color:       var(--lf-color-text-subtle, #94a3b8);
+    --lf-cal-time-font-size:   var(--lf-text-xs, 11px);
+    --lf-cal-time-width:       60px;
+    /* Scrollbar */
+    --lf-cal-scrollbar-size:   6px;
+    --lf-cal-scrollbar-thumb:  var(--lf-color-border-strong, #cbd5e1);
+    --lf-cal-scrollbar-track:  transparent;
+  }
 
-/* Dark mode overrides */
-[data-theme="dark"],
-.dark {
-  --lf-cal-today-bg:         rgba(137, 180, 250, 0.1);
-  --lf-cal-weekend-bg:       var(--lf-color-bg-subtle, #181825);
-  --lf-cal-time-color:       #6c7086;
-  --lf-cal-scrollbar-thumb:  #45475a;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
+  /* Dark mode overrides */
+  [data-theme="dark"],
+  .dark {
     --lf-cal-today-bg:         rgba(137, 180, 250, 0.1);
     --lf-cal-weekend-bg:       var(--lf-color-bg-subtle, #181825);
     --lf-cal-time-color:       #6c7086;
     --lf-cal-scrollbar-thumb:  #45475a;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --lf-cal-today-bg:         rgba(137, 180, 250, 0.1);
+      --lf-cal-weekend-bg:       var(--lf-color-bg-subtle, #181825);
+      --lf-cal-time-color:       #6c7086;
+      --lf-cal-scrollbar-thumb:  #45475a;
+    }
   }
 }
 

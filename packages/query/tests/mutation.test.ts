@@ -26,7 +26,7 @@ describe('createMutation', () => {
       expect(result).toEqual({ id: 1, name: 'Created' });
       expect(mutation.data()).toEqual({ id: 1, name: 'Created' });
       expect(mutation.isLoading()).toBe(false);
-      expect(mutation.error()).toBeUndefined();
+      expect(mutation.error()).toBeNull();
       expect(mutationFn).toHaveBeenCalledWith({ name: 'Test' });
     });
 
@@ -83,7 +83,7 @@ describe('createMutation', () => {
       mutation.reset();
 
       expect(mutation.data()).toBeUndefined();
-      expect(mutation.error()).toBeUndefined();
+      expect(mutation.error()).toBeNull();
       expect(mutation.isLoading()).toBe(false);
     });
 
@@ -96,7 +96,7 @@ describe('createMutation', () => {
 
       mutation.reset();
 
-      expect(mutation.error()).toBeUndefined();
+      expect(mutation.error()).toBeNull();
     });
   });
 

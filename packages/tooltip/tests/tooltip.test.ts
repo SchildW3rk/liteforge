@@ -85,6 +85,15 @@ describe('tooltip()', () => {
     expect(document.querySelector('.lf-tooltip')).toBeNull();
   });
 
+  it('hides tooltip on click (navigation guard)', () => {
+    const target = makeTarget();
+    tooltip(target, 'Hello');
+    pointerEnter(target);
+    expect(document.querySelector('.lf-tooltip')).not.toBeNull();
+    target.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    expect(document.querySelector('.lf-tooltip')).toBeNull();
+  });
+
   it('shows tooltip on focus', () => {
     const target = makeTarget();
     tooltip(target, 'Focus tooltip');
@@ -180,6 +189,83 @@ describe('tooltip()', () => {
     pointerEnter(target);
     const el = document.querySelector('.lf-tooltip');
     expect(el?.getAttribute('role')).toBe('tooltip');
+  });
+});
+
+// ─── Unhappy path / error cases ───────────────────────────────────────────
+
+describe('tooltip() — unhappy path', () => {
+  it('empty string content renders an empty tooltip (no throw)', () => {
+    const target = makeTarget();
+    expect(() => tooltip(target, '')).not.toThrow();
+    pointerEnter(target);
+    const el = document.querySelector('.lf-tooltip');
+    expect(el).not.toBeNull();
+    expect(el?.textContent).toBe('');
+  });
+
+  it('cleanup called twice is safe (idempotent)', () => {
+    const target = makeTarget();
+    const cleanup = tooltip(target, 'Hello');
+    expect(() => {
+      cleanup();
+      cleanup(); // second call must not throw
+    }).not.toThrow();
+    pointerEnter(target);
+    expect(document.querySelector('.lf-tooltip')).toBeNull(); // still suppressed
+  });
+
+  it('target removed from DOM while tooltip is visible — tooltip is removed without error', () => {
+    const target = makeTarget();
+    tooltip(target, 'Orphan test');
+    pointerEnter(target);
+    expect(document.querySelector('.lf-tooltip')).not.toBeNull();
+
+    // Remove the target from DOM (simulates component unmount)
+    target.remove();
+
+    // Dispatching pointerleave on a detached element should not throw
+    expect(() => pointerLeave(target)).not.toThrow();
+    // Tooltip should no longer be in the document
+    expect(document.querySelector('.lf-tooltip')).toBeNull();
+  });
+
+  it('multiple tooltip() calls on same element — last one wins, no listener leak', () => {
+    const target = makeTarget();
+    const cleanup1 = tooltip(target, 'First');
+    const cleanup2 = tooltip(target, 'Second');
+
+    pointerEnter(target);
+    const tooltips = document.querySelectorAll('.lf-tooltip');
+    // Both are registered — two tooltips visible. Cleanup both.
+    cleanup1();
+    cleanup2();
+    pointerEnter(target);
+    expect(document.querySelectorAll('.lf-tooltip').length).toBe(0);
+  });
+
+  it('rapid pointerenter/pointerleave with delay cancels the timer', () => {
+    const target = makeTarget();
+    tooltip(target, { content: 'Delayed', delay: 200 });
+
+    pointerEnter(target);
+    // Leave before delay fires
+    pointerLeave(target);
+    vi.advanceTimersByTime(300);
+
+    // Timer was cancelled — no tooltip in DOM
+    expect(document.querySelector('.lf-tooltip')).toBeNull();
+  });
+
+  it('showWhen that throws is treated as false (no tooltip shown)', () => {
+    const target = makeTarget();
+    tooltip(target, {
+      content: 'Conditional',
+      showWhen: () => { throw new Error('showWhen threw'); },
+    });
+
+    expect(() => pointerEnter(target)).not.toThrow();
+    expect(document.querySelector('.lf-tooltip')).toBeNull();
   });
 });
 

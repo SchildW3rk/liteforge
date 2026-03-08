@@ -108,9 +108,20 @@ export function flushPendingEffects(): void {
       const effects = [...pendingEffects];
       pendingEffects.clear();
 
+      // Run all effects — collect errors so a throwing effect doesn't
+      // prevent sibling effects from receiving the updated value.
+      const errors: unknown[] = [];
       for (const effect of effects) {
-        effect();
+        try {
+          effect();
+        } catch (err) {
+          errors.push(err);
+        }
       }
+
+      // Re-throw after all effects have had a chance to run.
+      if (errors.length === 1) throw errors[0];
+      if (errors.length > 1) throw new AggregateError(errors, 'Multiple effects threw');
     }
   } finally {
     isFlushing = false;

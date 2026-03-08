@@ -258,5 +258,47 @@ describe('effect', () => {
         onCleanup(() => {});
       }).toThrow('onCleanup must be called inside an effect');
     });
+
+    it('effect that throws on re-run does not silence other effects', () => {
+      const src = signal(0);
+      const good = vi.fn();
+      const bad  = vi.fn(() => { if (src() > 0) throw new Error('bad effect'); });
+
+      effect(bad);
+      effect(() => { good(src()); });
+
+      expect(() => src.set(1)).toThrow('bad effect');
+      // good effect must have fired even though bad threw
+      expect(good).toHaveBeenCalledWith(1);
+    });
+
+    it('cleanup is called before effect re-runs even when prior run threw', () => {
+      const src = signal(0);
+      const cleanupSpy = vi.fn();
+
+      const dispose = effect(() => {
+        onCleanup(cleanupSpy);
+        if (src() > 1) throw new Error('late throw');
+        src(); // track
+      });
+
+      src.set(1); // re-run normally — cleanup fires once
+      expect(cleanupSpy).toHaveBeenCalledTimes(1);
+
+      expect(() => src.set(2)).toThrow('late throw');
+      // cleanup must have fired before the throwing run
+      expect(cleanupSpy).toHaveBeenCalledTimes(2);
+      dispose();
+    });
+
+    it('disposing an effect that previously threw is safe', () => {
+      const src = signal(0);
+      const dispose = effect(() => {
+        if (src() > 0) throw new Error('oops');
+      });
+
+      expect(() => src.set(1)).toThrow('oops');
+      expect(() => dispose()).not.toThrow(); // dispose must not re-throw
+    });
   });
 });

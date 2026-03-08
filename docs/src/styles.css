@@ -63,6 +63,8 @@
   --badge-red-bg:       rgba(239, 68, 68, 0.15);
   --badge-red-text:     #fca5a5;
   --badge-red-border:   rgba(239, 68, 68, 0.25);
+
+  --lf-tooltip-bg: #ffff
 }
 
 /* ─── Light theme ────────────────────────────────────────────────────────── */
@@ -112,9 +114,47 @@
 
 /* ─── Nav active state ───────────────────────────────────────────────────── */
 .lf-nav-active {
-  background: rgba(99, 102, 241, 0.15);
-  color: #818cf8;
-  font-weight: 600;
+  background: rgba(99, 102, 241, 0.12);
+  color: var(--color-primary-light) !important;
+  font-weight: 500;
+  box-shadow: inset 2px 0 0 0 var(--color-primary-light);
+}
+
+.lf-nav-active svg {
+  color: var(--color-primary-light);
+}
+
+/* ─── Collapsed icon-rail item ───────────────────────────────────────────── */
+/* When the desktop sidebar is collapsed, nav items switch to centered icons.
+   We override padding/gap on the anchor via the parent class. */
+.lf-nav-collapsed-item {
+  display: flex;
+  justify-content: center;
+}
+
+.lf-nav-collapsed-item .lf-nav-link {
+  padding: 0;
+  gap: 0;
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* In collapsed mode the active border becomes a bottom border on the icon */
+.lf-nav-collapsed-item .lf-nav-active {
+  box-shadow: inset 0 -2px 0 0 var(--color-primary-light);
+}
+
+/* ─── Tooltip overrides to match the docs dark theme ────────────────────── */
+:root {
+  --lf-tooltip-bg: #1e293b;
+  --lf-tooltip-color: #f1f5f9;
+  --lf-tooltip-radius: 5px;
+  --lf-tooltip-font-size: 11.5px;
+  --lf-tooltip-padding: 4px 9px;
+  --lf-tooltip-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
 }
 
 /* ─── Smooth scroll ──────────────────────────────────────────────────────── */

@@ -237,4 +237,67 @@ describe('computed', () => {
       expect(spy).toHaveBeenCalledTimes(4);
     });
   });
+
+  describe('error handling', () => {
+    it('computed that throws propagates the error to the caller', () => {
+      const a = signal(0);
+      const boom = computed(() => {
+        if (a() > 0) throw new Error('too big');
+        return a();
+      });
+
+      expect(boom()).toBe(0); // fine initially
+
+      a.set(1);
+      expect(() => boom()).toThrow('too big');
+    });
+
+    it('computed recovers after the error condition is resolved', () => {
+      const a = signal(-1);
+      const safe = computed(() => {
+        if (a() < 0) throw new Error('negative');
+        return a() * 10;
+      });
+
+      expect(() => safe()).toThrow('negative');
+
+      a.set(5);
+      expect(safe()).toBe(50); // reactive graph still intact
+    });
+
+    it('other computeds are unaffected when a sibling computed throws', () => {
+      const src = signal(0);
+      const bad  = computed(() => { if (src() === 1) throw new Error('bad'); return src(); });
+      const good = computed(() => src() + 100);
+
+      src.set(1);
+      expect(() => bad()).toThrow('bad');
+      expect(good()).toBe(101); // sibling is unaffected
+    });
+
+    it('effect reading a throwing computed propagates the error', () => {
+      const a = signal(0);
+      const boom = computed(() => { if (a() > 0) throw new Error('boom'); return 0; });
+      const errors: unknown[] = [];
+
+      const dispose = effect(() => {
+        try { boom(); } catch (e) { errors.push(e); }
+      });
+
+      expect(errors).toHaveLength(0);
+      a.set(1);
+      expect(errors).toHaveLength(1);
+      expect((errors[0] as Error).message).toBe('boom');
+      dispose();
+    });
+
+    it('null and undefined are valid computed return values', () => {
+      const flag = signal(true);
+      const c = computed<string | null | undefined>(() => flag() ? null : undefined);
+
+      expect(c()).toBeNull();
+      flag.set(false);
+      expect(c()).toBeUndefined();
+    });
+  });
 });

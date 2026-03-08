@@ -2,16 +2,18 @@
 /* Default values reference @liteforge/theme semantic tokens.    */
 /* Dark mode cascades automatically through the theme selectors. */
 
-:root {
-  --lf-modal-backdrop:     var(--lf-color-bg-overlay, rgba(0, 0, 0, 0.5));
-  --lf-modal-bg:           var(--lf-color-surface, #ffffff);
-  --lf-modal-border-radius: 10px;
-  --lf-modal-shadow:       var(--lf-shadow-xl, 0 20px 60px rgba(0, 0, 0, 0.3));
-  --lf-modal-header-bg:    var(--lf-color-bg-subtle, #f8fafc);
-  --lf-modal-header-color: var(--lf-color-text, #1e293b);
-  --lf-modal-body-color:   var(--lf-color-text, #374151);
-  --lf-modal-close-color:  var(--lf-color-text-muted, #6b7280);
-  --lf-modal-z-index:      var(--lf-z-modal, 1000);
+@layer lf-modal-defaults {
+  :root {
+    --lf-modal-backdrop:     var(--lf-color-bg-overlay, rgba(0, 0, 0, 0.5));
+    --lf-modal-bg:           var(--lf-color-surface, #ffffff);
+    --lf-modal-border-radius: 10px;
+    --lf-modal-shadow:       var(--lf-shadow-xl, 0 20px 60px rgba(0, 0, 0, 0.3));
+    --lf-modal-header-bg:    var(--lf-color-bg-subtle, #f8fafc);
+    --lf-modal-header-color: var(--lf-color-text, #1e293b);
+    --lf-modal-body-color:   var(--lf-color-text, #374151);
+    --lf-modal-close-color:  var(--lf-color-text-muted, #6b7280);
+    --lf-modal-z-index:      var(--lf-z-modal, 1000);
+  }
 }
 
 /* ─── Provider ─────────────────────────────────────────────── */

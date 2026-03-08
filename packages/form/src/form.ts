@@ -184,7 +184,13 @@ export function createForm<TSchema extends z.ZodObject<z.ZodRawShape>>(
    * Validate the entire form and return errors.
    */
   function validateAll(): Record<string, string | undefined> {
-    const result = schema.safeParse(valuesSignal());
+    let result: ReturnType<typeof schema.safeParse>;
+    try {
+      result = schema.safeParse(valuesSignal());
+    } catch {
+      // refine() or transform() threw — treat as a global validation failure
+      return { '': 'Validation failed' };
+    }
     const errors: Record<string, string | undefined> = {};
     
     if (!result.success) {
@@ -204,8 +210,13 @@ export function createForm<TSchema extends z.ZodObject<z.ZodRawShape>>(
    * Validate a specific field path.
    */
   function validateField(path: string): string | undefined {
-    const result = schema.safeParse(valuesSignal());
-    
+    let result: ReturnType<typeof schema.safeParse>;
+    try {
+      result = schema.safeParse(valuesSignal());
+    } catch {
+      return 'Validation failed';
+    }
+
     if (result.success) {
       return undefined;
     }

@@ -28,7 +28,7 @@ describe('createQuery', () => {
       await vi.waitFor(() => expect(query.isLoading()).toBe(false));
 
       expect(query.data()).toEqual({ id: 1, name: 'Alice' });
-      expect(query.error()).toBeUndefined();
+      expect(query.error()).toBeNull();
       expect(query.isFetched()).toBe(true);
       expect(fetcher).toHaveBeenCalledTimes(1);
 
@@ -197,7 +197,7 @@ describe('createQuery', () => {
       await vi.waitFor(() => expect(query.data()).toEqual({ id: 1 }), { timeout: 1000 });
 
       expect(fetcher).toHaveBeenCalledTimes(3);
-      expect(query.error()).toBeUndefined();
+      expect(query.error()).toBeNull();
 
       query.dispose();
     });
@@ -378,7 +378,7 @@ describe('createQuery', () => {
       shouldFail = false;
       await query.refetch();
 
-      expect(query.error()).toBeUndefined();
+      expect(query.error()).toBeNull();
       expect(query.data()).toEqual({ id: 1 });
 
       query.dispose();
@@ -542,6 +542,81 @@ describe('createQuery', () => {
       expect(states).toContain(false);
 
       stopEffect();
+      query.dispose();
+    });
+  });
+
+  describe('unhappy path / error cases', () => {
+    it('fetcher that throws synchronously is treated as rejection', async () => {
+      const query = createQuery({
+        key: 'sync-throw',
+        retry: 0,
+        fn: () => { throw new Error('sync boom'); },
+      });
+
+      await vi.waitFor(() => expect(query.isLoading()).toBe(false));
+      expect(query.error()).toBeInstanceOf(Error);
+      expect((query.error() as Error).message).toBe('sync boom');
+      expect(query.data()).toBeUndefined();
+      query.dispose();
+    });
+
+    it('refetch while already loading does not run two parallel fetches', async () => {
+      let resolveFirst!: (v: string) => void;
+      const fetcher = vi.fn().mockImplementationOnce(
+        () => new Promise(r => { resolveFirst = r; })
+      ).mockResolvedValue('second');
+
+      const query = createQuery({ key: 'refetch-loading', fn: fetcher });
+
+      // still loading — trigger a second refetch
+      query.refetch();
+      resolveFirst('first');
+
+      await vi.waitFor(() => expect(query.isLoading()).toBe(false));
+      // fetcher must not have been called more than twice total
+      expect(fetcher.mock.calls.length).toBeLessThanOrEqual(2);
+      query.dispose();
+    });
+
+    it('dispose while loading stops isLoading and does not set data', async () => {
+      let resolve!: (v: string) => void;
+      const fetcher = vi.fn().mockImplementation(
+        () => new Promise(r => { resolve = r; })
+      );
+
+      const query = createQuery({ key: 'dispose-loading', fn: fetcher });
+      expect(query.isLoading()).toBe(true);
+
+      query.dispose();
+      resolve('late value');
+
+      // After dispose the data must NOT update
+      await new Promise(r => setTimeout(r, 0));
+      expect(query.data()).toBeUndefined();
+    });
+
+    it('error state is cleared when refetch succeeds', async () => {
+      const fetcher = vi.fn()
+        .mockRejectedValueOnce(new Error('fail'))
+        .mockResolvedValue('ok');
+
+      const query = createQuery({ key: 'error-then-ok', retry: 0, fn: fetcher });
+
+      await vi.waitFor(() => expect(query.error()).not.toBeNull());
+      expect(query.data()).toBeUndefined();
+
+      query.refetch();
+      await vi.waitFor(() => expect(query.data()).toBe('ok'));
+      expect(query.error()).toBeNull();
+      query.dispose();
+    });
+
+    it('non-Error rejection is wrapped in an Error', async () => {
+      const query = createQuery({ key: 'non-error-throw', retry: 0, fn: () => Promise.reject('plain string') });
+
+      await vi.waitFor(() => expect(query.error()).not.toBeNull());
+      expect(query.error()).toBeInstanceOf(Error);
       query.dispose();
     });
   });

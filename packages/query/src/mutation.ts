@@ -42,7 +42,7 @@ export function createMutation<TData, TVariables = void>(
 
   // Internal state signals
   const dataSignal = signal<TData | undefined>(undefined);
-  const errorSignal = signal<Error | undefined>(undefined);
+  const errorSignal = signal<Error | null>(null);
   const isLoadingSignal = signal(false);
 
   /**
@@ -64,7 +64,7 @@ export function createMutation<TData, TVariables = void>(
    */
   async function mutate(variables: TVariables): Promise<TData> {
     isLoadingSignal.set(true);
-    errorSignal.set(undefined);
+    errorSignal.set(null);
 
     // Run onMutate for optimistic updates
     let rollbackData: unknown;
@@ -129,7 +129,7 @@ export function createMutation<TData, TVariables = void>(
    */
   function reset(): void {
     dataSignal.set(undefined);
-    errorSignal.set(undefined);
+    errorSignal.set(null);
     isLoadingSignal.set(false);
   }
 

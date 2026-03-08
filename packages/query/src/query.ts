@@ -106,7 +106,7 @@ export function createQuery<T>(options: CreateQueryOptions<T>): QueryResult<T> {
 
   // Internal state signals — initialized from cache when available
   const dataSignal = signal<T | undefined>(preloadData);
-  const errorSignal = signal<Error | undefined>(undefined);
+  const errorSignal = signal<Error | null>(null);
   const isLoadingSignal = signal(false);
   const isFetchedSignal = signal(preloadData !== undefined);
   const fetchedAtSignal = signal(preloadFetchedAt);
@@ -152,9 +152,9 @@ export function createQuery<T>(options: CreateQueryOptions<T>): QueryResult<T> {
     if (!background) {
       isLoadingSignal.set(true);
     }
-    errorSignal.set(undefined);
+    errorSignal.set(null);
 
-    let lastError: Error | undefined;
+    let lastError: Error | null = null;
     
     for (let attempt = 0; attempt <= opts.retry; attempt++) {
       if (isDisposed || abortController.signal.aborted) {
@@ -172,7 +172,7 @@ export function createQuery<T>(options: CreateQueryOptions<T>): QueryResult<T> {
 
         // Success - update state
         dataSignal.set(result);
-        errorSignal.set(undefined);
+        errorSignal.set(null);
         isLoadingSignal.set(false);
         isFetchedSignal.set(true);
         fetchedAtSignal.set(Date.now());

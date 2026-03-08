@@ -89,6 +89,7 @@ export function formatOps(ops: number): string {
  * Format bytes to human-readable string
  */
 export function formatBytes(bytes: number): string {
+  if (!isFinite(bytes)) return '—';
   if (bytes < 1024) {
     return `${bytes} B`;
   }

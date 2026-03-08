@@ -75,6 +75,30 @@ export const routes: RouteDefinition[] = [
         meta: { title: 'modal — LiteForge' },
       },
       {
+        path: '/toast',
+        component: () => import('./pages/ToastPage.js'),
+        export: 'ToastPage',
+        meta: { title: 'toast — LiteForge' },
+      },
+      {
+        path: '/tooltip',
+        component: () => import('./pages/TooltipPage.js'),
+        export: 'TooltipPage',
+        meta: { title: 'tooltip — LiteForge' },
+      },
+      {
+        path: '/lifecycle',
+        component: () => import('./pages/LifecyclePage.js'),
+        export: 'LifecyclePage',
+        meta: { title: 'Lifecycle — LiteForge' },
+      },
+      {
+        path: '/app',
+        component: () => import('./pages/AppPage.js'),
+        export: 'AppPage',
+        meta: { title: 'App Bootstrap — LiteForge' },
+      },
+      {
         path: '/devtools',
         component: () => import('./pages/DevtoolsPage.js'),
         export: 'DevtoolsPage',

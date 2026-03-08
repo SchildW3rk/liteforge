@@ -1,0 +1,301 @@
+import { createComponent } from 'liteforge';
+import { signal, effect } from 'liteforge';
+import { DocSection } from '../components/DocSection.js';
+import { CodeBlock } from '../components/CodeBlock.js';
+import { LiveExample } from '../components/LiveExample.js';
+import { ApiTable } from '../components/ApiTable.js';
+import type { ApiRow } from '../components/ApiTable.js';
+import { tooltip } from 'liteforge/tooltip';
+
+// ─── Live examples ─────────────────────────────────────────────────────────────
+
+function BasicTooltipExample(): Node {
+  const wrap = document.createElement('div');
+  wrap.className = 'flex flex-wrap gap-3';
+
+  const makeBtn = (label: string, pos: 'top' | 'right' | 'bottom' | 'left') => {
+    const btn = document.createElement('button');
+    btn.textContent = label;
+    btn.className = 'px-3 py-1.5 text-sm rounded bg-[var(--surface-overlay)] border border-[var(--line-default)] text-[var(--content-primary)] hover:bg-[var(--surface-raised)] transition-colors';
+    tooltip(btn, { content: `position: "${pos}"`, position: pos });
+    return btn;
+  };
+
+  wrap.appendChild(makeBtn('Tooltip top', 'top'));
+  wrap.appendChild(makeBtn('Tooltip right', 'right'));
+  wrap.appendChild(makeBtn('Tooltip bottom', 'bottom'));
+  wrap.appendChild(makeBtn('Tooltip left', 'left'));
+  return wrap;
+}
+
+function DelayExample(): Node {
+  const wrap = document.createElement('div');
+  wrap.className = 'flex flex-wrap gap-3';
+
+  const makeBtn = (label: string, delay: number) => {
+    const btn = document.createElement('button');
+    btn.textContent = label;
+    btn.className = 'px-3 py-1.5 text-sm rounded bg-[var(--surface-overlay)] border border-[var(--line-default)] text-[var(--content-primary)]';
+    tooltip(btn, { content: `${delay}ms delay`, delay, position: 'top' });
+    return btn;
+  };
+
+  wrap.appendChild(makeBtn('No delay', 0));
+  wrap.appendChild(makeBtn('150ms delay', 150));
+  wrap.appendChild(makeBtn('500ms delay', 500));
+  return wrap;
+}
+
+function ShowWhenExample(): Node {
+  const collapsed = signal(true);
+
+  const wrap = document.createElement('div');
+  wrap.className = 'space-y-3';
+
+  const toggleBtn = document.createElement('button');
+  toggleBtn.className = 'px-3 py-1.5 text-sm rounded bg-indigo-600 text-white hover:opacity-80 transition-opacity';
+  effect(() => {
+    toggleBtn.textContent = collapsed() ? 'Expand sidebar (tooltip hidden)' : 'Collapse sidebar (tooltip shown)';
+  });
+  toggleBtn.addEventListener('click', () => collapsed.update(v => !v));
+
+  const iconBtn = document.createElement('button');
+  iconBtn.className = 'w-10 h-10 rounded bg-[var(--surface-overlay)] border border-[var(--line-default)] text-lg flex items-center justify-center';
+  iconBtn.textContent = '⚙️';
+  tooltip(iconBtn, {
+    content: 'Settings',
+    position: 'right',
+    delay: 150,
+    showWhen: () => collapsed(),
+  });
+
+  const hint = document.createElement('p');
+  hint.className = 'text-xs text-[var(--content-muted)]';
+  effect(() => {
+    hint.textContent = collapsed()
+      ? 'Hover ⚙️ — tooltip visible (collapsed)'
+      : 'Hover ⚙️ — tooltip suppressed (expanded)';
+  });
+
+  wrap.appendChild(toggleBtn);
+  wrap.appendChild(iconBtn);
+  wrap.appendChild(hint);
+  return wrap;
+}
+
+function CleanupExample(): Node {
+  const wrap = document.createElement('div');
+  wrap.className = 'space-y-3';
+
+  const btn = document.createElement('button');
+  btn.textContent = 'Hover me';
+  btn.className = 'px-3 py-1.5 text-sm rounded bg-[var(--surface-overlay)] border border-[var(--line-default)] text-[var(--content-primary)]';
+
+  let cleanup: (() => void) | null = null;
+  const active = signal(true);
+
+  cleanup = tooltip(btn, { content: 'I can be removed', position: 'top' });
+
+  const removeBtn = document.createElement('button');
+  removeBtn.className = 'px-3 py-1.5 text-sm rounded bg-red-600/80 text-white hover:opacity-80';
+  effect(() => {
+    removeBtn.textContent = active() ? 'Remove tooltip' : 'Tooltip removed';
+    removeBtn.disabled = !active();
+  });
+  removeBtn.addEventListener('click', () => {
+    if (cleanup) { cleanup(); cleanup = null; active.set(false); }
+  });
+
+  wrap.appendChild(btn);
+  wrap.appendChild(removeBtn);
+  return wrap;
+}
+
+// ─── Code strings ──────────────────────────────────────────────────────────────
+
+const BASIC_CODE = `import { tooltip } from 'liteforge/tooltip';
+
+// String shorthand
+tooltip(el, 'Save changes');
+
+// Options object
+tooltip(el, {
+  content:  'Save changes',
+  position: 'top',     // 'top' | 'right' | 'bottom' | 'left' | 'auto'
+  delay:    150,        // hover delay in ms
+  offset:   8,          // px gap between element and tooltip
+});`;
+
+const REF_CODE = `// Ref-callback in JSX (most common pattern)
+<button
+  ref={el => tooltip(el, { content: 'Settings', position: 'right', delay: 150 })}
+>
+  ⚙️
+</button>`;
+
+const SHOW_WHEN_CODE = `// showWhen — only show when a condition is true
+// Perfect for collapsed sidebars
+<button
+  ref={el => tooltip(el, {
+    content:  item.label,
+    position: 'right',
+    delay:    150,
+    showWhen: () => !sidebarOpen(),  // ← signal-powered guard
+  })}
+>
+  {item.icon}
+</button>`;
+
+const CLEANUP_CODE = `// tooltip() returns a cleanup function
+const cleanup = tooltip(el, 'Hello');
+
+// Remove listeners + hide active tooltip
+cleanup();
+
+// Inside createComponent — use onCleanup:
+import { onCleanup } from 'liteforge';
+
+component({ props }) {
+  const el = document.createElement('button');
+  const cleanup = tooltip(el, props.hint);
+  onCleanup(cleanup);  // auto-called on unmount
+  return el;
+}`;
+
+const COMPONENT_CODE = `import { Tooltip } from 'liteforge/tooltip';
+
+// Wraps children in display:contents span
+// Tooltip attaches to the first HTMLElement child
+<Tooltip content="Save changes" position="top" delay={150}>
+  <button>💾</button>
+</Tooltip>`;
+
+const CSS_CODE = `:root {
+  --lf-tooltip-bg:         #1e1e2e;
+  --lf-tooltip-color:      #cdd6f4;
+  --lf-tooltip-radius:     6px;
+  --lf-tooltip-font-size:  12px;
+  --lf-tooltip-max-width:  240px;
+  --lf-tooltip-arrow-size: 5px;
+  --lf-tooltip-padding:    5px 10px;
+  --lf-tooltip-shadow:     0 4px 12px rgba(0,0,0,0.25);
+  --lf-tooltip-z:          99999;
+}`;
+
+const AUTO_CODE = `// position: 'auto' — tries top first, flips if overflows viewport
+tooltip(el, { content: 'I find my own way', position: 'auto' });`;
+
+// ─── API rows ──────────────────────────────────────────────────────────────────
+
+const OPTIONS_API: ApiRow[] = [
+  { name: 'content', type: 'string | Node', description: 'Tooltip text or DOM node to render inside the tooltip' },
+  { name: 'position', type: "'top' | 'right' | 'bottom' | 'left' | 'auto'", default: "'top'", description: "'auto' tries top first and flips to avoid viewport edges" },
+  { name: 'delay', type: 'number', default: '0', description: 'Hover delay before showing in ms — prevents flicker on fast mouse movement' },
+  { name: 'offset', type: 'number', default: '8', description: 'Pixel gap between the target element and the tooltip' },
+  { name: 'disabled', type: 'boolean', default: 'false', description: 'Completely suppress the tooltip — cleanup fn is a noop' },
+  { name: 'showWhen', type: '() => boolean', description: 'Guard function — tooltip only shows when this returns true. Re-checked on every pointerenter.' },
+];
+
+const FUNC_API: ApiRow[] = [
+  { name: 'tooltip(el, input)', type: '() => void', description: 'Attach tooltip to an HTMLElement. Returns a cleanup function that removes listeners and hides any active tooltip.' },
+  { name: 'positionTooltip(el, target, position, offset)', type: 'void', description: 'Low-level: position a tooltip element relative to a target. Called internally, exposed for custom implementations.' },
+];
+
+const COMPONENT_API: ApiRow[] = [
+  { name: 'content', type: 'string | Node', description: 'Tooltip text (required)' },
+  { name: 'position', type: 'TooltipPosition', default: "'top'", description: 'See position option above' },
+  { name: 'delay', type: 'number', description: 'Hover delay in ms' },
+  { name: 'offset', type: 'number', description: 'Gap in px' },
+  { name: 'disabled', type: 'boolean', description: 'Suppress tooltip' },
+  { name: 'showWhen', type: '() => boolean', description: 'Conditional guard' },
+  { name: 'children', type: 'Node', description: 'The element to wrap. Tooltip attaches to firstElementChild.' },
+];
+
+// ─── Page ──────────────────────────────────────────────────────────────────────
+
+export const TooltipPage = createComponent({
+  name: 'TooltipPage',
+  component() {
+    return (
+      <div>
+        <div class="mb-10">
+          <p class="text-xs font-mono text-[var(--content-muted)] mb-1">@liteforge/tooltip</p>
+          <h1 class="text-3xl font-bold text-[var(--content-primary)] mb-2">Tooltip</h1>
+          <p class="text-[var(--content-secondary)] leading-relaxed max-w-xl">
+            Portal-based tooltip primitive. Renders directly on{' '}
+            <code class="text-indigo-400 text-sm">{'<body>'}</code> — no{' '}
+            <code class="text-indigo-400 text-sm">overflow:hidden</code> clipping,
+            no z-index battles. Supports delayed hover, conditional{' '}
+            <code class="text-indigo-400 text-sm">showWhen</code>, and all four positions with auto-flip.
+          </p>
+          <CodeBlock code="pnpm add @liteforge/tooltip" language="bash" />
+          <CodeBlock code="import { tooltip } from 'liteforge/tooltip';" language="typescript" />
+        </div>
+
+        <DocSection title="Basic usage" id="basic">
+          <CodeBlock code={BASIC_CODE} language="typescript" />
+          <LiveExample
+            title="All four positions"
+            code={`tooltip(btn, { content: 'position: "top"', position: 'top' });`}
+            component={BasicTooltipExample}
+          />
+        </DocSection>
+
+        <DocSection title="Ref-callback in JSX" id="ref" description="The most common usage — attach directly in JSX via the ref prop.">
+          <CodeBlock code={REF_CODE} language="typescript" />
+        </DocSection>
+
+        <DocSection title="showWhen — conditional guard" id="show-when"
+          description="showWhen is the key feature for sidebar collapsed-state tooltips. The guard is re-evaluated on every pointerenter — no re-attach needed.">
+          <CodeBlock code={SHOW_WHEN_CODE} language="typescript" />
+          <LiveExample
+            title="showWhen — sidebar pattern"
+            code={`tooltip(el, { content: 'Settings', showWhen: () => !sidebarOpen() })`}
+            component={ShowWhenExample}
+          />
+        </DocSection>
+
+        <DocSection title="Delay" id="delay" description="Use delay to prevent tooltips from flashing during quick mouse movements across a toolbar.">
+          <LiveExample
+            title="Hover delay"
+            code={`tooltip(btn, { content: '150ms delay', delay: 150 })`}
+            component={DelayExample}
+          />
+        </DocSection>
+
+        <DocSection title="Cleanup" id="cleanup" description="tooltip() returns a cleanup function. Call it to remove all listeners and hide any active tooltip. Use onCleanup() inside createComponent.">
+          <CodeBlock code={CLEANUP_CODE} language="typescript" />
+          <LiveExample
+            title="Manual cleanup"
+            code={`const cleanup = tooltip(el, 'Hello');\ncleanup(); // removes tooltip`}
+            component={CleanupExample}
+          />
+        </DocSection>
+
+        <DocSection title="Tooltip() component wrapper" id="component" description="Plain factory function that wraps children in a display:contents span. Useful in JSX composition.">
+          <CodeBlock code={COMPONENT_CODE} language="typescript" />
+        </DocSection>
+
+        <DocSection title="Auto position" id="auto" description="position: 'auto' tries top first, then flips to avoid viewport edges.">
+          <CodeBlock code={AUTO_CODE} language="typescript" />
+        </DocSection>
+
+        <DocSection title="CSS Variables" id="css" description="Override any token globally via :root.">
+          <CodeBlock code={CSS_CODE} language="css" />
+        </DocSection>
+
+        <DocSection title="tooltip() API" id="api">
+          <ApiTable rows={FUNC_API} />
+        </DocSection>
+
+        <DocSection title="TooltipOptions" id="options-api">
+          <ApiTable rows={OPTIONS_API} />
+        </DocSection>
+
+        <DocSection title="Tooltip() component props" id="component-api">
+          <ApiTable rows={COMPONENT_API} />
+        </DocSection>
+      </div>
+    );
+  },
+});
