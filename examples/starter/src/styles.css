@@ -499,32 +499,8 @@ input, select {
   pointer-events: none;
 }
 
-/* ── Tooltip (shown only when collapsed) ─────────────────── */
-
-.nav-item::after {
-  content: attr(data-tooltip);
-  position: absolute;
-  left: calc(100% + 10px);
-  top: 50%;
-  transform: translateY(-50%) translateX(-4px);
-  background: var(--lf-color-bg-inverse, #1e293b);
-  color: var(--lf-color-text-on-inverse, #f8fafc);
-  font-size: 12px;
-  font-weight: 500;
-  padding: 5px 10px;
-  border-radius: 6px;
-  white-space: nowrap;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.15s, transform 0.15s;
-  z-index: 200;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-}
-
-.sidebar-collapsed .nav-item:hover::after {
-  opacity: 1;
-  transform: translateY(-50%) translateX(0);
-}
+/* ── Tooltip: handled by @liteforge/tooltip portal ──────── */
+/* CSS pseudo-tooltips removed — real tooltips render in body portal */
 
 /* ── Footer ──────────────────────────────────────────────── */
 

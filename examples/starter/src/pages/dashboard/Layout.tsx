@@ -5,7 +5,8 @@
  */
 
 import { createComponent } from 'liteforge';
-import { Link, RouterOutlet } from 'liteforge/router';
+import { RouterOutlet } from 'liteforge/router';
+import { tooltip } from 'liteforge/tooltip';
 import { authStore } from '../../stores/auth.js';
 import { uiStore } from '../../stores/ui.js';
 import type { Router } from 'liteforge/router';
@@ -45,7 +46,12 @@ export const DashboardLayout = createComponent({
       <a
         href={item.href}
         class="nav-item"
-        data-tooltip={item.label}
+        ref={(el: HTMLElement) => tooltip(el, {
+          content: item.label,
+          position: 'right',
+          delay: 150,
+          showWhen: () => !uiStore.sidebarOpen(),
+        })}
         onclick={(e: Event) => {
           e.preventDefault();
           router.navigate(item.href);
@@ -80,14 +86,27 @@ export const DashboardLayout = createComponent({
 
           {/* Footer */}
           <div class="sidebar-footer">
-            <div class="nav-item sidebar-user" data-tooltip={() => authStore.displayName()}>
+            <div
+              class="nav-item sidebar-user"
+              ref={(el: HTMLElement) => tooltip(el, {
+                content: authStore.displayName(),
+                position: 'right',
+                delay: 150,
+                showWhen: () => !uiStore.sidebarOpen(),
+              })}
+            >
               <span class="nav-icon">👤</span>
               <span class="nav-label">{() => authStore.displayName()}</span>
             </div>
             <button
               type="button"
               class="nav-item sidebar-logout"
-              data-tooltip="Logout"
+              ref={(el: HTMLElement) => tooltip(el, {
+                content: 'Logout',
+                position: 'right',
+                delay: 150,
+                showWhen: () => !uiStore.sidebarOpen(),
+              })}
               onclick={handleLogout}
             >
               <span class="nav-icon">🚪</span>

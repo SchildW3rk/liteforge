@@ -22,6 +22,7 @@
       "liteforge/admin": ["packages/liteforge/src/admin.ts"],
       "liteforge/i18n": ["packages/liteforge/src/i18n.ts"],
       "liteforge/toast": ["packages/toast/src/index.ts"],
+      "liteforge/tooltip": ["packages/tooltip/src/index.ts"],
       "@liteforge/router": ["packages/router/src/index.ts"],
       "@liteforge/toast": ["packages/toast/src/index.ts"],
       "@liteforge/admin": ["packages/admin/src/index.ts"],
