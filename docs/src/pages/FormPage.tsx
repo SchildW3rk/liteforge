@@ -9,6 +9,7 @@ import { ApiTable } from '../components/ApiTable.js';
 import { Button } from '../components/Button.js';
 import { inputClass } from '../components/Input.js';
 import type { ApiRow } from '../components/ApiTable.js';
+import { t } from '../i18n.js';
 
 // ─── Live example: Login form (JSX) ──────────────────────────────────────────
 
@@ -296,19 +297,18 @@ export const FormPage = createComponent({
       <div>
         <div class="mb-10">
           <p class="text-xs font-mono text-[var(--content-muted)] mb-1">@liteforge/form</p>
-          <h1 class="text-3xl font-bold text-[var(--content-primary)] mb-2">Form Management</h1>
+          <h1 class="text-3xl font-bold text-[var(--content-primary)] mb-2">{() => t('form.title')}</h1>
           <p class="text-[var(--content-secondary)] leading-relaxed max-w-xl">
-            Signal-based form state with Zod validation. Field-level error tracking,
-            array fields, submission state — all as reactive signals.
+            {() => t('form.subtitle')}
           </p>
           <CodeBlock code={`pnpm add @liteforge/form zod`} language="bash" />
           <CodeBlock code={`import { createForm } from 'liteforge/form';\nimport { z } from 'zod';`} language="typescript" />
         </div>
 
         <DocSection
-          title="createForm()"
+          title={() => t('form.createForm')}
           id="create-form"
-          description="Define schema, initial values, and submission handler. Returns a form instance with reactive field signals."
+          description={() => t('form.createFormDesc')}
         >
           <div>
             <CodeBlock code={SETUP_CODE} language="typescript" />
@@ -317,25 +317,25 @@ export const FormPage = createComponent({
         </DocSection>
 
         <DocSection
-          title="Field binding"
+          title={() => t('form.fields')}
           id="fields"
-          description="form.field(name) returns reactive signals for value, error, touched, and dirty state."
+          description={() => t('form.fieldsDesc')}
         >
           <CodeBlock code={FIELD_CODE} language="tsx" />
         </DocSection>
 
         <DocSection
-          title="Zod schema validation"
+          title={() => t('form.validation')}
           id="validation"
-          description="Use the full Zod API for validation rules. Error messages are reactive — update automatically as the user types."
+          description={() => t('form.validationDesc')}
         >
           <CodeBlock code={ZOD_CODE} language="typescript" />
         </DocSection>
 
         <DocSection
-          title="Array fields"
+          title={() => t('form.arrays')}
           id="arrays"
-          description="Dynamic lists (medications, addresses, contacts) with append/remove and per-item field access."
+          description={() => t('form.arraysDesc')}
         >
           <div>
             <CodeBlock code={ARRAY_CODE} language="typescript" />
@@ -344,32 +344,32 @@ export const FormPage = createComponent({
         </DocSection>
 
         <DocSection
-          title="Form state signals"
+          title={() => t('form.state')}
           id="state"
         >
           <CodeBlock code={FORM_STATE_CODE} language="typescript" />
         </DocSection>
 
         <DocSection
-          title="Live example — Login form"
+          title={() => t('form.live')}
           id="live"
         >
           <LiveExample
-            title="Login form with Zod validation"
-            description="Blur a field to trigger validation"
+            title={() => t('form.liveTitle')}
+            description={() => t('form.liveDesc')}
             component={LoginFormExample}
             code={LIVE_CODE}
           />
         </DocSection>
 
         <DocSection
-          title="Live example — Array fields"
+          title={() => t('form.liveArray')}
           id="live-array"
-          description="Dynamic invoice line items with reactive total."
+          description={() => t('form.liveArrayDesc')}
         >
           <LiveExample
-            title="Invoice form with array fields"
-            description="Add/remove rows, total updates reactively"
+            title={() => t('form.liveArrayTitle')}
+            description={() => t('form.liveArrayDescEx')}
             component={ArrayFieldExample}
             code={ARRAY_LIVE_CODE}
           />

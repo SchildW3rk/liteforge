@@ -3,6 +3,7 @@ import { DocSection } from '../components/DocSection.js';
 import { CodeBlock } from '../components/CodeBlock.js';
 import { ApiTable } from '../components/ApiTable.js';
 import type { ApiRow } from '../components/ApiTable.js';
+import { t } from '../i18n.js';
 
 // ─── Code strings ─────────────────────────────────────────────────────────────
 
@@ -79,36 +80,34 @@ export const DevtoolsPage = createComponent({
       <div>
         <div class="mb-10">
           <p class="text-xs font-mono text-[var(--content-muted)] mb-1">@liteforge/devtools</p>
-          <h1 class="text-3xl font-bold text-[var(--content-primary)] mb-2">DevTools</h1>
+          <h1 class="text-3xl font-bold text-[var(--content-primary)] mb-2">{() => t('devtools.title')}</h1>
           <p class="text-[var(--content-secondary)] leading-relaxed max-w-xl">
-            In-browser debug panel for LiteForge applications. Inspect signals,
-            stores, router state, and component trees. Includes time-travel debugging
-            for store history.
+            {() => t('devtools.subtitle')}
           </p>
           <CodeBlock code={INSTALL_CODE} language="bash" />
           <CodeBlock code={IMPORT_CODE} language="typescript" />
         </div>
 
         <DocSection
-          title="Integration"
+          title={() => t('devtools.integration')}
           id="integration"
-          description="Pass devtoolsPlugin() in the plugins array to createApp(). It only activates in development mode — tree-shaken from production builds."
+          description={() => t('devtools.integrationDesc')}
         >
           <CodeBlock code={INTEGRATION_CODE} language="typescript" />
         </DocSection>
 
         <DocSection
-          title="Configuration"
+          title={() => t('devtools.config')}
           id="config"
-          description="All options are optional — sensible defaults apply. The shortcut, position, and maxEvents are the most commonly customized."
+          description={() => t('devtools.configDesc')}
         >
           <ApiTable rows={CONFIG_API} />
         </DocSection>
 
         <DocSection
-          title="Panel tabs"
+          title={() => t('devtools.tabs')}
           id="tabs"
-          description="The panel has 5 tabs. Each tab shows a live view of a different aspect of your application."
+          description={() => t('devtools.tabsDesc')}
         >
           <div>
             <div class="p-4 rounded-lg border border-[var(--line-default)] bg-[var(--surface-raised)]/60 font-mono text-xs text-[var(--content-secondary)] leading-relaxed mb-4">
@@ -140,17 +139,17 @@ export const DevtoolsPage = createComponent({
         </DocSection>
 
         <DocSection
-          title="Time-travel debugging"
+          title={() => t('devtools.timeTravel')}
           id="time-travel"
-          description="The Stores tab records every action dispatch. Click any past entry to rewind all signals to that snapshot."
+          description={() => t('devtools.timeTravelDesc')}
         >
           <CodeBlock code={TIME_TRAVEL_CODE} language="typescript" />
         </DocSection>
 
         <DocSection
-          title="Standalone usage"
+          title={() => t('devtools.standalone')}
           id="standalone"
-          description="createDevTools() lets you attach DevTools without createApp() — useful for testing or non-SPA contexts."
+          description={() => t('devtools.standaloneDesc')}
         >
           <CodeBlock code={STANDALONE_CODE} language="typescript" />
         </DocSection>

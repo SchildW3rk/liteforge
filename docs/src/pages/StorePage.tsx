@@ -8,6 +8,7 @@ import { ApiTable } from '../components/ApiTable.js';
 import { Button } from '../components/Button.js';
 import { Badge } from '../components/Badge.js';
 import type { ApiRow } from '../components/ApiTable.js';
+import { t } from '../i18n.js';
 
 // ─── Live example ─────────────────────────────────────────────────────────────
 
@@ -184,19 +185,18 @@ export const StorePage = createComponent({
       <div>
         <div class="mb-10">
           <p class="text-xs font-mono text-[var(--content-muted)] mb-1">@liteforge/store</p>
-          <h1 class="text-3xl font-bold text-[var(--content-primary)] mb-2">Store</h1>
+          <h1 class="text-3xl font-bold text-[var(--content-primary)] mb-2">{() => t('store.title')}</h1>
           <p class="text-[var(--content-secondary)] leading-relaxed max-w-xl">
-            Signal-based global state management. Define state, computed getters, and
-            async actions in one place. Zero boilerplate — no reducers, no dispatches.
+            {() => t('store.subtitle')}
           </p>
           <CodeBlock code={`pnpm add @liteforge/store`} language="bash" />
           <CodeBlock code={`import { defineStore } from 'liteforge/store';`} language="typescript" />
         </div>
 
         <DocSection
-          title="defineStore()"
+          title={() => t('store.defineStore')}
           id="define-store"
-          description="Pass a unique name, state shape, optional getters, and actions. State keys become signals automatically."
+          description={() => t('store.defineStoreDesc')}
         >
           <div>
             <CodeBlock code={SETUP_CODE} language="typescript" />
@@ -205,38 +205,38 @@ export const StorePage = createComponent({
         </DocSection>
 
         <DocSection
-          title="Store instance"
+          title={() => t('store.instance')}
           id="instance"
-          description="The returned store exposes state signals, getters, and actions directly on the object."
+          description={() => t('store.instanceDesc')}
         >
           <ApiTable rows={STORE_INSTANCE_API} />
         </DocSection>
 
         <DocSection
-          title="Live example"
+          title={() => t('store.live')}
           id="live"
-          description="Counter store with getters, actions, and a 5-entry action history."
+          description={() => t('store.liveDesc')}
         >
           <LiveExample
-            title="Counter store"
-            description="Uses defineStore with getters + actions"
+            title={() => t('store.liveTitle')}
+            description={() => t('store.liveDescEx')}
             component={StoreExample}
             code={LIVE_CODE}
           />
         </DocSection>
 
         <DocSection
-          title="Plugins"
+          title={() => t('store.plugins')}
           id="plugins"
-          description="Plugins intercept actions and state changes globally. Use defineStorePlugin() to create one."
+          description={() => t('store.pluginsDesc')}
         >
           <CodeBlock code={PLUGINS_CODE} language="typescript" />
         </DocSection>
 
         <DocSection
-          title="Time-travel"
+          title={() => t('store.timeTravel')}
           id="time-travel"
-          description="Devtools integration enables time-travel debugging — rewind state to any previous snapshot."
+          description={() => t('store.timeTravelDesc')}
         >
           <CodeBlock code={TIME_TRAVEL_CODE} language="typescript" />
         </DocSection>

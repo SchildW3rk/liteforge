@@ -1,5 +1,4 @@
-import { createComponent } from 'liteforge';
-import { signal } from 'liteforge';
+import { createComponent, signal } from 'liteforge';
 
 interface CodeBlockProps {
   code: string;
@@ -94,17 +93,23 @@ function tokenize(code: string): Token[] {
   return tokens;
 }
 
+// Syntax colors use CSS variables so the theme customizer can update them.
+// Each variable is defined in styles.css and tied to --color-primary.
 const TOKEN_CLASS: Record<TokenType, string> = {
-  keyword: 'text-violet-400',
-  string:  'text-emerald-400',
-  comment: 'text-[var(--content-muted)] italic',
-  number:  'text-amber-400',
-  fn:      'text-sky-300',
-  type:    'text-amber-300',
+  keyword: 'text-[var(--syntax-keyword)]',
+  string:  'text-[var(--syntax-string)]',
+  comment: 'text-[var(--syntax-comment)] italic',
+  number:  'text-[var(--syntax-number)]',
+  fn:      'text-[var(--syntax-fn)]',
+  type:    'text-[var(--syntax-type)]',
   plain:   'text-[var(--content-primary)]',
 };
 
-function renderHighlighted(code: string): Node {
+// Intentionally imperative: this is a pure one-shot rendering utility that
+// builds a static DocumentFragment from tokens. No reactivity needed here —
+// the code prop never changes after mount, so signals/effects would add cost
+// with no benefit.
+export function renderHighlighted(code: string): Node {
   const frag = document.createDocumentFragment();
   for (const token of tokenize(code)) {
     const span = document.createElement('span');
@@ -134,7 +139,7 @@ export const CodeBlock = createComponent<CodeBlockProps>({
     codeEl.appendChild(renderHighlighted(props.code));
 
     return (
-      <div class="relative rounded-lg overflow-hidden border border-[var(--line-default)] bg-[var(--surface-raised)] my-4">
+      <div class="relative overflow-hidden border border-[var(--line-default)] bg-[var(--surface-raised)] my-4" style="border-radius: var(--lf-radius)">
         <div class="flex items-center justify-between px-4 py-2 border-b border-[var(--line-default)] bg-[var(--surface-raised)]">
           <span class="text-xs text-[var(--content-muted)] font-mono">
             {props.title ?? (props.language ?? 'typescript')}

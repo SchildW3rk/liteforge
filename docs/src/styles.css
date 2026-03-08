@@ -22,6 +22,7 @@
 
 /* ─── Dark theme (default) ───────────────────────────────────────────────── */
 :root {
+  --lf-radius: 8px;
   --surface-base:    #0a0a0a;
   --surface-raised:  #171717;
   --surface-overlay: #262626;
@@ -63,8 +64,6 @@
   --badge-red-bg:       rgba(239, 68, 68, 0.15);
   --badge-red-text:     #fca5a5;
   --badge-red-border:   rgba(239, 68, 68, 0.25);
-
-  --lf-tooltip-bg: #ffff
 }
 
 /* ─── Light theme ────────────────────────────────────────────────────────── */
@@ -128,33 +127,27 @@
 /* When the desktop sidebar is collapsed, nav items switch to centered icons.
    We override padding/gap on the anchor via the parent class. */
 .lf-nav-collapsed-item {
-  display: flex;
-  justify-content: center;
+  width: 100%;
 }
 
 .lf-nav-collapsed-item .lf-nav-link {
-  padding: 0;
-  gap: 0;
+  padding: 0 !important;
+  gap: 0 !important;
   width: 2rem;
   height: 2rem;
   display: flex;
   align-items: center;
   justify-content: center;
+  margin: 0 auto;
+}
+
+.lf-nav-collapsed-item .lf-nav-link > span {
+  gap: 0 !important;
 }
 
 /* In collapsed mode the active border becomes a bottom border on the icon */
 .lf-nav-collapsed-item .lf-nav-active {
   box-shadow: inset 0 -2px 0 0 var(--color-primary-light);
-}
-
-/* ─── Tooltip overrides to match the docs dark theme ────────────────────── */
-:root {
-  --lf-tooltip-bg: #1e293b;
-  --lf-tooltip-color: #f1f5f9;
-  --lf-tooltip-radius: 5px;
-  --lf-tooltip-font-size: 11.5px;
-  --lf-tooltip-padding: 4px 9px;
-  --lf-tooltip-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
 }
 
 /* ─── Smooth scroll ──────────────────────────────────────────────────────── */
@@ -191,3 +184,55 @@ html {
   --lf-modal-backdrop: rgba(0, 0, 0, 0.75);
   --lf-modal-shadow:   0 20px 60px rgba(0, 0, 0, 0.7);
 }
+
+/* ─── Syntax highlighting tokens ────────────────────────────────────────── */
+/* These are updated by the Theme Customizer effect when accent changes.     */
+:root {
+  --syntax-keyword: #a78bfa;   /* violet-400 default */
+  --syntax-string:  #34d399;   /* emerald-400 default */
+  --syntax-fn:      #7dd3fc;   /* sky-300 default */
+  --syntax-type:    #fcd34d;   /* amber-300 default */
+  --syntax-number:  #fbbf24;   /* amber-400 default */
+  --syntax-comment: var(--content-muted);
+}
+
+/* ─── Theme Customizer ─────────────────────────────────────────────────── */
+.lf-tc-panel {
+  width: 220px;
+  background: var(--surface-raised);
+  border: 1px solid var(--line-default);
+  border-radius: 10px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+  padding: 12px;
+  display: flex; flex-direction: column; gap: 12px;
+}
+.lf-tc-panel header { display:flex; justify-content:space-between; align-items:center; }
+.lf-tc-title { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.08em; color:var(--content-muted); }
+.lf-tc-section { display:flex; flex-direction:column; gap:6px; }
+.lf-tc-label { font-size:11px; color:var(--content-secondary); }
+.lf-tc-swatches { display:flex; gap:6px; flex-wrap:wrap; }
+.lf-tc-swatch {
+  width:22px; height:22px; border-radius:50%; cursor:pointer;
+  border:2px solid transparent; transition:transform .1s;
+}
+.lf-tc-swatch:hover { transform:scale(1.15); }
+.lf-tc-swatch.active { border-color:var(--content-primary); }
+.lf-tc-row { display:flex; justify-content:space-between; align-items:center; gap:8px; }
+.lf-tc-slider { flex:1; accent-color:var(--color-primary); }
+.lf-tc-value { font-size:11px; color:var(--content-muted); min-width:28px; text-align:right; }
+.lf-tc-reset {
+  width:100%; padding:5px 0; font-size:11px;
+  background:var(--surface-overlay); border:1px solid var(--line-default);
+  color:var(--content-secondary); border-radius:5px; cursor:pointer;
+  transition:background .15s;
+}
+.lf-tc-reset:hover { background:var(--surface-raised); color:var(--content-primary); }
+.lf-tc-toggle {
+  width:36px; height:36px; border-radius:50%;
+  background:var(--color-primary); color:white;
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; border:none;
+  box-shadow:0 4px 12px rgba(0,0,0,0.3);
+  transition:transform .15s, background .2s;
+}
+.lf-tc-toggle:hover { transform:scale(1.08); }

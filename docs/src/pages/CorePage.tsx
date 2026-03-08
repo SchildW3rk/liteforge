@@ -1,5 +1,6 @@
 import { createComponent } from 'liteforge';
 import { signal, computed } from 'liteforge';
+import { t } from '../i18n.js';
 import { DocSection } from '../components/DocSection.js';
 import { CodeBlock } from '../components/CodeBlock.js';
 import { LiveExample } from '../components/LiveExample.js';
@@ -38,7 +39,7 @@ const FullNameExample = createComponent({
     return (
       <div class="space-y-2">
         <div class="flex items-center gap-3">
-          <label class="text-xs text-[var(--content-muted)] w-20">First name</label>
+          <label class="text-xs text-[var(--content-muted)] w-20">{() => t('core.firstName')}</label>
           <input
             class={inputClass({ size: 'sm', extra: 'w-36' })}
             value={() => firstName()}
@@ -46,7 +47,7 @@ const FullNameExample = createComponent({
           />
         </div>
         <div class="flex items-center gap-3">
-          <label class="text-xs text-[var(--content-muted)] w-20">Last name</label>
+          <label class="text-xs text-[var(--content-muted)] w-20">{() => t('core.lastName')}</label>
           <input
             class={inputClass({ size: 'sm', extra: 'w-36' })}
             value={() => lastName()}
@@ -131,26 +132,27 @@ const fullName  = computed(() => \`\${firstName()} \${lastName()}\`);
 <input value={() => lastName()}  oninput={e => lastName.set(e.target.value)}  />
 <p>{() => fullName()}</p>`;
 
-// ─── API rows ─────────────────────────────────────────────────────────────────
-
-const SIGNAL_API: ApiRow[] = [
-  { name: 'signal(initial)', type: 'Signal<T>', description: 'Creates a reactive signal with an initial value' },
-  { name: 'sig()', type: 'T', description: 'Reads the current value — tracked inside effect/computed' },
-  { name: 'sig.set(value)', type: 'void', description: 'Sets a new value directly' },
-  { name: 'sig.update(fn)', type: 'void', description: 'Updates value via a function: fn receives current value' },
-];
-
-const COMPUTED_API: ApiRow[] = [
-  { name: 'computed(fn)', type: 'ReadonlySignal<T>', description: 'Creates a derived signal — recalculates lazily when dependencies change' },
-  { name: 'derived()', type: 'T', description: 'Reads the computed value — tracked inside other effects/computed' },
-];
-
-const EFFECT_API: ApiRow[] = [
-  { name: 'effect(fn)', type: 'DisposeFn', description: 'Runs fn immediately and re-runs when any signal read inside it changes' },
-  { name: 'dispose()', type: 'void', description: 'Stop the effect — no more re-runs' },
-];
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
+
+// ─── API rows (reactive — rebuild when locale changes) ────────────────────────
+
+function getSignalApi(): ApiRow[] { return [
+  { name: 'signal(initial)', type: 'Signal<T>',         description: t('core.apiSignal')  },
+  { name: 'sig()',           type: 'T',                 description: t('core.apiRead')    },
+  { name: 'sig.set(value)',  type: 'void',              description: t('core.apiSet')     },
+  { name: 'sig.update(fn)',  type: 'void',              description: t('core.apiUpdate')  },
+]; }
+
+function getComputedApi(): ApiRow[] { return [
+  { name: 'computed(fn)',    type: 'ReadonlySignal<T>', description: t('core.apiComputed') },
+  { name: 'derived()',       type: 'T',                description: t('core.apiDerived')  },
+]; }
+
+function getEffectApi(): ApiRow[] { return [
+  { name: 'effect(fn)',      type: 'DisposeFn',        description: t('core.apiEffect')  },
+  { name: 'dispose()',       type: 'void',             description: t('core.apiDispose') },
+]; }
 
 export const CorePage = createComponent({
   name: 'CorePage',
@@ -160,10 +162,9 @@ export const CorePage = createComponent({
         {/* Header */}
         <div class="mb-10">
           <p class="text-xs font-mono text-[var(--content-muted)] mb-1">@liteforge/core</p>
-          <h1 class="text-3xl font-bold text-[var(--content-primary)] mb-2">Signals & Reactivity</h1>
+          <h1 class="text-3xl font-bold text-[var(--content-primary)] mb-2">{() => t('core.title')}</h1>
           <p class="text-[var(--content-secondary)] leading-relaxed max-w-xl">
-            The reactive foundation of LiteForge. Fine-grained signals that track their dependencies
-            automatically — no subscriptions, no manual cleanup, no VDOM diffing.
+            {() => t('core.subtitle')}
           </p>
           <CodeBlock code={`pnpm add @liteforge/core`} language="bash" />
           <CodeBlock code={`import { signal, computed, effect, batch } from 'liteforge';`} language="typescript" />
@@ -171,35 +172,35 @@ export const CorePage = createComponent({
 
         {/* Concepts */}
         <DocSection
-          title="How it works"
+          title={() => t('core.howItWorks')}
           id="how-it-works"
-          description="Every signal() call creates a reactive cell. When you read a signal inside an effect() or computed(), it registers as a dependency automatically. When the signal changes, only the effects and computed values that depend on it re-run — nothing else."
+          description={() => t('core.howItWorksDesc')}
         />
 
         {/* signal() */}
         <DocSection
-          title="signal()"
+          title={() => t('core.signal')}
           id="signal"
-          description="The building block of reactivity. A signal holds a value and notifies dependents when it changes."
+          description={() => t('core.signalDesc')}
         >
           <div>
             <CodeBlock code={SIGNAL_CODE} language="typescript" />
-            <ApiTable rows={SIGNAL_API} />
+            <ApiTable rows={() => getSignalApi()} />
           </div>
         </DocSection>
 
         {/* computed() */}
         <DocSection
-          title="computed()"
+          title={() => t('core.computed')}
           id="computed"
-          description="Derives a value from one or more signals. Lazy — only recalculates when a dependency changed and the value is actually read."
+          description={() => t('core.computedDesc')}
         >
           <div>
             <CodeBlock code={COMPUTED_CODE} language="typescript" />
-            <ApiTable rows={COMPUTED_API} />
+            <ApiTable rows={() => getComputedApi()} />
             <LiveExample
-              title="computed() — fullName"
-              description="Derived from two signals"
+              title={() => t('core.computedTitle')}
+              description={() => t('core.computedDescEx')}
               component={FullNameExample}
               code={FULLNAME_CODE}
             />
@@ -208,44 +209,44 @@ export const CorePage = createComponent({
 
         {/* effect() */}
         <DocSection
-          title="effect()"
+          title={() => t('core.effect')}
           id="effect"
-          description="Runs a side effect when dependencies change. Returns a dispose function to stop tracking."
+          description={() => t('core.effectDesc')}
         >
           <div>
             <CodeBlock code={EFFECT_CODE} language="typescript" />
-            <ApiTable rows={EFFECT_API} />
+            <ApiTable rows={() => getEffectApi()} />
           </div>
         </DocSection>
 
         {/* batch() */}
         <DocSection
-          title="batch()"
+          title={() => t('core.batch')}
           id="batch"
-          description="Groups multiple signal updates so dependent effects run only once after all updates complete."
+          description={() => t('core.batchDesc')}
         >
           <CodeBlock code={BATCH_CODE} language="typescript" />
         </DocSection>
 
         {/* Live demo */}
-        <DocSection title="Live example" id="live">
+        <DocSection title={() => t('core.liveExample')} id="live">
           <LiveExample
-            title="signal + computed counter"
+            title={() => t('core.liveTitle')}
             component={CounterExample}
             code={COUNTER_CODE}
           />
         </DocSection>
 
         {/* Patterns */}
-        <DocSection title="Patterns" id="patterns">
+        <DocSection title={() => t('core.patterns')} id="patterns">
           <div class="space-y-4 text-sm">
-            <div class="p-4 rounded-lg border border-emerald-800/40 bg-emerald-950/20">
-              <p class="font-semibold text-emerald-300 mb-1">✓ Read signals inside effects/JSX expressions</p>
-              <p class="text-[var(--content-secondary)]">Signals are only tracked when read inside a reactive context (effect, computed, or <code class="font-mono text-xs bg-[var(--surface-overlay)] px-1 rounded">{'{() => signal()}'}</code> in JSX).</p>
+            <div class="p-4 border border-emerald-800/40 bg-emerald-950/20" style="border-radius: var(--lf-radius)">
+              <p class="font-semibold text-emerald-300 mb-1">{() => t('core.patternDo')}</p>
+              <p class="text-[var(--content-secondary)]">{() => t('core.patternDoDesc', { code: '{() => signal()}' })}</p>
             </div>
-            <div class="p-4 rounded-lg border border-red-800/40 bg-red-950/20">
-              <p class="font-semibold text-red-300 mb-1">✗ Don't read signals outside reactive contexts to "cache" them</p>
-              <p class="text-[var(--content-secondary)]">Reading a signal outside of an effect or computed snapshot its value at that moment — changes won't be tracked.</p>
+            <div class="p-4 border border-red-800/40 bg-red-950/20" style="border-radius: var(--lf-radius)">
+              <p class="font-semibold text-red-300 mb-1">{() => t('core.patternDont')}</p>
+              <p class="text-[var(--content-secondary)]">{() => t('core.patternDontDesc')}</p>
             </div>
           </div>
         </DocSection>

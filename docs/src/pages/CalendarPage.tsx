@@ -7,6 +7,7 @@ import { CodeBlock } from '../components/CodeBlock.js';
 import { LiveExample } from '../components/LiveExample.js';
 import { ApiTable } from '../components/ApiTable.js';
 import type { ApiRow } from '../components/ApiTable.js';
+import { t } from '../i18n.js';
 
 // ─── Live example ─────────────────────────────────────────────────────────────
 
@@ -228,32 +229,31 @@ export const CalendarPage = createComponent({
       <div>
         <div class="mb-10">
           <p class="text-xs font-mono text-[var(--content-muted)] mb-1">@liteforge/calendar</p>
-          <h1 class="text-3xl font-bold text-[var(--content-primary)] mb-2">Calendar</h1>
+          <h1 class="text-3xl font-bold text-[var(--content-primary)] mb-2">{() => t('calendar.title')}</h1>
           <p class="text-[var(--content-secondary)] leading-relaxed max-w-xl">
-            Scheduling calendar with Day, Week, Month, and Agenda views.
-            Supports resource columns (therapists, rooms), drag & drop, event resizing, and recurring events.
+            {() => t('calendar.subtitle')}
           </p>
           <CodeBlock code={`pnpm add @liteforge/calendar`} language="bash" />
           <CodeBlock code={`import { createCalendar } from 'liteforge/calendar';`} language="typescript" />
         </div>
 
         <DocSection
-          title="Live example"
+          title={() => t('calendar.live')}
           id="live"
-          description="Week view with 2 resources. Click an empty slot to add an event, drag events to move them."
+          description={() => t('calendar.liveDesc')}
         >
           <LiveExample
-            title="Calendar — drag & drop, resources, week view"
-            description="Click empty slots to create events"
+            title={() => t('calendar.liveTitle')}
+            description={() => t('calendar.liveDescEx')}
             component={CalendarLiveExample}
             code={LIVE_CODE}
           />
         </DocSection>
 
         <DocSection
-          title="createCalendar()"
+          title={() => t('calendar.createCalendar')}
           id="setup"
-          description="Pass events as a reactive function and configure the view, locale, and time range."
+          description={() => t('calendar.createCalendarDesc')}
         >
           <div>
             <CodeBlock code={SETUP_CODE} language="typescript" />
@@ -262,33 +262,33 @@ export const CalendarPage = createComponent({
         </DocSection>
 
         <DocSection
-          title="Resources"
+          title={() => t('calendar.resources')}
           id="resources"
-          description="In day view, resources (doctors, rooms) appear as parallel columns. Events are assigned to a resource via resourceId."
+          description={() => t('calendar.resourcesDesc')}
         >
           <CodeBlock code={RESOURCES_CODE} language="typescript" />
         </DocSection>
 
         <DocSection
-          title="Event handlers"
+          title={() => t('calendar.eventHandlers')}
           id="event-handlers"
-          description="Handle drag & drop, resize, slot click, and event click to create/update your event signal."
+          description={() => t('calendar.eventHandlersDesc')}
         >
           <CodeBlock code={EVENTS_CODE} language="typescript" />
         </DocSection>
 
         <DocSection
-          title="Recurring events"
+          title={() => t('calendar.recurring')}
           id="recurring"
-          description="Define recurring rules with frequency, interval, end date, and exclude dates."
+          description={() => t('calendar.recurringDesc')}
         >
           <CodeBlock code={RECURRING_CODE} language="typescript" />
         </DocSection>
 
         <DocSection
-          title="Navigation & view switching"
+          title={() => t('calendar.navigation')}
           id="navigation"
-          description="All navigation is programmatic — or use calendar.Toolbar() for a built-in toolbar with prev/next/today and view selector."
+          description={() => t('calendar.navigationDesc')}
         >
           <CodeBlock code={NAVIGATION_CODE} language="typescript" />
         </DocSection>

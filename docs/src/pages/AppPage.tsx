@@ -3,6 +3,7 @@ import { DocSection } from '../components/DocSection.js';
 import { CodeBlock } from '../components/CodeBlock.js';
 import { ApiTable } from '../components/ApiTable.js';
 import type { ApiRow } from '../components/ApiTable.js';
+import { t } from '../i18n.js';
 
 // ─── Code strings ──────────────────────────────────────────────────────────────
 
@@ -167,36 +168,36 @@ app.destroy();   // router cleanup → modal cleanup → … (reverse order)`;
 
 // ─── API rows ──────────────────────────────────────────────────────────────────
 
-const CREATE_APP_API: ApiRow[] = [
-  { name: 'root', type: 'ComponentFactory', description: 'Root component of the application' },
-  { name: 'target', type: 'string | HTMLElement', description: 'CSS selector or element to mount into' },
-  { name: 'stores', type: 'StoreDefinition[]', default: '[]', description: 'Stores to initialize before mount — available via use() in all components' },
-  { name: 'context', type: 'Record<string, unknown>', default: '{}', description: 'Arbitrary values provided to all components via use()' },
-  { name: 'debug', type: 'boolean', default: 'false', description: 'Exposes window.$lf for console debugging. Required for @liteforge/devtools.' },
-];
+function getCreateAppApi(): ApiRow[] { return [
+  { name: 'root', type: 'ComponentFactory', description: t('app.apiRoot') },
+  { name: 'target', type: 'string | HTMLElement', description: t('app.apiTarget') },
+  { name: 'stores', type: 'StoreDefinition[]', default: '[]', description: t('app.apiStores') },
+  { name: 'context', type: 'Record<string, unknown>', default: '{}', description: t('app.apiContext') },
+  { name: 'debug', type: 'boolean', default: 'false', description: t('app.apiDebug') },
+]; }
 
-const BUILDER_API: ApiRow[] = [
-  { name: '.use(plugin)', type: 'AppBuilder', description: 'Register a plugin. Returns the builder for chaining. Throws after .mount().' },
-  { name: '.useDev(factory)', type: 'AppBuilder', description: 'Register a plugin only in development (import.meta.env.DEV). Factory is a function returning Promise<LiteForgePlugin>. Tree-shaken in prod.' },
-  { name: '.mount()', type: 'Promise<App>', description: 'Install all plugins (in registration order, awaiting async installs) then mount the root component. Returns the App instance.' },
-  { name: '.then(fn)', type: 'Promise<App>', description: 'Thenable — delegates to .mount().then(fn). Enables top-level await without explicit .mount() call.' },
-  { name: '.catch(fn)', type: 'Promise<App>', description: 'Thenable — delegates to .mount().catch(fn).' },
-];
+function getBuilderApi(): ApiRow[] { return [
+  { name: '.use(plugin)', type: 'AppBuilder', description: t('app.builderUse') },
+  { name: '.useDev(factory)', type: 'AppBuilder', description: t('app.builderUseDev') },
+  { name: '.mount()', type: 'Promise<App>', description: t('app.builderMount') },
+  { name: '.then(fn)', type: 'Promise<App>', description: t('app.builderThen') },
+  { name: '.catch(fn)', type: 'Promise<App>', description: t('app.builderCatch') },
+]; }
 
-const PLUGIN_API: ApiRow[] = [
-  { name: 'name', type: 'string', description: 'Unique plugin identifier. Duplicate names throw before any install() runs.' },
-  { name: 'install(ctx)', type: 'void | (() => void) | Promise<void | (() => void)>', description: 'Called once during mount. Async is supported — app waits for resolution. Return a cleanup function to run on app.destroy().' },
-];
+function getPluginApi(): ApiRow[] { return [
+  { name: 'name', type: 'string', description: t('app.pluginName') },
+  { name: 'install(ctx)', type: 'void | (() => void) | Promise<void | (() => void)>', description: t('app.pluginInstall') },
+]; }
 
-const PLUGIN_CTX_API: ApiRow[] = [
-  { name: 'provide(key, value)', type: 'void', description: 'Register a value accessible via use(key) in all components.' },
-  { name: 'resolve(key)', type: 'PluginRegistry[K]', description: 'Access a value provided by another plugin. Throws if the key is not yet registered.' },
-  { name: 'target', type: 'HTMLElement', description: 'The resolved mount target element.' },
-];
+function getPluginCtxApi(): ApiRow[] { return [
+  { name: 'provide(key, value)', type: 'void', description: t('app.ctxProvide') },
+  { name: 'resolve(key)', type: 'PluginRegistry[K]', description: t('app.ctxResolve') },
+  { name: 'target', type: 'HTMLElement', description: t('app.ctxTarget') },
+]; }
 
-const APP_API: ApiRow[] = [
-  { name: 'destroy()', type: 'void', description: 'Unmount the root component and run all plugin cleanup functions in reverse registration order.' },
-];
+function getAppApi(): ApiRow[] { return [
+  { name: 'destroy()', type: 'void', description: t('app.appDestroy') },
+]; }
 
 // ─── Page ──────────────────────────────────────────────────────────────────────
 
@@ -207,79 +208,77 @@ export const AppPage = createComponent({
       <div>
         <div class="mb-10">
           <p class="text-xs font-mono text-[var(--content-muted)] mb-1">@liteforge/runtime</p>
-          <h1 class="text-3xl font-bold text-[var(--content-primary)] mb-2">App Bootstrap</h1>
+          <h1 class="text-3xl font-bold text-[var(--content-primary)] mb-2">{() => t('app.title')}</h1>
           <p class="text-[var(--content-secondary)] leading-relaxed max-w-xl">
-            <code class="text-indigo-400 text-sm">createApp()</code> bootstraps a LiteForge application.
-            It initializes stores, installs plugins in order (awaiting async installs), then mounts the root
-            component. The builder is{' '}
-            <code class="text-indigo-400 text-sm">Thenable</code> — top-level{' '}
-            <code class="text-indigo-400 text-sm">await</code> works without an explicit{' '}
-            <code class="text-indigo-400 text-sm">.mount()</code> call.
+            <code class="text-indigo-400 text-sm">createApp()</code> {() => t('app.subtitlePre')}{' '}
+            <code class="text-indigo-400 text-sm">Thenable</code> — {() => t('app.subtitleTopLevel')}{' '}
+            <code class="text-indigo-400 text-sm">await</code> {() => t('app.subtitleMid')}{' '}
+            <code class="text-indigo-400 text-sm">.mount()</code> {() => t('app.subtitleSuffix')}
           </p>
         </div>
 
-        <DocSection title="Minimal bootstrap" id="minimal">
+        <DocSection title={() => t('app.minimal')} id="minimal">
           <CodeBlock code={MINIMAL_CODE} language="typescript" />
         </DocSection>
 
-        <DocSection title="Full bootstrap" id="full"
-          description="Real-world main.tsx with all plugins chained. Plugins install in registration order; async installs are awaited before mount.">
+        <DocSection title={() => t('app.full')} id="full"
+          description={() => t('app.fullDesc')}>
           <CodeBlock code={FULL_CODE} language="typescript" />
         </DocSection>
 
-        <DocSection title="Plugin system" id="plugins"
-          description="A plugin is a factory returning a LiteForgePlugin. Plugins provide values, consume other plugins via resolve(), and return cleanup functions.">
+        <DocSection title={() => t('app.plugins')} id="plugins"
+          description={() => t('app.pluginsDesc')}>
           <CodeBlock code={PLUGIN_CODE} language="typescript" />
         </DocSection>
 
-        <DocSection title="use() — consuming plugins in components" id="use"
-          description="Any value registered via provide() is accessible in component setup() via use(). Fully typed via Declaration Merging on PluginRegistry.">
+        <DocSection title={() => t('app.use')} id="use"
+          description={() => t('app.useDesc')}>
           <CodeBlock code={USE_CODE} language="typescript" />
         </DocSection>
 
-        <DocSection title="context — static app values" id="context"
-          description="Pass arbitrary values at app level. Useful for environment config, feature flags, or shared constants that don't need a full plugin.">
+        <DocSection title={() => t('app.context')} id="context"
+          description={() => t('app.contextDesc')}>
           <CodeBlock code={CONTEXT_CODE} language="typescript" />
         </DocSection>
 
-        <DocSection title="stores — pre-initialized state" id="stores"
-          description="Stores passed to createApp() are initialized before any component mounts. All components get the same singleton instance via use().">
+        <DocSection title={() => t('app.stores')} id="stores"
+          description={() => t('app.storesDesc')}>
           <CodeBlock code={STORES_CODE} language="typescript" />
         </DocSection>
 
-        <DocSection title="debug mode & $lf" id="debug"
-          description="debug: true exposes window.$lf for console inspection. Required for @liteforge/devtools to connect.">
+        <DocSection title={() => t('app.debug')} id="debug"
+          description={() => t('app.debugDesc')}>
           <CodeBlock code={DEBUG_CODE} language="typescript" />
         </DocSection>
 
-        <DocSection title="Thenable & async mount" id="thenable"
-          description="AppBuilder implements .then()/.catch() — it behaves like a Promise. All three patterns below are equivalent.">
+        <DocSection title={() => t('app.thenable')} id="thenable"
+          description={() => t('app.thenableDesc')}>
           <CodeBlock code={THENABLE_CODE} language="typescript" />
         </DocSection>
 
-        <DocSection title="app.destroy()" id="destroy"
-          description="Unmounts the app and runs all plugin cleanups in reverse registration order. Useful in tests or SPAs that swap roots.">
+        <DocSection title={() => t('app.destroy')} id="destroy"
+          description={() => t('app.destroyDesc')}>
           <CodeBlock code={DESTROY_CODE} language="typescript" />
         </DocSection>
 
-        <DocSection title="createApp() options" id="api">
-          <ApiTable rows={CREATE_APP_API} />
+        <DocSection title={() => t('app.apiOptions')} id="api">
+          <ApiTable rows={() => getCreateAppApi()} />
         </DocSection>
 
-        <DocSection title="AppBuilder methods" id="builder-api">
-          <ApiTable rows={BUILDER_API} />
+        <DocSection title={() => t('app.apiBuilder')} id="builder-api">
+          <ApiTable rows={() => getBuilderApi()} />
         </DocSection>
 
-        <DocSection title="LiteForgePlugin" id="plugin-api">
-          <ApiTable rows={PLUGIN_API} />
+        <DocSection title={() => t('app.apiPlugin')} id="plugin-api">
+          <ApiTable rows={() => getPluginApi()} />
         </DocSection>
 
-        <DocSection title="PluginContext (install argument)" id="plugin-ctx-api">
-          <ApiTable rows={PLUGIN_CTX_API} />
+        <DocSection title={() => t('app.apiCtx')} id="plugin-ctx-api">
+          <ApiTable rows={() => getPluginCtxApi()} />
         </DocSection>
 
-        <DocSection title="App instance" id="app-api">
-          <ApiTable rows={APP_API} />
+        <DocSection title={() => t('app.apiApp')} id="app-api">
+          <ApiTable rows={() => getAppApi()} />
         </DocSection>
       </div>
     );

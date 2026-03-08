@@ -5,6 +5,7 @@ import { CodeBlock } from '../components/CodeBlock.js';
 import { LiveExample } from '../components/LiveExample.js';
 import { ApiTable } from '../components/ApiTable.js';
 import type { ApiRow } from '../components/ApiTable.js';
+import { t } from '../i18n.js';
 
 // ─── Live example ──────────────────────────────────────────────────────────────
 
@@ -153,23 +154,22 @@ export const ToastPage = createComponent({
       <div>
         <div class="mb-10">
           <p class="text-xs font-mono text-[var(--content-muted)] mb-1">@liteforge/toast</p>
-          <h1 class="text-3xl font-bold text-[var(--content-primary)] mb-2">Toast</h1>
+          <h1 class="text-3xl font-bold text-[var(--content-primary)] mb-2">{() => t('toast.title')}</h1>
           <p class="text-[var(--content-secondary)] leading-relaxed max-w-xl">
-            Imperative toast notifications with four variants, promise integration, and configurable position.
-            Rendered in a portal at the body level — no z-index battles.
+            {() => t('toast.subtitle')}
           </p>
           <CodeBlock code="pnpm add @liteforge/toast" language="bash" />
           <CodeBlock code="import { toast } from 'liteforge/toast';" language="typescript" />
         </div>
 
-        <DocSection title="Setup" id="setup" description="Mount the toast container once via toastPlugin() in main.tsx.">
+        <DocSection title={() => t('toast.setup')} id="setup" description={() => t('toast.setupDesc')}>
           <CodeBlock code={SETUP_CODE} language="typescript" />
         </DocSection>
 
-        <DocSection title="Basic usage" id="basic">
+        <DocSection title={() => t('toast.basic')} id="basic">
           <CodeBlock code={BASIC_CODE} language="typescript" />
           <LiveExample
-            title="Toast variants"
+            title={() => t('toast.liveTitle')}
             code={`toast.success('Saved!');
 toast.error('Something went wrong.');
 toast.warning('Check your input.');
@@ -178,27 +178,27 @@ toast.info('New version available.');`}
           />
         </DocSection>
 
-        <DocSection title="Promise toasts" id="promise" description="toast.promise() automatically transitions loading → success or error when the promise settles.">
+        <DocSection title={() => t('toast.promise')} id="promise" description={() => t('toast.promiseDesc')}>
           <CodeBlock code={PROMISE_CODE} language="typescript" />
         </DocSection>
 
-        <DocSection title="Position" id="position">
+        <DocSection title={() => t('toast.position')} id="position">
           <CodeBlock code={POSITIONS_CODE} language="typescript" />
         </DocSection>
 
-        <DocSection title="CSS Variables" id="css" description="Override any token globally via :root, or per data-theme.">
+        <DocSection title={() => t('toast.cssVars')} id="css" description={() => t('toast.cssVarsDesc')}>
           <CodeBlock code={CSS_CODE} language="css" />
         </DocSection>
 
-        <DocSection title="Plugin options" id="plugin-api">
+        <DocSection title={() => t('toast.pluginOptions')} id="plugin-api">
           <ApiTable rows={PLUGIN_API} />
         </DocSection>
 
-        <DocSection title="toast API" id="api">
+        <DocSection title={() => t('toast.api')} id="api">
           <ApiTable rows={TOAST_API} />
         </DocSection>
 
-        <DocSection title="Toast options" id="opts-api">
+        <DocSection title={() => t('toast.toastOptions')} id="opts-api">
           <ApiTable rows={OPTS_API} />
         </DocSection>
       </div>

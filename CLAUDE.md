@@ -367,6 +367,7 @@ If a new DOM event isn't recognized as an event handler and gets wrapped in a ge
 3. **Calendar drag & drop** uses event delegation on the grid container (not individual event elements) to survive reactive re-renders.
 4. **Store signals** use `.set()` for updates, not direct assignment: `state.value.set(newVal)` not `state.value = newVal`.
 5. **`Show` `when` prop — pass signals directly**: The vite-plugin compiles `when: mySignal` to `when: () => mySignal` (wraps the identifier). `Show`'s `getValue()` then returns the signal function object itself — always truthy, never changing. Fix applied in `control-flow.ts`: `getValue` double-resolves if the result is itself a function. This means both `when: mySignal` and `when: () => mySignal()` work correctly.
+6. **`Show` vs. `display:none`** — Use `<Show>` when content is expensive and shouldn't be in the DOM. Use `style={() => open() ? '' : 'display:none'}` when content has reactive nodes that must stay alive while hidden (e.g. a panel with live-updating signals). Removing a node from the DOM disposes its effects — re-inserting the same node does NOT re-attach them.
 
 ---
 

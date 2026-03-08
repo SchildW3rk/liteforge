@@ -6,6 +6,7 @@ import { ApiTable } from '../components/ApiTable.js';
 import { LiveExample } from '../components/LiveExample.js';
 import { btnClass } from '../components/Button.js';
 import type { ApiRow } from '../components/ApiTable.js';
+import { t } from '../i18n.js';
 
 // ─── Live example ──────────────────────────────────────────────────────────────
 
@@ -296,19 +297,18 @@ export const RouterPage = createComponent({
       <div>
         <div class="mb-10">
           <p class="text-xs font-mono text-[var(--content-muted)] mb-1">@liteforge/router</p>
-          <h1 class="text-3xl font-bold text-[var(--content-primary)] mb-2">Router</h1>
+          <h1 class="text-3xl font-bold text-[var(--content-primary)] mb-2">{() => t('router.title')}</h1>
           <p class="text-[var(--content-secondary)] leading-relaxed max-w-xl">
-            Client-side routing with nested routes, lazy loading, route guards, and middleware.
-            The docs app you're reading uses it right now.
+            {() => t('router.subtitle')}
           </p>
           <CodeBlock code={`pnpm add @liteforge/router`} language="bash" />
           <CodeBlock code={`import { createRouter, createBrowserHistory, Link, RouterOutlet } from 'liteforge/router';`} language="typescript" />
         </div>
 
         <DocSection
-          title="Setup"
+          title={() => t('router.setup')}
           id="setup"
-          description="Create a router instance and pass it to createApp(). Routes are matched top-to-bottom."
+          description={() => t('router.setupDesc')}
         >
           <div>
             <CodeBlock code={SETUP_CODE} language="typescript" />
@@ -317,39 +317,39 @@ export const RouterPage = createComponent({
         </DocSection>
 
         <DocSection
-          title="Nested routes"
+          title={() => t('router.nested')}
           id="nested"
-          description="Parent components render RouterOutlet() where child routes are mounted. Useful for layouts with sidebars, tabs, or shared headers."
+          description={() => t('router.nestedDesc')}
         >
           <CodeBlock code={NESTED_CODE} language="typescript" />
         </DocSection>
 
         <DocSection
-          title="Lazy loading"
+          title={() => t('router.lazy')}
           id="lazy"
-          description="Use inline import() expressions directly in route definitions — the router handles wrapping automatically."
+          description={() => t('router.lazyDesc')}
         >
           <CodeBlock code={LAZY_CODE} language="typescript" />
         </DocSection>
 
         <DocSection
-          title="Link & RouterOutlet"
+          title={() => t('router.link')}
           id="link"
-          description="Link renders an <a> tag with active state detection. RouterOutlet is where matched child routes render."
+          description={() => t('router.linkDesc')}
         >
           <CodeBlock code={LINK_CODE} language="tsx" />
         </DocSection>
 
         <DocSection
-          title="Accessing the router (use)"
+          title={() => t('router.useRouter')}
           id="params"
-          description="Inside a component, call use('router') to get the router instance. Route params are reactive — read them via computed() on currentRoute()."
+          description={() => t('router.useRouterDesc')}
         >
           <div>
             <CodeBlock code={USE_ROUTER_CODE} language="tsx" />
             <LiveExample
-              title="Router demo"
-              description="Active links, route params, programmatic navigation"
+              title={() => t('router.liveTitle')}
+              description={() => t('router.liveDesc')}
               component={RouterDemo}
               code={ROUTER_DEMO_CODE}
             />
@@ -357,17 +357,17 @@ export const RouterPage = createComponent({
         </DocSection>
 
         <DocSection
-          title="Guards"
+          title={() => t('router.guards')}
           id="guards"
-          description="Guards run before navigation completes. Return true to allow, a redirect path to redirect, or false to cancel."
+          description={() => t('router.guardsDesc')}
         >
           <CodeBlock code={GUARD_CODE} language="typescript" />
         </DocSection>
 
         <DocSection
-          title="Middleware"
+          title={() => t('router.middleware')}
           id="middleware"
-          description="Middleware wraps every navigation. Use it for logging, document title updates, analytics, or scroll restoration."
+          description={() => t('router.middlewareDesc')}
         >
           <CodeBlock code={MIDDLEWARE_CODE} language="typescript" />
         </DocSection>

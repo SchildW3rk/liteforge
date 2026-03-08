@@ -6,6 +6,7 @@ import { ApiTable } from '../components/ApiTable.js';
 import { LiveExample } from '../components/LiveExample.js';
 import { btnClass } from '../components/Button.js';
 import type { ApiRow } from '../components/ApiTable.js';
+import { t } from '../i18n.js';
 
 // ─── Live example ──────────────────────────────────────────────────────────────
 
@@ -311,27 +312,26 @@ export const ClientPage = createComponent({
       <div>
         <div class="mb-10">
           <p class="text-xs font-mono text-[var(--content-muted)] mb-1">@liteforge/client</p>
-          <h1 class="text-3xl font-bold text-[var(--content-primary)] mb-2">HTTP Client</h1>
+          <h1 class="text-3xl font-bold text-[var(--content-primary)] mb-2">{() => t('client.title')}</h1>
           <p class="text-[var(--content-secondary)] leading-relaxed max-w-xl">
-            TypeScript-first HTTP client. Zero dependencies. Go from raw fetch to fully reactive,
-            cached CRUD operations in 4 levels of progressively better DX.
+            {() => t('client.subtitle')}
           </p>
           <CodeBlock code={`pnpm add @liteforge/client`} language="bash" />
           <CodeBlock code={`import { createClient, ApiError } from 'liteforge/client';`} language="typescript" />
         </div>
 
         <DocSection
-          title="Progressive DX — 4 levels"
+          title={() => t('client.progressiveDx')}
           id="contrast"
-          description="Start with raw fetch, graduate to client → resource → QueryClient as your needs grow."
+          description={() => t('client.progressiveDxDesc')}
         >
           <CodeBlock code={CONTRAST_CODE} language="typescript" />
         </DocSection>
 
         <DocSection
-          title="createClient()"
+          title={() => t('client.createClient')}
           id="create-client"
-          description="Creates a typed HTTP client with default headers, timeout, and retry. Without query option returns Client; with query returns QueryClient."
+          description={() => t('client.createClientDesc')}
         >
           <div>
             <CodeBlock code={SETUP_CODE} language="typescript" />
@@ -340,31 +340,31 @@ export const ClientPage = createComponent({
         </DocSection>
 
         <DocSection
-          title="resource() — typed CRUD"
+          title={() => t('client.resource')}
           id="resource"
-          description="Binds a resource name to a base path and exposes strongly-typed CRUD methods. No URL strings in your components."
+          description={() => t('client.resourceDesc')}
         >
           <CodeBlock code={RESOURCE_CODE} language="typescript" />
         </DocSection>
 
         <DocSection
-          title="QueryClient — reactive resources"
+          title={() => t('client.queryClient')}
           id="query-client"
-          description="Pass { query } to createClient() to get a QueryClient. resource() then returns QueryResource — use* methods are required (not optional), no ! needed."
+          description={() => t('client.queryClientDesc')}
         >
           <CodeBlock code={QUERY_CLIENT_CODE} language="typescript" />
         </DocSection>
 
         <DocSection
-          title="Error handling (ApiError)"
+          title={() => t('client.errors')}
           id="errors"
-          description="All non-2xx responses throw an ApiError. Catch it for status-based handling, or handle globally via interceptors."
+          description={() => t('client.errorsDesc')}
         >
           <div>
             <CodeBlock code={ERROR_CODE} language="typescript" />
             <LiveExample
-              title="Fetch demo"
-              description="Loading, error, and paginated data states"
+              title={() => t('client.liveTitle')}
+              description={() => t('client.liveDesc')}
               component={FetchDemo}
               code={FETCH_DEMO_CODE}
             />
@@ -372,17 +372,17 @@ export const ClientPage = createComponent({
         </DocSection>
 
         <DocSection
-          title="Interceptors"
+          title={() => t('client.interceptors')}
           id="interceptors"
-          description="Intercept every request and response. Perfect for auth token injection, retry-on-401, or global error handling."
+          description={() => t('client.interceptorsDesc')}
         >
           <CodeBlock code={INTERCEPTOR_CODE} language="typescript" />
         </DocSection>
 
         <DocSection
-          title="Middleware"
+          title={() => t('client.middleware')}
           id="middleware"
-          description="Middleware wraps the entire request pipeline — useful for timing, logging, or request transformation."
+          description={() => t('client.middlewareDesc')}
         >
           <CodeBlock code={MIDDLEWARE_CODE} language="typescript" />
         </DocSection>

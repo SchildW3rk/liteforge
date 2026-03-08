@@ -7,6 +7,7 @@ import { LiveExample } from '../components/LiveExample.js';
 import { ApiTable } from '../components/ApiTable.js';
 import { Button } from '../components/Button.js';
 import type { ApiRow } from '../components/ApiTable.js';
+import { t } from '../i18n.js';
 
 // ─── Live example ─────────────────────────────────────────────────────────────
 
@@ -180,29 +181,29 @@ export const ModalPage = createComponent({
       <div>
         <div class="mb-10">
           <p class="text-xs font-mono text-[var(--content-muted)] mb-1">@liteforge/modal</p>
-          <h1 class="text-3xl font-bold text-[var(--content-primary)] mb-2">Modal</h1>
+          <h1 class="text-3xl font-bold text-[var(--content-primary)] mb-2">{() => t('modal.title')}</h1>
           <p class="text-[var(--content-secondary)] leading-relaxed max-w-xl">
-            Portal-based modal system with focus trap, keyboard handling, and CSS transitions.
-            Includes ready-made <code class="text-indigo-400 text-sm">confirm()</code>,{' '}
-            <code class="text-indigo-400 text-sm">alert()</code>, and{' '}
-            <code class="text-indigo-400 text-sm">prompt()</code> presets.
+            {() => t('modal.subtitlePre')}{' '}
+            <code class="text-indigo-400 text-sm">confirm()</code>,{' '}
+            <code class="text-indigo-400 text-sm">alert()</code>, {() => t('modal.subtitleAnd')}{' '}
+            <code class="text-indigo-400 text-sm">prompt()</code> {() => t('modal.subtitleSuffix')}
           </p>
           <CodeBlock code={`pnpm add @liteforge/modal`} language="bash" />
           <CodeBlock code={`import { createModal, confirm, alert, prompt } from 'liteforge/modal';`} language="typescript" />
         </div>
 
         <DocSection
-          title="Setup — ModalProvider"
+          title={() => t('modal.setup')}
           id="setup"
-          description="Mount ModalProvider once in main.tsx. It creates a portal div that modals render into — outside your app root."
+          description={() => t('modal.setupDesc')}
         >
           <CodeBlock code={SETUP_CODE} language="typescript" />
         </DocSection>
 
         <DocSection
-          title="createModal()"
+          title={() => t('modal.createModal')}
           id="create-modal"
-          description="Create a modal instance with config and a component function. The component renders your modal content using JSX."
+          description={() => t('modal.createModalDesc')}
         >
           <div>
             <CodeBlock code={BASIC_CODE} language="tsx" />
@@ -212,9 +213,9 @@ export const ModalPage = createComponent({
         </DocSection>
 
         <DocSection
-          title="Presets"
+          title={() => t('modal.presets')}
           id="presets"
-          description="confirm(), alert(), and prompt() return Promises. Use them with async/await for clean imperative code."
+          description={() => t('modal.presetsDesc')}
         >
           <div>
             <CodeBlock code={PRESETS_CODE} language="typescript" />
@@ -223,13 +224,13 @@ export const ModalPage = createComponent({
         </DocSection>
 
         <DocSection
-          title="Live example"
+          title={() => t('modal.live')}
           id="live"
-          description="Try all four modal types. Results are shown below the buttons."
+          description={() => t('modal.liveDesc')}
         >
           <LiveExample
-            title="Modal — createModal + presets"
-            description="Open modal, then try confirm / alert / prompt"
+            title={() => t('modal.liveTitle')}
+            description={() => t('modal.liveDescEx')}
             component={ModalExample}
             code={LIVE_CODE}
           />

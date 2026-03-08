@@ -6,6 +6,7 @@ import { LiveExample } from '../components/LiveExample.js';
 import { ApiTable } from '../components/ApiTable.js';
 import type { ApiRow } from '../components/ApiTable.js';
 import { tooltip } from 'liteforge/tooltip';
+import { t } from '../i18n.js';
 
 // ─── Live examples ─────────────────────────────────────────────────────────────
 
@@ -220,79 +221,92 @@ export const TooltipPage = createComponent({
       <div>
         <div class="mb-10">
           <p class="text-xs font-mono text-[var(--content-muted)] mb-1">@liteforge/tooltip</p>
-          <h1 class="text-3xl font-bold text-[var(--content-primary)] mb-2">Tooltip</h1>
+          <h1 class="text-3xl font-bold text-[var(--content-primary)] mb-2">{() => t('tooltip.title')}</h1>
           <p class="text-[var(--content-secondary)] leading-relaxed max-w-xl">
-            Portal-based tooltip primitive. Renders directly on{' '}
-            <code class="text-indigo-400 text-sm">{'<body>'}</code> — no{' '}
-            <code class="text-indigo-400 text-sm">overflow:hidden</code> clipping,
-            no z-index battles. Supports delayed hover, conditional{' '}
-            <code class="text-indigo-400 text-sm">showWhen</code>, and all four positions with auto-flip.
+            {() => t('tooltip.subtitlePre')}{' '}
+            <code class="text-indigo-400 text-sm">{'<body>'}</code> — {() => t('tooltip.subtitleMid')}{' '}
+            <code class="text-indigo-400 text-sm">overflow:hidden</code> {() => t('tooltip.subtitleMid2')}{' '}
+            <code class="text-indigo-400 text-sm">showWhen</code>, {() => t('tooltip.subtitleSuffix')}
           </p>
           <CodeBlock code="pnpm add @liteforge/tooltip" language="bash" />
           <CodeBlock code="import { tooltip } from 'liteforge/tooltip';" language="typescript" />
         </div>
 
-        <DocSection title="Basic usage" id="basic">
+        <DocSection title={() => t('tooltip.basic')} id="basic">
           <CodeBlock code={BASIC_CODE} language="typescript" />
           <LiveExample
-            title="All four positions"
+            title={() => t('tooltip.liveBasicTitle')}
             code={`tooltip(btn, { content: 'position: "top"', position: 'top' });`}
             component={BasicTooltipExample}
           />
         </DocSection>
 
-        <DocSection title="Ref-callback in JSX" id="ref" description="The most common usage — attach directly in JSX via the ref prop.">
+        <DocSection title={() => t('tooltip.ref')} id="ref" description={() => t('tooltip.refDesc')}>
           <CodeBlock code={REF_CODE} language="typescript" />
         </DocSection>
 
-        <DocSection title="showWhen — conditional guard" id="show-when"
-          description="showWhen is the key feature for sidebar collapsed-state tooltips. The guard is re-evaluated on every pointerenter — no re-attach needed.">
+        <DocSection title={() => t('tooltip.showWhen')} id="show-when"
+          description={() => t('tooltip.showWhenDesc')}>
           <CodeBlock code={SHOW_WHEN_CODE} language="typescript" />
           <LiveExample
-            title="showWhen — sidebar pattern"
+            title={() => t('tooltip.liveShowWhenTitle')}
             code={`tooltip(el, { content: 'Settings', showWhen: () => !sidebarOpen() })`}
             component={ShowWhenExample}
           />
         </DocSection>
 
-        <DocSection title="Delay" id="delay" description="Use delay to prevent tooltips from flashing during quick mouse movements across a toolbar.">
+        <DocSection title={() => t('tooltip.delay')} id="delay" description={() => t('tooltip.delayDesc')}>
           <LiveExample
-            title="Hover delay"
+            title={() => t('tooltip.liveDelayTitle')}
             code={`tooltip(btn, { content: '150ms delay', delay: 150 })`}
             component={DelayExample}
           />
         </DocSection>
 
-        <DocSection title="Cleanup" id="cleanup" description="tooltip() returns a cleanup function. Call it to remove all listeners and hide any active tooltip. Use onCleanup() inside createComponent.">
+        <DocSection title={() => t('tooltip.cleanup')} id="cleanup" description={() => t('tooltip.cleanupDesc')}>
           <CodeBlock code={CLEANUP_CODE} language="typescript" />
           <LiveExample
-            title="Manual cleanup"
+            title={() => t('tooltip.liveCleanupTitle')}
             code={`const cleanup = tooltip(el, 'Hello');\ncleanup(); // removes tooltip`}
             component={CleanupExample}
           />
         </DocSection>
 
-        <DocSection title="Tooltip() component wrapper" id="component" description="Plain factory function that wraps children in a display:contents span. Useful in JSX composition.">
+        <DocSection title={() => t('tooltip.gotcha')} id="gotcha">
+          <div class="p-3 rounded-lg border border-amber-500/30 bg-amber-500/10 text-sm text-[var(--content-secondary)] leading-relaxed">
+            <strong class="text-amber-400">⚠ Never use the native <code>title</code> attribute on an element that also has <code>tooltip()</code> attached.</strong>
+            {' '}The browser manages its own native tooltip independently — it ignores LiteForge's event listeners, doesn't hide on click, and overlaps the custom tooltip.
+            Remove <code>title</code> and let <code>tooltip()</code> handle everything.
+          </div>
+          <CodeBlock code={`// ❌ Wrong — native title conflicts with tooltip()
+tooltip(btn, 'Save');
+btn.title = 'Save'; // browser shows its own tooltip on hover, ignores click-hide
+
+// ✅ Correct — tooltip() only
+tooltip(btn, 'Save');`} language="typescript" />
+        </DocSection>
+
+        <DocSection title={() => t('tooltip.component')} id="component" description={() => t('tooltip.componentDesc')}>
           <CodeBlock code={COMPONENT_CODE} language="typescript" />
         </DocSection>
 
-        <DocSection title="Auto position" id="auto" description="position: 'auto' tries top first, then flips to avoid viewport edges.">
+        <DocSection title={() => t('tooltip.auto')} id="auto" description={() => t('tooltip.autoDesc')}>
           <CodeBlock code={AUTO_CODE} language="typescript" />
         </DocSection>
 
-        <DocSection title="CSS Variables" id="css" description="Override any token globally via :root.">
+        <DocSection title={() => t('tooltip.cssVars')} id="css" description={() => t('tooltip.cssVarsDesc')}>
           <CodeBlock code={CSS_CODE} language="css" />
         </DocSection>
 
-        <DocSection title="tooltip() API" id="api">
+        <DocSection title={() => t('tooltip.api')} id="api">
           <ApiTable rows={FUNC_API} />
         </DocSection>
 
-        <DocSection title="TooltipOptions" id="options-api">
+        <DocSection title={() => t('tooltip.optionsApi')} id="options-api">
           <ApiTable rows={OPTIONS_API} />
         </DocSection>
 
-        <DocSection title="Tooltip() component props" id="component-api">
+        <DocSection title={() => t('tooltip.componentApi')} id="component-api">
           <ApiTable rows={COMPONENT_API} />
         </DocSection>
       </div>

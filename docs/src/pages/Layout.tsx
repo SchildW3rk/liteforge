@@ -1,7 +1,8 @@
-import { createComponent, signal } from 'liteforge';
+import { createComponent, signal, effect } from 'liteforge';
 import { RouterOutlet, Link } from 'liteforge/router';
 import { tooltip } from 'liteforge/tooltip';
 import { themeStore } from '../stores/theme.js';
+import { t, locale, setLocale } from '../i18n.js';
 
 // ─── Lucide icon helper ────────────────────────────────────────────────────────
 
@@ -63,76 +64,76 @@ const IC = {
 
 interface NavLink {
   href: string;
-  label: string;
+  labelKey: string;  // key into t('nav.*')
   icon: IconNode;
 }
 
 interface NavGroup {
   id: string;
-  label: string;
+  labelKey: string;  // key into t('nav.*')
   links: NavLink[];
 }
 
 const NAV_GROUPS: NavGroup[] = [
   {
     id: 'foundation',
-    label: 'Foundation',
+    labelKey: 'nav.foundation',
     links: [
-      { href: '/app',          label: 'App Bootstrap',        icon: IC['rocket']       },
-      { href: '/core',         label: 'Signals & Reactivity', icon: IC['zap']          },
-      { href: '/runtime',      label: 'Components & JSX',     icon: IC['box']          },
-      { href: '/lifecycle',    label: 'Lifecycle',            icon: IC['refreshcw']    },
-      { href: '/store',        label: 'State Management',     icon: IC['database']     },
-      { href: '/devtools',     label: 'DevTools',             icon: IC['wrench']       },
+      { href: '/app',          labelKey: 'nav.app',         icon: IC['rocket']       },
+      { href: '/core',         labelKey: 'nav.core',        icon: IC['zap']          },
+      { href: '/runtime',      labelKey: 'nav.runtime',     icon: IC['box']          },
+      { href: '/lifecycle',    labelKey: 'nav.lifecycle',   icon: IC['refreshcw']    },
+      { href: '/store',        labelKey: 'nav.store',       icon: IC['database']     },
+      { href: '/devtools',     labelKey: 'nav.devtools',    icon: IC['wrench']       },
     ],
   },
   {
     id: 'control-flow',
-    label: 'Control Flow',
+    labelKey: 'nav.controlFlow',
     links: [
-      { href: '/control-flow', label: 'Show / Switch / For',  icon: IC['gitbranch']   },
+      { href: '/control-flow', labelKey: 'nav.controlflow', icon: IC['gitbranch']   },
     ],
   },
   {
     id: 'routing',
-    label: 'Routing',
+    labelKey: 'nav.routing',
     links: [
-      { href: '/router',       label: 'Routing',              icon: IC['navigation']  },
+      { href: '/router',       labelKey: 'nav.router',      icon: IC['navigation']  },
     ],
   },
   {
     id: 'data',
-    label: 'Data',
+    labelKey: 'nav.data',
     links: [
-      { href: '/query',        label: 'Data Fetching',        icon: IC['clouddownload'] },
-      { href: '/client',       label: 'HTTP Client',          icon: IC['globe']         },
+      { href: '/query',        labelKey: 'nav.query',       icon: IC['clouddownload'] },
+      { href: '/client',       labelKey: 'nav.client',      icon: IC['globe']         },
     ],
   },
   {
     id: 'ui',
-    label: 'UI',
+    labelKey: 'nav.ui',
     links: [
-      { href: '/form',         label: 'Forms',                icon: IC['clipboardlist'] },
-      { href: '/table',        label: 'Tables',               icon: IC['table2']        },
-      { href: '/modal',        label: 'Modal',                icon: IC['layers']        },
-      { href: '/toast',        label: 'Toast',                icon: IC['bell']          },
-      { href: '/tooltip',      label: 'Tooltip',              icon: IC['messagesquare'] },
-      { href: '/calendar',     label: 'Calendar',             icon: IC['calendardays']  },
+      { href: '/form',         labelKey: 'nav.form',        icon: IC['clipboardlist'] },
+      { href: '/table',        labelKey: 'nav.table',       icon: IC['table2']        },
+      { href: '/modal',        labelKey: 'nav.modal',       icon: IC['layers']        },
+      { href: '/toast',        labelKey: 'nav.toast',       icon: IC['bell']          },
+      { href: '/tooltip',      labelKey: 'nav.tooltip',     icon: IC['messagesquare'] },
+      { href: '/calendar',     labelKey: 'nav.calendar',    icon: IC['calendardays']  },
     ],
   },
   {
     id: 'plugins',
-    label: 'Plugins',
+    labelKey: 'nav.plugins',
     links: [
-      { href: '/i18n',         label: 'Internationalization', icon: IC['languages']   },
-      { href: '/admin',        label: 'Admin Panel',          icon: IC['shield']      },
+      { href: '/i18n',         labelKey: 'nav.i18n',        icon: IC['languages']   },
+      { href: '/admin',        labelKey: 'nav.admin',       icon: IC['shield']      },
     ],
   },
   {
     id: 'tools',
-    label: 'Tools',
+    labelKey: 'nav.tools',
     links: [
-      { href: '/benchmark',    label: 'Benchmark',            icon: IC['barchart2']   },
+      { href: '/benchmark',    labelKey: 'nav.benchmark',   icon: IC['barchart2']   },
     ],
   },
 ];
@@ -161,6 +162,79 @@ function loadDesktopCollapsed(): boolean {
 function saveDesktopCollapsed(v: boolean): void {
   try { localStorage.setItem(LS_DESKTOP_COLLAPSED, String(v)); } catch { /* ignore */ }
 }
+
+// ─── Theme Customizer helpers ─────────────────────────────────────────────────
+
+const TC_DEFAULTS = { accent: '#6366f1', radius: 6 };
+const TC_LS_KEY   = 'lf-docs-theme-customizer';
+
+interface TCState { accent: string; radius: number }
+
+function loadTC(): TCState {
+  try {
+    const raw = localStorage.getItem(TC_LS_KEY);
+    if (raw) return { ...TC_DEFAULTS, ...JSON.parse(raw) };
+  } catch { /* ignore */ }
+  return { ...TC_DEFAULTS };
+}
+
+function saveTC(s: TCState): void {
+  try { localStorage.setItem(TC_LS_KEY, JSON.stringify(s)); } catch { /* ignore */ }
+}
+
+/** Convert a hex color to an HSL-lightened hex (pure, no deps). */
+function lighten(hex: string, amount: number): string {
+  // Parse #rrggbb or #rgb
+  let r: number, g: number, b: number;
+  const h = hex.replace('#', '');
+  if (h.length === 3) {
+    r = parseInt(h.charAt(0) + h.charAt(0), 16);
+    g = parseInt(h.charAt(1) + h.charAt(1), 16);
+    b = parseInt(h.charAt(2) + h.charAt(2), 16);
+  } else {
+    r = parseInt(h.slice(0, 2), 16);
+    g = parseInt(h.slice(2, 4), 16);
+    b = parseInt(h.slice(4, 6), 16);
+  }
+  // RGB → HSL
+  const rn = r / 255, gn = g / 255, bn = b / 255;
+  const max = Math.max(rn, gn, bn), min = Math.min(rn, gn, bn);
+  const l = (max + min) / 2;
+  const d = max - min;
+  let hh = 0, ss = 0;
+  if (d !== 0) {
+    ss = d / (1 - Math.abs(2 * l - 1));
+    if (max === rn)      hh = ((gn - bn) / d + 6) % 6;
+    else if (max === gn) hh = (bn - rn) / d + 2;
+    else                 hh = (rn - gn) / d + 4;
+    hh /= 6;
+  }
+  // Bump lightness, clamp 0–1
+  const l2 = Math.min(1, l + amount / 100);
+  // HSL → RGB
+  const hue2rgb = (p: number, q: number, t: number) => {
+    let tt = t < 0 ? t + 1 : t > 1 ? t - 1 : t;
+    if (tt < 1/6) return p + (q - p) * 6 * tt;
+    if (tt < 1/2) return q;
+    if (tt < 2/3) return p + (q - p) * (2/3 - tt) * 6;
+    return p;
+  };
+  const q2 = l2 < 0.5 ? l2 * (1 + ss) : l2 + ss - l2 * ss;
+  const p2 = 2 * l2 - q2;
+  const toHex = (v: number) => Math.round(v * 255).toString(16).padStart(2, '0');
+  return `#${toHex(hue2rgb(p2, q2, hh + 1/3))}${toHex(hue2rgb(p2, q2, hh))}${toHex(hue2rgb(p2, q2, hh - 1/3))}`;
+}
+
+const TC_SWATCHES = [
+  { color: '#6366f1', label: 'Indigo'   },
+  { color: '#8b5cf6', label: 'Violet'   },
+  { color: '#3b82f6', label: 'Blue'     },
+  { color: '#10b981', label: 'Emerald'  },
+  { color: '#f59e0b', label: 'Amber'    },
+  { color: '#ef4444', label: 'Red'      },
+  { color: '#ec4899', label: 'Pink'     },
+  { color: '#14b8a6', label: 'Teal'     },
+];
 
 // ─── Layout component ─────────────────────────────────────────────────────────
 
@@ -191,6 +265,112 @@ export const Layout = createComponent({
       sig.set(next);
       saveCollapsed(g.id, next);
     };
+
+    // ── Theme Customizer ──────────────────────────────────────────────────
+    const tcSaved  = loadTC();
+    const tcOpen   = signal(false);
+    const tcAccent = signal<string>(tcSaved.accent);
+    const tcRadius = signal<number>(tcSaved.radius);
+
+    effect(() => {
+      const accent = tcAccent();
+      const radius = tcRadius();
+      const root = document.documentElement.style;
+      root.setProperty('--color-primary', accent);
+      root.setProperty('--color-primary-light', lighten(accent, 20));
+      root.setProperty('--lf-modal-border-radius', `${radius}px`);
+      root.setProperty('--lf-tooltip-radius', `${radius}px`);
+      root.setProperty('--lf-radius', `${radius}px`);
+      saveTC({ accent, radius });
+    });
+
+    // paintbrush SVG (inline, no dependency on IC helper)
+    const paintbrushIcon = (() => {
+      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      svg.setAttribute('viewBox', '0 0 24 24');
+      svg.setAttribute('width', '16');
+      svg.setAttribute('height', '16');
+      svg.setAttribute('fill', 'none');
+      svg.setAttribute('stroke', 'currentColor');
+      svg.setAttribute('stroke-width', '2');
+      svg.setAttribute('stroke-linecap', 'round');
+      svg.setAttribute('stroke-linejoin', 'round');
+      const path1 = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      path1.setAttribute('d', 'M18.37 2.63 14 7l-1.59-1.59a2 2 0 0 0-2.82 0L8 7l9 9 1.59-1.59a2 2 0 0 0 0-2.82L17 10l4.37-4.37a2.12 2.12 0 1 0-3-3Z');
+      const path2 = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      path2.setAttribute('d', 'M9 8c-2 3-4 3.5-7 4l8 10c2-1 6-5 6-7');
+      const path3 = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      path3.setAttribute('d', 'M14.5 17.5c4.2-2.5 6-6 5.3-10.3');
+      svg.append(path1, path2, path3);
+      return svg;
+    })();
+
+    const tcPanel = (
+      <div class="lf-tc-panel">
+        <header>
+          <span class="lf-tc-title">{() => t('tc.title')}</span>
+          <button
+            type="button"
+            onclick={() => tcOpen.set(false)}
+            style="background:none;border:none;cursor:pointer;color:var(--content-muted);padding:2px 4px;font-size:14px;line-height:1;"
+          >×</button>
+        </header>
+
+        <div class="lf-tc-section">
+          <span class="lf-tc-label">{() => t('tc.accent')}</span>
+          <div class="lf-tc-swatches">
+            {TC_SWATCHES.map(s => {
+              const btn = (
+                <button
+                  type="button"
+                  class={() => `lf-tc-swatch${tcAccent() === s.color ? ' active' : ''}`}
+                  style={`background:${s.color}`}
+                  title={s.label}
+                  onclick={() => tcAccent.set(s.color)}
+                />
+              );
+              return btn;
+            })}
+          </div>
+        </div>
+
+        <div class="lf-tc-section">
+          <span class="lf-tc-label">{() => t('tc.radius')}</span>
+          <div class="lf-tc-row">
+            <input
+              type="range"
+              class="lf-tc-slider"
+              min="0"
+              max="16"
+              step="1"
+              value={() => tcRadius()}
+              oninput={(e: Event) => tcRadius.set(Number((e.target as HTMLInputElement).value))}
+            />
+            <span class="lf-tc-value">{() => `${tcRadius()}px`}</span>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          class="lf-tc-reset"
+          onclick={() => { tcAccent.set(TC_DEFAULTS.accent); tcRadius.set(TC_DEFAULTS.radius); }}
+        >{() => t('tc.reset')}</button>
+      </div>
+    );
+
+    const tcButton = (() => {
+      const btn = (
+        <button
+          type="button"
+          class="lf-tc-toggle"
+          style={() => `background:${tcAccent()}`}
+          onclick={() => tcOpen.update(v => !v)}
+        >
+          {paintbrushIcon}
+        </button>
+      ) as HTMLButtonElement;
+      return btn;
+    })();
 
     // ── Desktop sidebar (collapses to icon-rail) ──────────────────────────────
     const desktopSidebar = (
@@ -225,7 +405,7 @@ export const Layout = createComponent({
         </div>
 
         {/* Nav */}
-        <nav class="flex-1 px-1.5 py-3 space-y-0.5 overflow-y-auto overflow-x-hidden">
+        <nav class={() => `flex-1 py-3 space-y-0.5 overflow-y-auto overflow-x-hidden ${desktopCollapsed() ? 'px-0' : 'px-1.5'}`}>
           {NAV_GROUPS.map(group => {
             const collapsedSig = collapsed.get(group.id)!;
 
@@ -239,7 +419,7 @@ export const Layout = createComponent({
                     onclick={() => toggle(group)}
                     class="w-full flex items-center justify-between px-2 py-1.5 rounded-md text-[0.65rem] font-semibold uppercase tracking-widest text-[--content-muted] hover:text-[--content-secondary] hover:bg-[--surface-overlay] transition-colors cursor-pointer select-none"
                   >
-                    <span>{group.label}</span>
+                    <span>{() => t(group.labelKey)}</span>
                     <span class={() => `text-[--content-subtle] transition-opacity duration-200 ${collapsedSig() ? 'opacity-50' : 'opacity-100'}`}>
                       {() => icon(collapsedSig() ? IC['chevronright'] : IC['chevrondown'], 'w-3 h-3')}
                     </span>
@@ -269,13 +449,13 @@ export const Layout = createComponent({
                             {icon(link.icon)}
                           </span>
                           <span class={() => `truncate leading-tight transition-[opacity,max-width] duration-200 ${desktopCollapsed() ? 'max-w-0 opacity-0 overflow-hidden' : 'max-w-xs opacity-100'}`}>
-                            {link.label}
+                            {() => t(link.labelKey)}
                           </span>
                         </span>
                       ),
                     });
                     // Tooltip shows label only in icon-only mode
-                    tooltip(anchor, { content: link.label, position: 'right', delay: 200, showWhen: () => desktopCollapsed() });
+                    tooltip(anchor, { content: t(link.labelKey), position: 'right', delay: 200, showWhen: () => desktopCollapsed() });
                     return (
                       <li class={() => desktopCollapsed() ? 'lf-nav-collapsed-item' : ''}>
                         {anchor}
@@ -294,21 +474,30 @@ export const Layout = createComponent({
           <button
             type="button"
             onclick={() => themeStore.toggle()}
-            class={() => `flex items-center transition-colors text-[var(--content-muted)] hover:text-[var(--content-primary)] ${desktopCollapsed() ? 'justify-center w-full h-full' : 'gap-2 px-4 text-xs'}`}
-            title="Toggle light/dark"
+            class={() => `flex items-center justify-center transition-colors text-[var(--content-muted)] hover:text-[var(--content-primary)] hover:bg-[var(--surface-overlay)] rounded ${desktopCollapsed() ? 'w-full h-full' : 'w-9 h-9 ml-1'}`}
+            title={() => t('footer.toggleTheme')}
           >
             {() => icon(themeStore.isDark() ? IC['sun'] : IC['moon'], 'w-3.5 h-3.5 shrink-0')}
-            <span class={() => `whitespace-nowrap overflow-hidden transition-[opacity,max-width] duration-200 text-xs ${desktopCollapsed() ? 'max-w-0 opacity-0' : 'max-w-xs opacity-100'}`}>
-              {() => themeStore.label()}
-            </span>
           </button>
+          {/* Locale toggle — hidden when icon-only */}
+          <div class={() => `overflow-hidden transition-[opacity,max-width] duration-200 ${desktopCollapsed() ? 'max-w-0 opacity-0' : 'max-w-xs opacity-100'}`}>
+            <button
+              type="button"
+              onclick={() => void setLocale(locale() === 'de' ? 'en' : 'de')}
+              class="flex items-center gap-1.5 px-2 py-1 rounded text-xs text-[var(--content-muted)] hover:text-[var(--content-primary)] hover:bg-[var(--surface-overlay)] transition-colors whitespace-nowrap"
+              title={() => t('footer.language')}
+            >
+              {() => icon(IC['languages'], 'w-3.5 h-3.5 shrink-0')}
+              <span>{() => locale() === 'de' ? 'DE' : 'EN'}</span>
+            </button>
+          </div>
         </div>
       </aside>
     );
 
     // ── Mobile sidebar (always full-width, no icon-only mode) ─────────────────
     const mobileSidebar = (
-      <aside class="flex flex-col w-56 shrink-0 border-r border-[var(--line-default)] bg-[--surface-raised] h-screen overflow-y-auto">
+      <aside class="flex flex-col w-56 shrink-0 border-r border-[var(--line-default)] bg-[var(--surface-raised)] h-screen overflow-y-auto">
 
         <div class="flex items-center gap-2 px-4 py-4 border-b border-[var(--line-default)]">
           {Link({
@@ -332,7 +521,7 @@ export const Layout = createComponent({
                   onclick={() => toggle(group)}
                   class="w-full flex items-center justify-between px-2 py-1.5 rounded-md text-[0.65rem] font-semibold uppercase tracking-widest text-[--content-muted] hover:text-[--content-secondary] hover:bg-[--surface-overlay] transition-colors cursor-pointer select-none"
                 >
-                  <span>{group.label}</span>
+                  <span>{() => t(group.labelKey)}</span>
                   <span class={() => `text-[--content-subtle] transition-opacity duration-200 ${collapsedSig() ? 'opacity-50' : 'opacity-100'}`}>
                     {() => icon(collapsedSig() ? IC['chevronright'] : IC['chevrondown'], 'w-3 h-3')}
                   </span>
@@ -351,7 +540,7 @@ export const Layout = createComponent({
                       children: (
                         <span class="flex items-center gap-2.5 min-w-0">
                           <span class="shrink-0 text-[--content-muted]">{icon(link.icon)}</span>
-                          <span class="truncate leading-tight">{link.label}</span>
+                          <span class="truncate leading-tight">{() => t(link.labelKey)}</span>
                         </span>
                       ),
                     });
@@ -364,15 +553,26 @@ export const Layout = createComponent({
         </nav>
 
         <div class="px-4 py-3 border-t border-[var(--line-default)] flex items-center justify-between">
-          <span class="text-xs text-[var(--content-subtle)]">MIT License</span>
-          <button
-            type="button"
-            onclick={() => themeStore.toggle()}
-            class="flex items-center gap-1.5 text-xs text-[var(--content-muted)] hover:text-[var(--content-primary)] transition-colors"
-          >
-            {() => icon(themeStore.isDark() ? IC['sun'] : IC['moon'], 'w-3.5 h-3.5')}
-            {() => themeStore.label()}
-          </button>
+          <span class="text-xs text-[var(--content-subtle)]">{() => t('footer.license')}</span>
+          <div class="flex items-center gap-1">
+            <button
+              type="button"
+              onclick={() => void setLocale(locale() === 'de' ? 'en' : 'de')}
+              class="flex items-center gap-1 px-2 py-1 rounded text-xs text-[var(--content-muted)] hover:text-[var(--content-primary)] hover:bg-[var(--surface-overlay)] transition-colors"
+              title={() => t('footer.language')}
+            >
+              {() => icon(IC['languages'], 'w-3.5 h-3.5 shrink-0')}
+              <span>{() => locale() === 'de' ? 'DE' : 'EN'}</span>
+            </button>
+            <button
+              type="button"
+              onclick={() => themeStore.toggle()}
+              class="flex items-center gap-1 px-2 py-1 rounded text-xs text-[var(--content-muted)] hover:text-[var(--content-primary)] hover:bg-[var(--surface-overlay)] transition-colors"
+              title={() => t('footer.toggleTheme')}
+            >
+              {() => icon(themeStore.isDark() ? IC['sun'] : IC['moon'], 'w-3.5 h-3.5')}
+            </button>
+          </div>
         </div>
       </aside>
     );
@@ -408,6 +608,14 @@ export const Layout = createComponent({
           <main class="px-6 py-10 max-w-3xl mx-auto">
             {RouterOutlet()}
           </main>
+        </div>
+
+        {/* Theme Customizer — fixed bottom-right */}
+        <div class="fixed bottom-4 right-4 z-50 flex flex-col items-end gap-2">
+          <div style={() => tcOpen() ? '' : 'display:none'}>
+            {tcPanel}
+          </div>
+          {tcButton}
         </div>
 
       </div>

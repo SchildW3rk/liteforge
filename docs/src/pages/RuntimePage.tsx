@@ -7,6 +7,7 @@ import { ApiTable } from '../components/ApiTable.js';
 import { btnClass } from '../components/Button.js';
 import { inputClass } from '../components/Input.js';
 import type { ApiRow } from '../components/ApiTable.js';
+import { t } from '../i18n.js';
 
 // ─── Live examples ────────────────────────────────────────────────────────────
 
@@ -217,16 +218,16 @@ const FOR_LIVE_CODE = `const items = signal(['Appointments', 'Patients', 'Invoic
 
 // ─── API rows ─────────────────────────────────────────────────────────────────
 
-const COMPONENT_API: ApiRow[] = [
-  { name: 'name', type: 'string', description: 'Component identifier used in DevTools and HMR' },
-  { name: 'component(args)', type: 'Node', description: 'Render function — receives props, data, setup. Returns a DOM node (JSX)' },
-  { name: 'setup(args)', type: 'object', description: 'Runs before load() — set up signals and handlers that don\'t need async data' },
-  { name: 'load(args)', type: 'Promise<object>', description: 'Async data loading — return value is passed as data to component()' },
-  { name: 'placeholder()', type: 'Node', description: 'Rendered while load() is in flight' },
-  { name: 'error(args)', type: 'Node', description: 'Rendered when load() throws — receives error and retry()' },
-  { name: 'mounted({ el })', type: 'void', description: 'Called after component is mounted to the DOM' },
-  { name: 'destroyed()', type: 'void', description: 'Called when component is removed from the DOM' },
-];
+function getComponentApi(): ApiRow[] { return [
+  { name: 'name', type: 'string', description: t('runtime.apiName') },
+  { name: 'component(args)', type: 'Node', description: t('runtime.apiComponent') },
+  { name: 'setup(args)', type: 'object', description: t('runtime.apiSetup') },
+  { name: 'load(args)', type: 'Promise<object>', description: t('runtime.apiLoad') },
+  { name: 'placeholder()', type: 'Node', description: t('runtime.apiPlaceholder') },
+  { name: 'error(args)', type: 'Node', description: t('runtime.apiError') },
+  { name: 'mounted({ el })', type: 'void', description: t('runtime.apiMounted') },
+  { name: 'destroyed()', type: 'void', description: t('runtime.apiDestroyed') },
+]; }
 
 // ─── Page ──────────────────────────────────────────────────────────────────────
 
@@ -239,13 +240,13 @@ export const RuntimePage = createComponent({
       <div>
         <div class="mb-10">
           <p class="text-xs font-mono text-[var(--content-muted)] mb-1">@liteforge/runtime</p>
-          <h1 class="text-3xl font-bold text-[var(--content-primary)] mb-2">Components & JSX</h1>
+          <h1 class="text-3xl font-bold text-[var(--content-primary)] mb-2">{() => t('runtime.title')}</h1>
           <p class="text-[var(--content-secondary)] leading-relaxed max-w-xl">
-            The component model and DOM runtime. Create components with{' '}
+            {() => t('runtime.subtitlePre')}{' '}
             <code class="font-mono text-sm text-indigo-300">createComponent()</code>,
-            {' '}use JSX for declarative UI, and control rendering with{' '}
+            {' '}{() => t('runtime.subtitleMid')}{' '}
             <code class="font-mono text-sm text-indigo-300">Show</code>,{' '}
-            <code class="font-mono text-sm text-indigo-300">For</code>, and{' '}
+            <code class="font-mono text-sm text-indigo-300">For</code>, {() => t('runtime.subtitleAnd')}{' '}
             <code class="font-mono text-sm text-indigo-300">Switch</code>.
           </p>
           <CodeBlock code={`pnpm add @liteforge/runtime @liteforge/core`} language="bash" />
@@ -253,34 +254,34 @@ export const RuntimePage = createComponent({
         </div>
 
         <DocSection
-          title="createComponent()"
+          title={() => t('runtime.createComponent')}
           id="create-component"
-          description="Defines a component — a factory function that creates a DOM node with reactive bindings."
+          description={() => t('runtime.createComponentDesc')}
         >
           <div>
             <CodeBlock code={COMPONENT_CODE} language="tsx" />
-            <ApiTable rows={COMPONENT_API} />
+            <ApiTable rows={() => getComponentApi()} />
           </div>
         </DocSection>
 
         <DocSection
-          title="JSX syntax"
+          title={() => t('runtime.jsx')}
           id="jsx"
-          description="LiteForge JSX compiles to direct DOM operations — no virtual DOM. Key rule: reactive expressions need () => wrappers, event handlers do not."
+          description={() => t('runtime.jsxDesc')}
         >
           <CodeBlock code={JSX_CODE} language="tsx" />
         </DocSection>
 
         <DocSection
-          title="Show — conditional rendering"
+          title={() => t('runtime.show')}
           id="show"
-          description="Renders children when the when condition is truthy. Unmounts when falsy."
+          description={() => t('runtime.showDesc')}
         >
           <div>
             <CodeBlock code={SHOW_CODE} language="tsx" />
             <LiveExample
-              title="Show"
-              description="Toggle visibility"
+              title={() => t('runtime.showTitle')}
+              description={() => t('runtime.showDescEx')}
               component={ToggleExample}
               code={TOGGLE_CODE}
             />
@@ -288,15 +289,15 @@ export const RuntimePage = createComponent({
         </DocSection>
 
         <DocSection
-          title="For — list rendering"
+          title={() => t('runtime.for')}
           id="for"
-          description="Renders a list of items reactively. Re-renders the minimal set of items when the array changes."
+          description={() => t('runtime.forDesc')}
         >
           <div>
             <CodeBlock code={FOR_CODE} language="tsx" />
             <LiveExample
-              title="For"
-              description="Press Enter to add items"
+              title={() => t('runtime.forTitle')}
+              description={() => t('runtime.forDescEx')}
               component={ForExample}
               code={FOR_LIVE_CODE}
             />
@@ -304,17 +305,17 @@ export const RuntimePage = createComponent({
         </DocSection>
 
         <DocSection
-          title="Plugin injection (use)"
+          title={() => t('runtime.use')}
           id="use"
-          description="Access plugins registered with .use() via the use() function passed to component(). Fully typed via Declaration Merging."
+          description={() => t('runtime.useDesc')}
         >
           <CodeBlock code={USE_CODE} language="tsx" />
         </DocSection>
 
         <DocSection
-          title="Async lifecycle (load)"
+          title={() => t('runtime.lifecycle')}
           id="lifecycle"
-          description="Use load() for async data fetching. While loading, placeholder() renders. On error, error() renders with a retry() function."
+          description={() => t('runtime.lifecycleDesc')}
         >
           <CodeBlock code={LIFECYCLE_CODE} language="tsx" />
         </DocSection>

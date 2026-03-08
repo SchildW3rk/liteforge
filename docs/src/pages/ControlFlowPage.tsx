@@ -7,6 +7,7 @@ import { CodeBlock } from '../components/CodeBlock.js';
 import { LiveExample } from '../components/LiveExample.js';
 import { ApiTable } from '../components/ApiTable.js';
 import type { ApiRow } from '../components/ApiTable.js';
+import { t } from '../i18n.js';
 
 // =============================================================================
 // Live Examples
@@ -474,10 +475,9 @@ export const ControlFlowPage = createComponent({
         {/* Header */}
         <div class="mb-10">
           <p class="text-xs font-mono text-[var(--content-muted)] mb-1">@liteforge/runtime</p>
-          <h1 class="text-3xl font-bold text-[var(--content-primary)] mb-2">Control Flow</h1>
+          <h1 class="text-3xl font-bold text-[var(--content-primary)] mb-2">{() => t('controlflow.title')}</h1>
           <p class="text-[var(--content-secondary)] leading-relaxed max-w-xl">
-            Conditionals, lists, and reactive rendering — no virtual DOM diffing, just surgical DOM updates.
-            Each reactive node updates independently when its signal changes.
+            {() => t('controlflow.subtitle')}
           </p>
           <CodeBlock
             code={`import { Show, Switch, Match, For } from 'liteforge';`}
@@ -487,9 +487,9 @@ export const ControlFlowPage = createComponent({
 
         {/* Section 1: Reactive expressions */}
         <DocSection
-          title="Reactive expressions {() => ...}"
+          title={() => t('controlflow.reactiveExpr')}
           id="reactive-expressions"
-          description="The foundation of everything. Any () => expr in JSX creates a fine-grained reactive scope — only that DOM node updates when the signal changes, nothing else."
+          description={() => t('controlflow.reactiveExprDesc')}
         >
           <div>
             <CodeBlock code={REACTIVE_EXPR_SIGNAL_CODE} language="tsx" />
@@ -504,9 +504,9 @@ export const ControlFlowPage = createComponent({
 
         {/* Section 2: Show */}
         <DocSection
-          title="Show"
+          title={() => t('controlflow.show')}
           id="show"
-          description="Conditional rendering with typed value passing. When the condition is truthy, children receives the value narrowed to NonNullable<T> — no optional chaining needed."
+          description={() => t('controlflow.showDesc')}
         >
           <div>
             <CodeBlock code={SHOW_BASIC_CODE} language="tsx" />
@@ -514,7 +514,7 @@ export const ControlFlowPage = createComponent({
             <ApiTable rows={SHOW_API} />
             <CodeBlock code={SHOW_REALISTIC_CODE} language="tsx" title="With @liteforge/query" />
             <LiveExample
-              title="Show — conditional login state"
+              title={() => t('controlflow.liveShowTitle')}
               component={ShowLiveExample}
               code={LIVE_SHOW_CODE}
             />
@@ -523,9 +523,9 @@ export const ControlFlowPage = createComponent({
 
         {/* Section 3: Switch / Match */}
         <DocSection
-          title="Switch / Match"
+          title={() => t('controlflow.switchMatch')}
           id="switch"
-          description="Multiple exclusive conditions — like a switch/case for JSX. First truthy Match wins. Cleaner than nested ternaries when you have 3+ states."
+          description={() => t('controlflow.switchMatchDesc')}
         >
           <div>
             <CodeBlock code={SWITCH_CODE} language="tsx" />
@@ -535,7 +535,7 @@ export const ControlFlowPage = createComponent({
             <p class="text-xs font-semibold text-[var(--content-secondary)] mb-1 mt-4">Match</p>
             <ApiTable rows={MATCH_API} />
             <LiveExample
-              title="Switch — appointment status"
+              title={() => t('controlflow.liveSwitchTitle')}
               component={SwitchLiveExample}
               code={LIVE_SWITCH_CODE}
             />
@@ -544,9 +544,9 @@ export const ControlFlowPage = createComponent({
 
         {/* Section 4: For */}
         <DocSection
-          title="For"
+          title={() => t('controlflow.for')}
           id="for"
-          description="Keyed list rendering. For each item LiteForge tracks a stable key — when the array changes, only the nodes that actually changed are updated or moved. No full re-render."
+          description={() => t('controlflow.forDesc')}
         >
           <div>
             <CodeBlock code={FOR_BASIC_CODE} language="tsx" />
@@ -554,7 +554,7 @@ export const ControlFlowPage = createComponent({
             <ApiTable rows={FOR_API} />
             <CodeBlock code={FOR_WHY_NOT_MAP_CODE} language="tsx" title="Why not .map()?" />
             <LiveExample
-              title="For — patient list with add/remove"
+              title={() => t('controlflow.liveForTitle')}
               component={ForLiveExample}
               code={LIVE_FOR_CODE}
             />
@@ -562,13 +562,13 @@ export const ControlFlowPage = createComponent({
         </DocSection>
 
         {/* Section 5: Decision guide */}
-        <DocSection title="When to use what" id="decision-guide">
+        <DocSection title={() => t('controlflow.whenToUse')} id="decision-guide">
           {decisionTable.Root()}
         </DocSection>
 
         {/* Section 6: Patterns & tips */}
         <DocSection
-          title="Patterns & tips"
+          title={() => t('controlflow.patterns')}
           id="patterns"
         >
           <div>

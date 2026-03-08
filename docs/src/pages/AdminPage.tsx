@@ -3,6 +3,7 @@ import { DocSection } from '../components/DocSection.js';
 import { CodeBlock } from '../components/CodeBlock.js';
 import { ApiTable } from '../components/ApiTable.js';
 import type { ApiRow } from '../components/ApiTable.js';
+import { t } from '../i18n.js';
 
 // ─── Code strings ──────────────────────────────────────────────────────────────
 
@@ -190,71 +191,69 @@ export const AdminPage = createComponent({
       <div>
         <div class="mb-10">
           <p class="text-xs font-mono text-[--content-muted] mb-1">@liteforge/admin</p>
-          <h1 class="text-3xl font-bold text-[--content-primary] mb-2">Admin Panel</h1>
+          <h1 class="text-3xl font-bold text-[--content-primary] mb-2">{() => t('admin.title')}</h1>
           <p class="text-[--content-secondary] leading-relaxed max-w-xl">
-            Signals-based admin panel with auto-generated CRUD routes and views.
-            Define resources declaratively — the package generates a sidebar, DataTable with sorting/filtering/pagination,
-            detail view, and create/edit forms with optional Zod validation.
+            {() => t('admin.subtitle')}
           </p>
           <CodeBlock code={INSTALL_CODE} language="bash" />
           <CodeBlock code={IMPORT_CODE} language="typescript" />
         </div>
 
         <DocSection
-          title="Define a resource"
+          title={() => t('admin.defineResource')}
           id="define-resource"
-          description="defineResource() creates a frozen resource definition with all CRUD configuration. Call registerResource() to add it to the admin registry."
+          description={() => t('admin.defineResourceDesc')}
         >
           <CodeBlock code={DEFINE_CODE} language="typescript" />
           <ApiTable rows={DEFINE_RESOURCE_API} />
         </DocSection>
 
         <DocSection
-          title="Router integration"
+          title={() => t('admin.routerIntegration')}
           id="router"
-          description="Since @liteforge/router doesn't support dynamic route addition, include buildAdminRoutes() in your createRouter() config. It returns a flat RouteDefinition[] with AdminLayout as the parent."
+          description={() => t('admin.routerIntegrationDesc')}
         >
           <CodeBlock code={ROUTER_CODE} language="typescript" />
         </DocSection>
 
         <DocSection
-          title="Plugin setup"
+          title={() => t('admin.pluginSetup')}
           id="plugin"
-          description="adminPlugin() injects CSS variables, registers the 'admin' context key, and warns if no resources are registered. Requires routerPlugin and clientPlugin to already be registered."
+          description={() => t('admin.pluginSetupDesc')}
         >
           <CodeBlock code={PLUGIN_CODE} language="typescript" />
           <ApiTable rows={PLUGIN_API} />
         </DocSection>
 
         <DocSection
-          title="Field types"
+          title={() => t('admin.fieldTypes')}
           id="field-types"
-          description="Each field type controls the input rendered in forms and the cell rendered in list/detail views."
+          description={() => t('admin.fieldTypesDesc')}
         >
           <ApiTable rows={FIELD_TYPES_API} />
         </DocSection>
 
         <DocSection
-          title="Lifecycle hooks"
+          title={() => t('admin.hooks')}
           id="hooks"
-          description="Hooks fire around each CRUD operation. beforeDestroy returning false cancels the operation — no HTTP call is made."
+          description={() => t('admin.hooksDesc')}
         >
           <CodeBlock code={HOOKS_CODE} language="typescript" />
           <ApiTable rows={HOOKS_API} />
         </DocSection>
 
         <DocSection
-          title="Custom cells &amp; row actions"
+          title={() => t('admin.customCells')}
           id="custom"
-          description="renderCell() lets you return any Node for a table cell. rowActions adds per-row buttons beyond the default View/Edit/Delete."
+          description={() => t('admin.customCellsDesc')}
         >
           <CodeBlock code={CUSTOM_CELL_CODE} language="typescript" />
         </DocSection>
 
         <DocSection
-          title="Relation fields"
+          title={() => t('admin.relations')}
           id="relations"
-          description="The 'relation' field type renders a select populated from another registered resource. Specify the resource name and the field to use as the option label."
+          description={() => t('admin.relationsDesc')}
         >
           <CodeBlock code={RELATION_CODE} language="typescript" />
         </DocSection>

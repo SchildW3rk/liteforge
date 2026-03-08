@@ -9,14 +9,14 @@ export interface ApiRow {
 }
 
 interface ApiTableProps {
-  rows: ApiRow[];
+  rows: ApiRow[] | (() => ApiRow[]);
 }
 
 export const ApiTable = createComponent<ApiTableProps>({
   name: 'ApiTable',
   component({ props }) {
     const table = createTable<ApiRow>({
-      data: () => props.rows,
+      data: () => typeof props.rows === 'function' ? props.rows() : props.rows,
       columns: [
         {
           key: 'name',
@@ -49,7 +49,7 @@ export const ApiTable = createComponent<ApiTableProps>({
       ],
       unstyled: true,
       classes: {
-        root:       'overflow-x-auto rounded-lg border border-[var(--line-default)] my-4',
+        root:       'overflow-x-auto border border-[var(--line-default)] my-4 [border-radius:var(--lf-radius,8px)]',
         table:      'w-full text-sm text-left',
         header:     'bg-[var(--surface-raised)] text-[var(--content-muted)] text-xs uppercase tracking-wider',
         headerCell: 'px-4 py-3',

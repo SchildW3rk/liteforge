@@ -1,6 +1,7 @@
 import { createComponent } from 'liteforge';
 import { Link } from 'liteforge/router';
 import { CodeBlock } from '../components/CodeBlock.js';
+import { t } from '../i18n.js';
 
 type BadgeToken = 'violet' | 'blue' | 'emerald' | 'amber';
 
@@ -36,6 +37,14 @@ const PACKAGES: PackageCard[] = [
   { name: 'admin',     label: 'Admin Panel',          href: '/admin',     description: 'Full admin scaffold with sidebar, CRUD pages, and auth guards',   badge: 'plugin',     token: 'blue'    },
 ];
 
+// Translation key → package name mapping
+const PKG_DESC_KEY: Record<string, string> = {
+  core: 'pkg.core', runtime: 'pkg.runtime', router: 'pkg.router', query: 'pkg.query',
+  client: 'pkg.client', form: 'pkg.form', table: 'pkg.table', modal: 'pkg.modal',
+  toast: 'pkg.toast', tooltip: 'pkg.tooltip', calendar: 'pkg.calendar',
+  i18n: 'pkg.i18n', admin: 'pkg.admin',
+};
+
 // Use variable to prevent vite-plugin HMR transform from injecting __hmrId into demo strings
 const _cc = 'createComponent';
 const QUICKSTART = `import { signal, computed } from 'liteforge';
@@ -67,22 +76,21 @@ export const Overview = createComponent({
         <div class="mb-10">
           <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[var(--badge-indigo-border)] bg-[var(--badge-indigo-bg)] text-[var(--badge-indigo-text)] text-xs font-medium mb-4">
             <span class="w-1.5 h-1.5 rounded-full bg-indigo-400"></span>
-            Signals-based · No Virtual DOM · TypeScript-first
+            {() => t('overview.tagline')}
           </div>
 
           <h1 class="text-4xl font-bold text-[var(--content-primary)] mb-3 tracking-tight">
-            LiteForge
+            {() => t('overview.title')}
           </h1>
           <p class="text-lg text-[var(--content-secondary)] leading-relaxed max-w-xl mb-6">
-            A modular frontend framework built around fine-grained reactivity.
-            Direct DOM updates, zero virtual DOM overhead, and a clean component model.
+            {() => t('overview.subtitle')}
           </p>
 
           <div class="flex flex-wrap items-center gap-3">
             {Link({
               href: '/app',
               class: 'inline-flex items-center px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium transition-colors',
-              children: 'Get started →',
+              children: () => t('overview.getStarted'),
             })}
             <a
               href="https://github.com/SchildW3rk/liteforge"
@@ -97,24 +105,24 @@ export const Overview = createComponent({
 
         {/* Install */}
         <div class="mb-10">
-          <h2 class="text-sm font-semibold text-[var(--content-secondary)] uppercase tracking-wider mb-2">Install</h2>
+          <h2 class="text-sm font-semibold text-[var(--content-secondary)] uppercase tracking-wider mb-2">{() => t('overview.install')}</h2>
           <CodeBlock code="npm install liteforge @liteforge/router" language="bash" />
         </div>
 
         {/* Why LiteForge */}
-        <div class="mb-10 p-4 rounded-lg border border-[var(--line-default)] bg-[var(--surface-raised)]/50">
-          <h2 class="text-sm font-semibold text-[var(--content-secondary)] uppercase tracking-wider mb-3">Why LiteForge</h2>
+        <div class="mb-10 p-4 border border-[var(--line-default)] bg-[var(--surface-raised)]/50" style="border-radius: var(--lf-radius)">
+          <h2 class="text-sm font-semibold text-[var(--content-secondary)] uppercase tracking-wider mb-3">{() => t('overview.why')}</h2>
           <div class="grid grid-cols-1 gap-2">
-            {[
-              { label: 'No Virtual DOM', desc: 'Signals drive direct DOM mutations — no diffing, no reconciler, no wasted renders.' },
-              { label: 'No build magic', desc: 'Standard Vite plugin, standard TypeScript, standard ESM. Nothing hidden.' },
-              { label: 'No runtime overhead', desc: 'Effects only re-run the exact code that reads changed signals — granular by design.' },
-            ].map(item => (
+            {([
+              { labelKey: 'overview.whyItems.noVdom',       descKey: 'overview.whyItems.noVdomDesc'       },
+              { labelKey: 'overview.whyItems.noBuildMagic', descKey: 'overview.whyItems.noBuildMagicDesc' },
+              { labelKey: 'overview.whyItems.noOverhead',   descKey: 'overview.whyItems.noOverheadDesc'   },
+            ] as const).map(item => (
               <div class="flex gap-3 py-1.5">
                 <span class="text-[var(--badge-emerald-text)] font-mono text-xs mt-0.5">✓</span>
                 <div>
-                  <span class="text-sm font-medium text-[var(--content-primary)]">{item.label}</span>
-                  <span class="text-sm text-[var(--content-muted)] ml-2">{item.desc}</span>
+                  <span class="text-sm font-medium text-[var(--content-primary)]">{() => t(item.labelKey)}</span>
+                  <span class="text-sm text-[var(--content-muted)] ml-2">{() => t(item.descKey)}</span>
                 </div>
               </div>
             ))}
@@ -123,10 +131,10 @@ export const Overview = createComponent({
 
         {/* Performance */}
         <div class="mb-10">
-          <h2 class="text-sm font-semibold text-[var(--content-secondary)] uppercase tracking-wider mb-3">Performance</h2>
-          <div class="p-4 rounded-lg border border-[var(--line-default)] bg-[var(--surface-raised)]/50">
+          <h2 class="text-sm font-semibold text-[var(--content-secondary)] uppercase tracking-wider mb-3">{() => t('overview.performance')}</h2>
+          <div class="p-4 border border-[var(--line-default)] bg-[var(--surface-raised)]/50" style="border-radius: var(--lf-radius)">
             <p class="text-xs text-[var(--content-muted)] mb-3">
-              js-framework-benchmark — geometric mean of all metrics (lower is better)
+              {() => t('overview.perfNote')}
             </p>
             <div class="space-y-2">
               {[
@@ -149,49 +157,33 @@ export const Overview = createComponent({
               ))}
             </div>
             <p class="text-[0.65rem] text-[var(--content-subtle)] mt-3">
-              Approximate — run <span class="font-mono">pnpm --filter starter dev</span> and navigate to <span class="font-mono">/benchmark</span> for live results.
+              {() => t('overview.perfApprox', { cmd: 'pnpm --filter starter dev', path: '/benchmark' })}
             </p>
           </div>
         </div>
 
-        {/* Feature highlights */}
-        <div class="grid grid-cols-2 gap-3 mb-10">
-          {[
-            { icon: '⚡', title: 'Fine-grained reactivity', desc: 'Signal-based — only what changed re-renders' },
-            { icon: '🚫', title: 'No Virtual DOM',          desc: 'Direct DOM manipulation, no diffing overhead' },
-            { icon: '🔷', title: 'TypeScript-first',        desc: 'Strict types everywhere, zero any in public APIs' },
-            { icon: '📦', title: 'Modular packages',        desc: 'Use only what you need — each package is standalone' },
-          ].map(f => (
-            <div class="p-4 rounded-lg border border-[var(--line-default)] bg-[var(--surface-raised)]/50">
-              <div class="text-xl mb-2">{f.icon}</div>
-              <p class="text-sm font-semibold text-[var(--content-primary)] mb-0.5">{f.title}</p>
-              <p class="text-xs text-[var(--content-muted)]">{f.desc}</p>
-            </div>
-          ))}
-        </div>
-
         {/* Quick start */}
         <div class="mb-10">
-          <h2 class="text-sm font-semibold text-[var(--content-secondary)] uppercase tracking-wider mb-2">Quick start</h2>
-          <p class="text-sm text-[var(--content-secondary)] mb-3">A reactive counter in 15 lines:</p>
+          <h2 class="text-sm font-semibold text-[var(--content-secondary)] uppercase tracking-wider mb-2">{() => t('overview.quickstart')}</h2>
+          <p class="text-sm text-[var(--content-secondary)] mb-3">{() => t('overview.quickstartDesc')}</p>
           <CodeBlock code={QUICKSTART} language="tsx" />
         </div>
 
         {/* Package map */}
         <div class="mb-10">
-          <h2 class="text-sm font-semibold text-[var(--content-secondary)] uppercase tracking-wider mb-4">Packages</h2>
+          <h2 class="text-sm font-semibold text-[var(--content-secondary)] uppercase tracking-wider mb-4">{() => t('overview.packages')}</h2>
           <div class="grid grid-cols-1 gap-1.5">
             {PACKAGES.map(pkg => (
               <div>
                 {Link({
                   href: pkg.href,
                   children: (
-                    <div class="flex items-center justify-between px-3 py-2 rounded-lg border border-[var(--line-default)] hover:border-[var(--content-subtle)] bg-[var(--surface-raised)]/40 hover:bg-[var(--surface-raised)] transition-all group">
+                    <div class="flex items-center justify-between px-3 py-2 border border-[var(--line-default)] hover:border-[var(--content-subtle)] bg-[var(--surface-raised)]/40 hover:bg-[var(--surface-raised)] transition-all group" style="border-radius: var(--lf-radius)">
                       <div class="flex items-center gap-3 min-w-0">
                         <span class="font-mono text-xs text-[var(--badge-indigo-text)] group-hover:text-indigo-200 shrink-0">
                           {pkg.label}
                         </span>
-                        <span class="text-xs text-[var(--content-muted)] truncate">{pkg.description}</span>
+                        <span class="text-xs text-[var(--content-muted)] truncate">{() => t(PKG_DESC_KEY[pkg.name] ?? '')}</span>
                       </div>
                       <span class={`text-[0.65rem] px-1.5 py-0.5 rounded font-medium shrink-0 ml-3 ${BADGE_CLASSES[pkg.token]}`}>
                         {pkg.badge}
@@ -205,19 +197,19 @@ export const Overview = createComponent({
         </div>
 
         {/* Get started CTA */}
-        <div class="border border-[var(--line-default)] rounded-lg p-6 text-center mb-4 bg-[var(--surface-raised)]/30">
-          <h2 class="text-base font-semibold text-[var(--content-primary)] mb-1">Ready to build?</h2>
-          <p class="text-sm text-[var(--content-muted)] mb-4">Set up a new app in under 5 minutes.</p>
+        <div class="border border-[var(--line-default)] p-6 text-center mb-4 bg-[var(--surface-raised)]/30" style="border-radius: var(--lf-radius)">
+          <h2 class="text-base font-semibold text-[var(--content-primary)] mb-1">{() => t('overview.ready')}</h2>
+          <p class="text-sm text-[var(--content-muted)] mb-4">{() => t('overview.readyDesc')}</p>
           <div class="flex justify-center gap-3">
             {Link({
               href: '/app',
               class: 'inline-flex items-center px-5 py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium transition-colors',
-              children: 'App Bootstrap →',
+              children: () => t('overview.appBootstrap'),
             })}
             {Link({
               href: '/core',
               class: 'inline-flex items-center px-5 py-2.5 rounded-lg border border-[var(--line-default)] hover:border-[var(--content-muted)] text-[var(--content-secondary)] hover:text-[var(--content-primary)] text-sm font-medium transition-colors',
-              children: 'Core concepts',
+              children: () => t('overview.coreConcepts'),
             })}
           </div>
         </div>

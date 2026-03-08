@@ -4,6 +4,7 @@ import { CodeBlock } from '../components/CodeBlock.js';
 import { LiveExample } from '../components/LiveExample.js';
 import { ApiTable } from '../components/ApiTable.js';
 import type { ApiRow } from '../components/ApiTable.js';
+import { t } from '../i18n.js';
 
 // ─── Live example: lifecycle log ───────────────────────────────────────────────
 
@@ -306,48 +307,45 @@ export const LifecyclePage = createComponent({
       <div>
         <div class="mb-10">
           <p class="text-xs font-mono text-[var(--content-muted)] mb-1">@liteforge/runtime</p>
-          <h1 class="text-3xl font-bold text-[var(--content-primary)] mb-2">Component Lifecycle</h1>
+          <h1 class="text-3xl font-bold text-[var(--content-primary)] mb-2">{() => t('lifecycle.title')}</h1>
           <p class="text-[var(--content-secondary)] leading-relaxed max-w-xl">
-            LiteForge components do not re-render. The component function runs{' '}
-            <em>once</em> and returns a DOM tree. Reactivity happens through signals
-            and effects — not reconciliation. This page explains every lifecycle hook
-            and when to use each one.
+            {() => t('lifecycle.subtitle')}
           </p>
         </div>
 
-        <DocSection title="Lifecycle diagram" id="diagram">
+        <DocSection title={() => t('lifecycle.diagram')} id="diagram">
           {LifecycleDiagram()}
         </DocSection>
 
-        <DocSection title="Full example" id="full" description="All lifecycle hooks in one component.">
+        <DocSection title={() => t('lifecycle.fullExample')} id="full" description={() => t('lifecycle.fullExampleDesc')}>
           <CodeBlock code={FULL_CODE} language="typescript" />
         </DocSection>
 
-        <DocSection title="Interactive demo" id="demo" description="Mount and unmount a child component to see lifecycle events fire in real time.">
+        <DocSection title={() => t('lifecycle.demo')} id="demo" description={() => t('lifecycle.demoDesc')}>
           <LiveExample
-            title="Lifecycle events"
+            title={() => t('lifecycle.liveTitle')}
             code={`mounted()  → attached\nonCleanup() → effect re-ran\ndestroyed() → removed`}
             component={LifecycleExample}
           />
         </DocSection>
 
-        <DocSection title="onCleanup()" id="oncleanup"
-          description="The most important lifecycle primitive — register cleanup for effects. Runs before every re-run of the enclosing effect AND when the component is destroyed. Zero risk of memory leaks or stale listeners.">
+        <DocSection title={() => t('lifecycle.onCleanup')} id="oncleanup"
+          description={() => t('lifecycle.onCleanupDesc')}>
           <CodeBlock code={ONCLEANUP_CODE} language="typescript" />
         </DocSection>
 
-        <DocSection title="Real pattern: tooltip + onCleanup" id="tooltip-cleanup"
-          description="tooltip() returns a cleanup function — pair it with onCleanup() for leak-free usage inside createComponent.">
+        <DocSection title={() => t('lifecycle.tooltipCleanup')} id="tooltip-cleanup"
+          description={() => t('lifecycle.tooltipCleanupDesc')}>
           <CodeBlock code={TOOLTIP_CLEANUP_CODE} language="typescript" />
         </DocSection>
 
-        <DocSection title="onMount() / onUnmount()" id="mount-unmount"
-          description="Convenience wrappers callable from inside component() — useful when you can't or don't want to use the mounted/destroyed hooks directly.">
+        <DocSection title={() => t('lifecycle.mountUnmount')} id="mount-unmount"
+          description={() => t('lifecycle.mountUnmountDesc')}>
           <CodeBlock code={MOUNT_UNMOUNT_CODE} language="typescript" />
         </DocSection>
 
-        <DocSection title="onCleanup vs onUnmount" id="diff"
-          description="Quick reference: choose the right hook for the job.">
+        <DocSection title={() => t('lifecycle.cleanupVsUnmount')} id="diff"
+          description={() => t('lifecycle.cleanupVsUnmountDesc')}>
           <CodeBlock code={DIFF_CODE} language="typescript" />
           <div class="mt-3 overflow-x-auto">
             <table class="w-full text-sm border-collapse">
@@ -379,11 +377,11 @@ export const LifecyclePage = createComponent({
           </div>
         </DocSection>
 
-        <DocSection title="Lifecycle hooks" id="api">
+        <DocSection title={() => t('lifecycle.hooks')} id="api">
           <ApiTable rows={HOOKS_API} />
         </DocSection>
 
-        <DocSection title="Utility functions" id="utils-api">
+        <DocSection title={() => t('lifecycle.utils')} id="utils-api">
           <ApiTable rows={UTILS_API} />
         </DocSection>
       </div>

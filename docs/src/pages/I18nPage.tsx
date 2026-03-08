@@ -7,6 +7,7 @@ import { LiveExample } from '../components/LiveExample.js';
 import { ApiTable } from '../components/ApiTable.js';
 import { btnClass } from '../components/Button.js';
 import type { ApiRow } from '../components/ApiTable.js';
+import { t } from '../i18n.js';
 
 // ─── Translations ──────────────────────────────────────────────────────────────
 
@@ -170,19 +171,19 @@ const { t, locale, setLocale } = i18n;
 
 // ─── API rows ──────────────────────────────────────────────────────────────────
 
-const OPTIONS_API: ApiRow[] = [
-  { name: 'defaultLocale',  type: 'string',                                      description: 'Locale loaded on startup (or from localStorage if persist: true)' },
-  { name: 'fallbackLocale', type: 'string',                       default: '—',  description: 'Loaded in parallel; used when a key is missing in the current locale' },
-  { name: 'load',           type: '(locale: string) => Promise<TranslationTree>', description: 'Async loader — return the raw translation object for the given locale' },
-  { name: 'persist',        type: 'boolean',                      default: 'true', description: 'Save locale choice to localStorage; restore on next visit' },
-  { name: 'storageKey',     type: 'string',                       default: "'lf-locale'", description: 'localStorage key used for persistence' },
-];
+function getOptionsApi(): ApiRow[] { return [
+  { name: 'defaultLocale',  type: 'string',                                      description: t('i18n.apiDefaultLocale') },
+  { name: 'fallbackLocale', type: 'string',                       default: '—',  description: t('i18n.apiFallbackLocale') },
+  { name: 'load',           type: '(locale: string) => Promise<TranslationTree>', description: t('i18n.apiLoad') },
+  { name: 'persist',        type: 'boolean',                      default: 'true', description: t('i18n.apiPersist') },
+  { name: 'storageKey',     type: 'string',                       default: "'lf-locale'", description: t('i18n.apiStorageKey') },
+]; }
 
-const API_API: ApiRow[] = [
-  { name: 'locale()',             type: '() => string',                    description: 'Signal — current locale. Auto-subscribes callers inside effects / JSX.' },
-  { name: 'setLocale(locale)',    type: '(locale: string) => Promise<void>', description: 'Load translations for the new locale, update signal atomically via batch()' },
-  { name: 't(key, params?, count?)', type: 'string',                       description: 'Translate a dot-notation key. Supports {param} interpolation and | pipe pluralization.' },
-];
+function getApiApi(): ApiRow[] { return [
+  { name: 'locale()',             type: '() => string',                    description: t('i18n.apiLocale') },
+  { name: 'setLocale(locale)',    type: '(locale: string) => Promise<void>', description: t('i18n.apiSetLocale') },
+  { name: 't(key, params?, count?)', type: 'string',                       description: t('i18n.apiT') },
+]; }
 
 // ─── Page ──────────────────────────────────────────────────────────────────────
 
@@ -193,65 +194,63 @@ export const I18nPage = createComponent({
       <div>
         <div class="mb-10">
           <p class="text-xs font-mono text-[--content-muted] mb-1">@liteforge/i18n</p>
-          <h1 class="text-3xl font-bold text-[--content-primary] mb-2">Internationalization</h1>
+          <h1 class="text-3xl font-bold text-[--content-primary] mb-2">{() => t('i18n.title')}</h1>
           <p class="text-[--content-secondary] leading-relaxed max-w-xl">
-            Signals-based i18n plugin. Lazy-loaded locale files, dot-notation keys,
-            interpolation, pipe-based pluralization, fallback locale, and localStorage persistence.
-            No re-render on locale switch — only the text nodes that read <code class="text-xs font-mono">t()</code> update.
+            {() => t('i18n.subtitlePre')} <code class="text-xs font-mono">t()</code> {() => t('i18n.subtitleSuffix')}
           </p>
           <CodeBlock code={INSTALL_CODE} language="bash" />
           <CodeBlock code={IMPORT_CODE} language="typescript" />
         </div>
 
         <DocSection
-          title="Plugin setup"
+          title={() => t('i18n.setup')}
           id="setup"
-          description="Register i18nPlugin before .mount() — it awaits the initial locale before the app renders, preventing any flash of untranslated keys."
+          description={() => t('i18n.setupDesc')}
         >
           <CodeBlock code={PLUGIN_CODE} language="typescript" />
-          <ApiTable rows={OPTIONS_API} />
+          <ApiTable rows={() => getOptionsApi()} />
         </DocSection>
 
         <DocSection
-          title="Using translations"
+          title={() => t('i18n.usage')}
           id="usage"
-          description="Access the i18n API via use('i18n') in any component's setup(). t() is a plain function — wrap it in () => for reactive JSX."
+          description={() => t('i18n.usageDesc')}
         >
           <CodeBlock code={USE_CODE} language="typescript" />
-          <ApiTable rows={API_API} />
+          <ApiTable rows={() => getApiApi()} />
         </DocSection>
 
         <DocSection
-          title="Locale files"
+          title={() => t('i18n.localeFiles')}
           id="locale-files"
-          description="Translation trees are plain TypeScript objects — no special format, no CLI needed. Use satisfies TranslationTree for type checking."
+          description={() => t('i18n.localeFilesDesc')}
         >
           <CodeBlock code={LOCALE_FILE_CODE} language="typescript" />
         </DocSection>
 
         <DocSection
-          title="Pluralization"
+          title={() => t('i18n.plural')}
           id="pluralization"
-          description="Pipe-separated strings. 2 parts = singular|plural. 3 parts = zero|one|many. Pass count as the third argument to t()."
+          description={() => t('i18n.pluralDesc')}
         >
           <CodeBlock code={PLURAL_CODE} language="typescript" />
         </DocSection>
 
         <DocSection
-          title="Fallback locale"
+          title={() => t('i18n.fallback')}
           id="fallback"
-          description="Missing keys in the current locale transparently fall back to the fallback locale. The fallback is loaded in parallel at startup."
+          description={() => t('i18n.fallbackDesc')}
         >
           <CodeBlock code={FALLBACK_CODE} language="typescript" />
         </DocSection>
 
         <DocSection
-          title="Live example"
+          title={() => t('i18n.live')}
           id="live"
-          description="Click the locale buttons — only the bound text nodes update, no component re-render."
+          description={() => t('i18n.liveDesc')}
         >
           <LiveExample
-            title="Locale switch · interpolation · pluralization · fallback"
+            title={() => t('i18n.liveTitle')}
             component={I18nExample}
             code={LIVE_CODE}
           />

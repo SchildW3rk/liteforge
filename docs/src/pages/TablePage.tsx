@@ -6,6 +6,7 @@ import { CodeBlock } from '../components/CodeBlock.js';
 import { LiveExample } from '../components/LiveExample.js';
 import { ApiTable } from '../components/ApiTable.js';
 import type { ApiRow } from '../components/ApiTable.js';
+import { t } from '../i18n.js';
 
 // ─── Sample data ───────────────────────────────────────────────────────────────
 
@@ -272,19 +273,18 @@ export const TablePage = createComponent({
       <div>
         <div class="mb-10">
           <p class="text-xs font-mono text-[var(--content-muted)] mb-1">@liteforge/table</p>
-          <h1 class="text-3xl font-bold text-[var(--content-primary)] mb-2">Data Table</h1>
+          <h1 class="text-3xl font-bold text-[var(--content-primary)] mb-2">{() => t('table.title')}</h1>
           <p class="text-[var(--content-secondary)] leading-relaxed max-w-xl">
-            Reactive data grid with sorting, filtering, pagination, and row selection.
-            Data is a signal — the table automatically re-renders when data changes.
+            {() => t('table.subtitle')}
           </p>
           <CodeBlock code={`pnpm add @liteforge/table`} language="bash" />
           <CodeBlock code={`import { createTable } from 'liteforge/table';`} language="typescript" />
         </div>
 
         <DocSection
-          title="createTable()"
+          title={() => t('table.createTable')}
           id="create-table"
-          description="Define columns, data source, and options. Call table.Root() to render."
+          description={() => t('table.createTableDesc')}
         >
           <div>
             <CodeBlock code={SETUP_CODE} language="tsx" />
@@ -293,41 +293,41 @@ export const TablePage = createComponent({
         </DocSection>
 
         <DocSection
-          title="Column definitions"
+          title={() => t('table.columns')}
           id="columns"
-          description="Each column can have a custom cell renderer for badges, buttons, or any DOM element."
+          description={() => t('table.columnsDesc')}
         >
           <CodeBlock code={COLUMNS_CODE} language="tsx" />
         </DocSection>
 
         <DocSection
-          title="Filters"
+          title={() => t('table.filters')}
           id="filters"
-          description="Add search and filter controls with built-in filter types: text, select, boolean, number range."
+          description={() => t('table.filtersDesc')}
         >
           <CodeBlock code={FILTER_CODE} language="typescript" />
         </DocSection>
 
         <DocSection
-          title="Row selection"
+          title={() => t('table.selection')}
           id="selection"
-          description="Single or multi-select with reactive selectedRows() signal."
+          description={() => t('table.selectionDesc')}
         >
           <CodeBlock code={SELECTION_CODE} language="typescript" />
         </DocSection>
 
         <DocSection
-          title="Table state"
+          title={() => t('table.state')}
           id="state"
-          description="All table state (sort, page, filters) is exposed as signals — read or set programmatically."
+          description={() => t('table.stateDesc')}
         >
           <CodeBlock code={STATE_CODE} language="typescript" />
         </DocSection>
 
         <DocSection
-          title="Styling"
+          title={() => t('table.styling')}
           id="styling"
-          description="Three layers of styling control — from full defaults to fully custom Tailwind."
+          description={() => t('table.stylingDesc')}
         >
           <div>
             <p class="text-[var(--content-secondary)] text-sm mb-4">
@@ -343,9 +343,9 @@ export const TablePage = createComponent({
         </DocSection>
 
         <DocSection
-          title="Style tokens"
+          title={() => t('table.styleTokens')}
           id="style-tokens"
-          description="styles: {} maps named tokens to CSS custom properties on the root element. Child elements inherit them automatically."
+          description={() => t('table.styleTokensDesc')}
         >
           <div>
             <ApiTable rows={STYLE_TOKENS_API} />
@@ -353,24 +353,24 @@ export const TablePage = createComponent({
         </DocSection>
 
         <DocSection
-          title="Live example"
+          title={() => t('table.live')}
           id="live"
-          description="Click column headers to sort. Use checkboxes to select rows. Navigate pages."
+          description={() => t('table.liveDesc')}
         >
           <LiveExample
-            title="Patient list with sort + pagination + selection"
+            title={() => t('table.liveTitle')}
             component={TableExampleDocs}
             code={STYLES_TOKEN_CODE}
           />
         </DocSection>
 
         <DocSection
-          title="Tailwind only"
+          title={() => t('table.tailwind')}
           id="tailwind"
-          description="unstyled: true removes all default CSS. classes: {} applies Tailwind utilities per element."
+          description={() => t('table.tailwindDesc')}
         >
           <LiveExample
-            title="Tailwind — unstyled: true + classes: {}"
+            title={() => t('table.tailwindTitle')}
             component={TableExampleTailwind}
             code={TAILWIND_CODE}
           />

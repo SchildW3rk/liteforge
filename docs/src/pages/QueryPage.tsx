@@ -6,6 +6,7 @@ import { CodeBlock } from '../components/CodeBlock.js';
 import { LiveExample } from '../components/LiveExample.js';
 import { ApiTable } from '../components/ApiTable.js';
 import type { ApiRow } from '../components/ApiTable.js';
+import { t } from '../i18n.js';
 
 // ─── Live example ─────────────────────────────────────────────────────────────
 
@@ -188,17 +189,16 @@ export const QueryPage = createComponent({
       <div>
         <div class="mb-10">
           <p class="text-xs font-mono text-[var(--content-muted)] mb-1">@liteforge/query</p>
-          <h1 class="text-3xl font-bold text-[var(--content-primary)] mb-2">Query & Mutations</h1>
+          <h1 class="text-3xl font-bold text-[var(--content-primary)] mb-2">{() => t('query.title')}</h1>
           <p class="text-[var(--content-secondary)] leading-relaxed max-w-xl">
-            Declarative data fetching with automatic caching, loading/error states, and reactive keys.
-            Mutations automatically invalidate related queries so your UI stays in sync.
+            {() => t('query.subtitle')}
           </p>
           <CodeBlock code={`pnpm add @liteforge/query`} language="bash" />
           <CodeBlock code={`import { createQuery, createMutation } from 'liteforge/query';`} language="typescript" />
         </div>
 
         <DocSection
-          title="The problem it solves"
+          title={() => t('query.problem')}
           id="problem"
         >
           <div class="space-y-0">
@@ -208,9 +208,9 @@ export const QueryPage = createComponent({
         </DocSection>
 
         <DocSection
-          title="createQuery()"
+          title={() => t('query.createQuery')}
           id="create-query"
-          description="Fetches data and caches the result. Returns reactive signals for data, loading, and error state."
+          description={() => t('query.createQueryDesc')}
         >
           <div>
             <CodeBlock code={QUERY_CODE} language="typescript" />
@@ -219,17 +219,17 @@ export const QueryPage = createComponent({
         </DocSection>
 
         <DocSection
-          title="Reactive keys"
+          title={() => t('query.reactiveKeys')}
           id="reactive-keys"
-          description="Pass a function as key — when any signal inside it changes, the query automatically re-fetches with the new parameters."
+          description={() => t('query.reactiveKeysDesc')}
         >
           <CodeBlock code={REACTIVE_KEY_CODE} language="typescript" />
         </DocSection>
 
         <DocSection
-          title="createMutation()"
+          title={() => t('query.createMutation')}
           id="mutation"
-          description="For write operations (POST, PUT, DELETE). Invalidate related queries on success to keep the cache fresh."
+          description={() => t('query.createMutationDesc')}
         >
           <div>
             <CodeBlock code={MUTATION_CODE} language="typescript" />
@@ -238,12 +238,12 @@ export const QueryPage = createComponent({
         </DocSection>
 
         <DocSection
-          title="Live example — reactive pagination"
+          title={() => t('query.live')}
           id="live"
-          description="Click Next/Prev to change postId — the query key changes, a new fetch fires, cached pages are reused."
+          description={() => t('query.liveDesc')}
         >
           <LiveExample
-            title="createQuery with reactive key"
+            title={() => t('query.liveTitle')}
             component={QueryExample}
             code={LIVE_CODE}
           />
