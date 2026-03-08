@@ -58,6 +58,9 @@ export type {
   // Utility types
   ExtractParams,
   TypedParams,
+  FillParams,
+  ExtractRoutePaths,
+  TypedNavigationTarget,
 } from './types.js';
 
 // =============================================================================

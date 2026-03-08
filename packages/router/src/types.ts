@@ -481,8 +481,12 @@ export interface NavigateOptions {
 
 /**
  * Router instance - the main router API
+ *
+ * @typeParam T - The literal routes array type (inferred by createRouter<T>).
+ *   Defaults to `readonly RouteDefinition[]` so existing code that references
+ *   `Router` without a type parameter continues to compile unchanged.
  */
-export interface Router {
+export interface Router<T extends readonly RouteDefinition[] = readonly RouteDefinition[]> {
   /** Current path as a signal */
   readonly path: Signal<string>;
   /** Current route parameters as a signal */
@@ -499,11 +503,29 @@ export interface Router {
   readonly isNavigating: Signal<boolean>;
   /** Preloaded data for current route */
   readonly preloadedData: Signal<unknown>;
-  
-  /** Navigate to a path or location */
-  navigate(target: NavigationTarget, options?: NavigateOptions): Promise<boolean>;
-  /** Alias for navigate with replace: true */
-  replace(target: NavigationTarget, options?: Omit<NavigateOptions, 'replace'>): Promise<boolean>;
+
+  /**
+   * Navigate to a typed path. TypeScript will error if the path string doesn't
+   * match any known route pattern. Param segments (:id) accept any string value.
+   *
+   * NOTE: Path-safety only — empty param values like '/users/' still type-check.
+   * For full param-safety, use the named route overload (Phase 2, coming soon):
+   *   navigate('route-name', { params: { id: '42' } })
+   *
+   * To get typed navigation, pass `routes` with `as const` to createRouter:
+   *   createRouter({ routes: [...] as const })
+   */
+  navigate(path: TypedNavigationTarget<T>, options?: NavigateOptions): Promise<boolean>;
+  /** Navigate with a full location object (always allowed, untyped) */
+  navigate(target: { path: string; query?: QueryParams; hash?: string; state?: unknown }, options?: NavigateOptions): Promise<boolean>;
+
+  /**
+   * Replace current history entry with a typed path.
+   * Same path-safety semantics as navigate().
+   */
+  replace(path: TypedNavigationTarget<T>, options?: Omit<NavigateOptions, 'replace'>): Promise<boolean>;
+  /** Replace with a full location object (always allowed, untyped) */
+  replace(target: { path: string; query?: QueryParams; hash?: string; state?: unknown }, options?: Omit<NavigateOptions, 'replace'>): Promise<boolean>;
   /** Go back in history */
   back(): void;
   /** Go forward in history */
@@ -587,3 +609,40 @@ export type ExtractParams<T extends string> =
 export type TypedParams<T extends string> = {
   [K in ExtractParams<T>]: string;
 };
+
+/**
+ * Replace :param segments with ${string} for path-safety checking.
+ * '/users/:id/posts/:postId' → '/users/${string}/posts/${string}'
+ *
+ * NOTE: This provides path-safety (catches typos) but not param-value-safety
+ * (empty strings or invalid values still pass TypeScript). See navigate() overload
+ * comments for Phase 2 full param-safety.
+ */
+export type FillParams<P extends string> =
+  P extends `${infer Pre}:${infer _Param}/${infer Rest}`
+    ? `${Pre}${string}/${FillParams<Rest>}`
+    : P extends `${infer Pre}:${infer _Param}`
+      ? `${Pre}${string}`
+      : P;
+
+/**
+ * Extract all path patterns from a routes array (recursively includes children).
+ * Used to constrain navigate() to only known route paths.
+ */
+export type ExtractRoutePaths<T extends readonly RouteDefinition[]> =
+  T extends readonly (infer R)[]
+    ? R extends RouteDefinition
+      ? R['path'] | (R extends { children: readonly RouteDefinition[] } ? ExtractRoutePaths<R['children']> : never)
+      : never
+    : never;
+
+/**
+ * A navigation target constrained to known route paths (with params filled).
+ * Provides path-safety: catches typos and wrong paths at compile time.
+ *
+ * @example
+ * // With routes [{ path: '/users/:id' }, { path: '/home' }]
+ * // TypedNavigationTarget<typeof routes> = '/home' | `/users/${string}`
+ */
+export type TypedNavigationTarget<T extends readonly RouteDefinition[]> =
+  FillParams<ExtractRoutePaths<T>>;

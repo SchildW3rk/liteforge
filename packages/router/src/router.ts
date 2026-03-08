@@ -8,6 +8,7 @@ import type { Signal } from '@liteforge/core';
 import type {
   Router,
   RouterOptions,
+  RouteDefinition,
   CompiledRoute,
   Location,
   RouteParams,
@@ -41,9 +42,22 @@ import { setupTitleEffect } from './title.js';
 // =============================================================================
 
 /**
- * Create a router instance
+ * Create a router instance.
+ *
+ * @typeParam T - Inferred from the `routes` array literal. Pass `as const` on
+ *   the routes array to get typed navigation:
+ *   ```ts
+ *   const router = createRouter({ routes: [{ path: '/home' }, { path: '/users/:id' }] as const })
+ *   router.navigate('/home')         // OK
+ *   router.navigate('/users/42')     // OK  (`:id` filled)
+ *   router.navigate('/typo')         // TS error
+ *   ```
+ *   Without `as const`, TypeScript widens path strings to `string` and typed
+ *   navigation degrades silently — all existing code continues to work.
  */
-export function createRouter(options: RouterOptions): Router {
+export function createRouter<T extends readonly RouteDefinition[]>(
+  options: RouterOptions & { routes: T },
+): Router<T> {
   const {
     routes: routeDefinitions,
     middleware = [],
@@ -616,7 +630,10 @@ export function createRouter(options: RouterOptions): Router {
   // Expose history for testing
   (router as RouterInternal)._history = history;
 
-  return router;
+  // The internal router object satisfies Router (default generic = readonly RouteDefinition[]).
+  // We cast to Router<T> at the boundary: the implementation already accepts any NavigationTarget
+  // (superset of TypedNavigationTarget<T>), so this is safe — the narrowing is enforced on callers only.
+  return router as Router<T>;
 }
 
 // =============================================================================
