@@ -1,5 +1,14 @@
 # @liteforge/tooltip
 
+## 0.3.0
+
+### Minor Changes
+
+- Add `triggerOnFocus` option and `hideAllTooltips()` utility
+
+  - New `triggerOnFocus?: boolean` option (default: `true`) — set to `false` to prevent focus/blur events from showing the tooltip. Useful for elements that receive programmatic focus-return (e.g. after a modal closes).
+  - New `hideAllTooltips()` export — imperatively removes all visible tooltip elements from the DOM.
+
 ## 0.2.1
 
 ### Patch Changes

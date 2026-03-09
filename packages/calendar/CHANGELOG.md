@@ -1,5 +1,60 @@
 # @liteforge/calendar
 
+## 0.4.0
+
+### Minor Changes
+
+- Major feature release: timeline, quarter/year views, snap, conflict detection, indicators, event tooltips, WAI-ARIA, iCal, virtualization
+
+  **New Views**
+
+  - Timeline view: horizontal time axis with drag-to-move (time + resource), resize, now-indicator, drag-to-create
+  - Quarter view: 3-month grid overview with event dots
+  - Year view: 12-month overview grid
+
+  **Drag & Drop**
+
+  - Unified `snapToSlot()` utility shared across week and day views
+  - Slot selection with snap-indicator badge and `maxDuration` cap
+
+  **Event Conflict Detection**
+
+  - `findConflicts()` pure utility exported from package
+  - `onEventConflict` callback: `'allow' | 'warn' | 'prevent'`
+  - Visual `data-conflict="true"` indicator on conflicting events
+
+  **Event Indicators**
+
+  - New `EventIndicator` type on `CalendarEvent`: `icon`, `tooltip`, `color`
+  - Rendered bottom-right corner of event chips in all timed views
+
+  **Event Tooltips**
+
+  - `eventTooltip` option: wire in `tooltip` from `@liteforge/tooltip`
+  - Default content renders title + time range
+  - `triggerOnFocus: false` prevents tooltip re-appearing after modal close
+
+  **Toolbar & UI**
+
+  - ⋮ More menu: Export iCal, Import iCal, Print, Mini-calendar toggle
+  - `miniCalendarVisible()` + `toggleMiniCalendar()` in `CalendarResult`
+  - `clearSelectedEvent()` in `CalendarResult`
+
+  **iCal / RRULE**
+
+  - Full iCal-compatible RRULE engine (FREQ, INTERVAL, UNTIL, COUNT, BYDAY, BYMONTHDAY, BYMONTH, BYSETPOS, EXDATE, WKST)
+  - `exportICal()`, `importICal()`, `downloadICal()`, `importICalFile()`
+
+  **Accessibility**
+
+  - WAI-ARIA roles, labels, keyboard navigation throughout all views
+
+  **Virtualization**
+
+  - Windowed event rendering for day/week views above threshold
+
+  625 tests across 16 test files.
+
 ## 0.3.0
 
 ### Minor Changes
