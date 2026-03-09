@@ -372,13 +372,77 @@ export const CalendarPage = createComponent({
     const formatSlotRange = (start: Date, end: Date) =>
       `${fmtDate.format(start)} – ${fmtTime.format(end)}`;
 
+    // ── Calendar instance ──────────────────────────────────────────────────────
+    // Defined first so modals can reference calendar.clearSelectedEvent directly.
+
+    const calendar = createCalendar<CalendarEvent>({
+      events,
+      resources,
+      view: 'week',
+      defaultDate: new Date(),
+      time: {
+        slotDuration: 15,
+        dayStart: 6,
+        dayEnd: 21,
+        weekStart: 1,
+        hiddenDays: [0],
+        nowIndicator: true,
+      },
+      editable: true,
+      selectable: true,
+      selection: {
+        snapIndicator: true,
+        maxDuration: 60,
+        snapSteps: [15, 30, 45, 60, 90],
+      },
+      locale: 'de-AT',
+      responsive: {
+        mobileBp: 768,
+        mobileView: 'day',
+      },
+      toolbar: {
+        resourceDisplay: 'dropdown',
+        resourceDropdownLabel: 'Ressourcen',
+        viewDisplay: 'dropdown',
+      },
+      onEventClick: (event) => {
+        detailModal.open({ event });
+      },
+      onSlotClick: (start, end, resourceId) => {
+        createEventModal.open({ start, end, ...(resourceId ? { resourceId } : {}) });
+      },
+      onSlotSelect: (start, end, resourceId) => {
+        createEventModal.open({ start, end, ...(resourceId ? { resourceId } : {}) });
+      },
+      onEventDrop: (event, newStart, newEnd, newResourceId) => {
+        events.update(evts =>
+          evts.map(e =>
+            e.id === event.id
+              ? { ...e, start: newStart, end: newEnd,
+                  ...(newResourceId !== undefined ? { resourceId: newResourceId } : {}) }
+              : e
+          )
+        );
+      },
+      onEventResize: (event, newEnd) => {
+        events.update(evts =>
+          evts.map(e => e.id === event.id ? { ...e, end: newEnd } : e)
+        );
+      },
+      eventTooltip: {
+        fn: tooltip,
+        delay: 400,
+        position: 'top',
+      },
+    });
+
+    // Expose for browser console testing (dev only)
+    if (import.meta.env.DEV) (window as Record<string, unknown>)._cal = calendar;
+
     // ── Detail modal — view / delete an existing event ─────────────────────────
 
-    // Forward ref — calendar is created after the modals, but onClose needs to clear selection
-    let calendarClearSelected: (() => void) | null = null
-
     const detailModal = createModal<{ event: CalendarEvent }>({
-      config: { size: 'sm', closeOnEsc: true, closeOnBackdrop: true, onClose: () => calendarClearSelected?.() },
+      config: { size: 'sm', closeOnEsc: true, closeOnBackdrop: true, onClose: () => calendar.clearSelectedEvent() },
       component: ({ event }) => {
         const deleteAndClose = () => {
           events.update(evts => evts.filter(e => e.id !== event.id));
@@ -659,73 +723,9 @@ export const CalendarPage = createComponent({
       if (simState().running) socket.stop(); else socket.start();
     };
 
-    // ── Calendar instance ──────────────────────────────────────────────────────
-
-    const calendar = createCalendar<CalendarEvent>({
-      events,
-      resources,
-      view: 'week',
-      defaultDate: new Date(),
-      time: {
-        slotDuration: 15,
-        dayStart: 6,
-        dayEnd: 21,
-        weekStart: 1,
-        hiddenDays: [0],
-        nowIndicator: true,
-      },
-      editable: true,
-      selectable: true,
-      selection: {
-        snapIndicator: true,
-        maxDuration: 60,
-        snapSteps: [15, 30, 45, 60, 90],
-      },
-      locale: 'de-AT',
-      responsive: {
-        mobileBp: 768,
-        mobileView: 'day',
-      },
-      toolbar: {
-        resourceDisplay: 'dropdown',
-        resourceDropdownLabel: 'Ressourcen',
-        viewDisplay: 'dropdown',
-      },
-      onEventClick: (event) => {
-        detailModal.open({ event });
-      },
-      onSlotClick: (start, end, resourceId) => {
-        createEventModal.open({ start, end, ...(resourceId ? { resourceId } : {}) });
-      },
-      onSlotSelect: (start, end, resourceId) => {
-        createEventModal.open({ start, end, ...(resourceId ? { resourceId } : {}) });
-      },
-      onEventDrop: (event, newStart, newEnd, newResourceId) => {
-        events.update(evts =>
-          evts.map(e =>
-            e.id === event.id
-              ? { ...e, start: newStart, end: newEnd,
-                  ...(newResourceId !== undefined ? { resourceId: newResourceId } : {}) }
-              : e
-          )
-        );
-      },
-      onEventResize: (event, newEnd) => {
-        events.update(evts =>
-          evts.map(e => e.id === event.id ? { ...e, end: newEnd } : e)
-        );
-      },
-      eventTooltip: {
-        fn: tooltip,
-        delay: 400,
-        position: 'top',
-      },
-    });
-
-    calendarClearSelected = calendar.clearSelectedEvent
-
     // Expose for browser console testing (dev only)
     if (import.meta.env.DEV) (window as Record<string, unknown>)._cal = calendar;
+
     return { calendar, simState, toggleSim };
   },
 
