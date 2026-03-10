@@ -144,9 +144,14 @@ function walkJsxNodes(
       const expr = attr.value.expression;
       if (t.isJSXEmptyExpression(expr)) continue;
 
-      // Skip event handlers and ref — they receive the raw value intentionally
       const attrName = t.isJSXIdentifier(attr.name) ? attr.name.name : '';
-      if (attrName === 'ref' || EVENT_HANDLER_RE.test(attrName)) continue;
+      // ref — leave completely untouched
+      if (attrName === 'ref') continue;
+      // Event handlers — don't wrap in a getter, but DO rewrite param refs inside the body
+      if (EVENT_HANDLER_RE.test(attrName)) {
+        rewriteParamRefsInArg(expr, itemName, indexName);
+        continue;
+      }
 
       const rewritten = rewriteExprForParam(expr, itemName, indexName);
       if (rewritten !== expr) {
@@ -233,6 +238,60 @@ function rewriteExprForParam(
   // If nothing changed there was no param reference — return original (identity preserved)
   if (rewritten === expr) return expr;
   return wrapInGetter(rewritten);
+}
+
+/**
+ * Rewrite param refs inside an event handler expression (arrow fn / block).
+ * Unlike rewriteExprForParam, we do NOT wrap the result in a getter — the
+ * handler is already a function and must remain one.
+ *
+ * Handles:
+ *   onclick={() => navTo(s)}              → s → s() inside the call args
+ *   onclick={() => router.navigate(s.id)} → s.id → s().id inside arrow body
+ *   onclick={() => { doThing(s.x) }}      → block statement body
+ */
+function rewriteParamRefsInArg(
+  expr: t.Expression,
+  itemName: string,
+  indexName: string | null,
+): void {
+  if (t.isArrowFunctionExpression(expr) || t.isFunctionExpression(expr)) {
+    if (t.isExpression(expr.body)) {
+      const rewritten = rewriteParamRefs(expr.body, itemName, indexName);
+      if (rewritten !== expr.body) {
+        (expr as t.ArrowFunctionExpression).body = rewritten;
+      }
+    } else if (t.isBlockStatement(expr.body)) {
+      rewriteParamRefsInBlock(expr.body, itemName, indexName);
+    }
+    return;
+  }
+  // Non-function handler (rare) — just rewrite in-place via rewriteParamRefs;
+  // we can't mutate an Identifier so silently ignore the case.
+}
+
+function rewriteParamRefsInBlock(
+  block: t.BlockStatement,
+  itemName: string,
+  indexName: string | null,
+): void {
+  for (let i = 0; i < block.body.length; i++) {
+    const stmt = block.body[i];
+    if (t.isExpressionStatement(stmt)) {
+      const rewritten = rewriteParamRefs(stmt.expression, itemName, indexName);
+      if (rewritten !== stmt.expression) stmt.expression = rewritten;
+    } else if (t.isReturnStatement(stmt) && stmt.argument) {
+      const rewritten = rewriteParamRefs(stmt.argument, itemName, indexName);
+      if (rewritten !== stmt.argument) stmt.argument = rewritten;
+    } else if (t.isBlockStatement(stmt)) {
+      rewriteParamRefsInBlock(stmt, itemName, indexName);
+    } else if (t.isIfStatement(stmt)) {
+      const test = rewriteParamRefs(stmt.test, itemName, indexName);
+      if (test !== stmt.test) stmt.test = test;
+      if (t.isBlockStatement(stmt.consequent)) rewriteParamRefsInBlock(stmt.consequent, itemName, indexName);
+      if (stmt.alternate && t.isBlockStatement(stmt.alternate)) rewriteParamRefsInBlock(stmt.alternate, itemName, indexName);
+    }
+  }
 }
 
 /**

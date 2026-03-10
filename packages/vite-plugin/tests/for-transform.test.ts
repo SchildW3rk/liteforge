@@ -203,6 +203,111 @@ describe('For() transform', () => {
   });
 
   // ─────────────────────────────────────────────────────────────────────────
+  // children prop — event handler bodies
+  // ─────────────────────────────────────────────────────────────────────────
+
+  describe('children — event handler param rewrite', () => {
+    it('rewrites item.id inside an onclick arrow body', () => {
+      const input = `
+        function List() {
+          return (
+            <ul>
+              {For({
+                each: items(),
+                children: (item) => (
+                  <li onclick={() => navigate(item.id)}>{item.name}</li>
+                ),
+              })}
+            </ul>
+          );
+        }
+      `;
+      const output = norm(transformCode(input)).replace(/\(\)\.\s+/g, '().');
+      // item.id inside the event handler must become item().id
+      expect(output).toContain('navigate(item().id)');
+      // item.name in JSX text must still be wrapped in a getter
+      expect(output).toContain('() => item().name');
+    });
+
+    it('rewrites bare item param passed as argument inside onclick', () => {
+      const input = `
+        function List() {
+          return (
+            <ul>
+              {For({
+                each: items(),
+                children: (item) => (
+                  <li onclick={() => handleClick(item)}>{item.name}</li>
+                ),
+              })}
+            </ul>
+          );
+        }
+      `;
+      const output = norm(transformCode(input)).replace(/\(\)\.\s+/g, '().');
+      expect(output).toContain('handleClick(item())');
+    });
+
+    it('rewrites item prop in a block-body event handler', () => {
+      const input = `
+        function List() {
+          return (
+            <ul>
+              {For({
+                each: items(),
+                children: (item) => (
+                  <li onclick={() => { doThing(item.id); }}>{item.name}</li>
+                ),
+              })}
+            </ul>
+          );
+        }
+      `;
+      const output = norm(transformCode(input)).replace(/\(\)\.\s+/g, '().');
+      expect(output).toContain('doThing(item().id)');
+    });
+
+    it('does not wrap the event handler itself in a getter', () => {
+      const input = `
+        function List() {
+          return (
+            <ul>
+              {For({
+                each: items(),
+                children: (item) => (
+                  <li onclick={() => navigate(item.id)}>{item.name}</li>
+                ),
+              })}
+            </ul>
+          );
+        }
+      `;
+      const output = norm(transformCode(input));
+      // The onclick value should remain a function, not () => (() => ...)
+      expect(output).not.toContain('onclick: () => () =>');
+    });
+
+    it('handles onPointerDown and other on* events too', () => {
+      const input = `
+        function List() {
+          return (
+            <ul>
+              {For({
+                each: items(),
+                children: (item) => (
+                  <li onPointerDown={() => select(item.id)}>{item.name}</li>
+                ),
+              })}
+            </ul>
+          );
+        }
+      `;
+      const output = norm(transformCode(input)).replace(/\(\)\.\s+/g, '().');
+      expect(output).toContain('select(item().id)');
+    });
+  });
+
+  // ─────────────────────────────────────────────────────────────────────────
   // Show() — when prop auto-wrapping
   // ─────────────────────────────────────────────────────────────────────────
 
