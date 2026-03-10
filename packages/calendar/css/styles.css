@@ -31,21 +31,43 @@
     --lf-cal-scrollbar-track:  transparent;
   }
 
-  /* Dark mode overrides */
+  /* Dark mode overrides — all tokens that have hardcoded light fallbacks */
   [data-theme="dark"],
   .dark {
+    --lf-cal-bg:               var(--lf-color-surface, #1e1e2e);
+    --lf-cal-border:           var(--lf-color-border, #313244);
+    --lf-cal-header-bg:        var(--lf-color-bg-subtle, #181825);
+    --lf-cal-header-color:     var(--lf-color-text, #cdd6f4);
     --lf-cal-today-bg:         rgba(137, 180, 250, 0.1);
     --lf-cal-weekend-bg:       var(--lf-color-bg-subtle, #181825);
-    --lf-cal-time-color:       #6c7086;
-    --lf-cal-scrollbar-thumb:  #45475a;
+    --lf-cal-now-color:        rgba(243, 139, 168, 0.55);
+    --lf-cal-now-dot-color:    rgba(243, 139, 168, 0.75);
+    --lf-cal-event-default-bg: var(--lf-color-accent, #89b4fa);
+    --lf-cal-event-default-color: var(--lf-color-text-on-accent, #1e1e2e);
+    --lf-cal-selection-bg:     var(--lf-color-accent-subtle, rgba(137, 180, 250, 0.15));
+    --lf-cal-selection-border: var(--lf-color-accent, #89b4fa);
+    --lf-cal-time-color:       var(--lf-color-text-subtle, #45475a);
+    --lf-cal-scrollbar-thumb:  var(--lf-color-border-strong, #45475a);
+    --lf-cal-color-danger:     var(--lf-color-danger, #f38ba8);
   }
 
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
+      --lf-cal-bg:               var(--lf-color-surface, #1e1e2e);
+      --lf-cal-border:           var(--lf-color-border, #313244);
+      --lf-cal-header-bg:        var(--lf-color-bg-subtle, #181825);
+      --lf-cal-header-color:     var(--lf-color-text, #cdd6f4);
       --lf-cal-today-bg:         rgba(137, 180, 250, 0.1);
       --lf-cal-weekend-bg:       var(--lf-color-bg-subtle, #181825);
-      --lf-cal-time-color:       #6c7086;
-      --lf-cal-scrollbar-thumb:  #45475a;
+      --lf-cal-now-color:        rgba(243, 139, 168, 0.55);
+      --lf-cal-now-dot-color:    rgba(243, 139, 168, 0.75);
+      --lf-cal-event-default-bg: var(--lf-color-accent, #89b4fa);
+      --lf-cal-event-default-color: var(--lf-color-text-on-accent, #1e1e2e);
+      --lf-cal-selection-bg:     var(--lf-color-accent-subtle, rgba(137, 180, 250, 0.15));
+      --lf-cal-selection-border: var(--lf-color-accent, #89b4fa);
+      --lf-cal-time-color:       var(--lf-color-text-subtle, #45475a);
+      --lf-cal-scrollbar-thumb:  var(--lf-color-border-strong, #45475a);
+      --lf-cal-color-danger:     var(--lf-color-danger, #f38ba8);
     }
   }
 }

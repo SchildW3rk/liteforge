@@ -150,7 +150,7 @@ export function renderToolbar(options: ToolbarOptions): HTMLDivElement {
 
   // Weekend toggle — rendered before view/resource dropdowns so layout is stable
   // (visibility:hidden keeps its space when irrelevant to avoid toolbar jumping)
-  if (onToggleWeekends && weekendsVisible) {
+  if (onToggleWeekends && weekendsVisible && toolbarConfig?.showWeekendToggle !== false) {
     const weekendBtn = document.createElement('button')
     weekendBtn.type = 'button'
     weekendBtn.className = 'lf-cal-toolbar-weekend-toggle'
