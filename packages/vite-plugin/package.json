@@ -1,6 +1,6 @@
 {
   "name": "@liteforge/vite-plugin",
-  "version": "0.4.4",
+  "version": "0.4.5",
   "description": "Vite plugin for LiteForge JSX transform. Converts JSX to direct DOM operations with signal-safe reactivity.",
   "author": "SchildW3rk <contact@schildw3rk.dev>",
   "license": "MIT",
