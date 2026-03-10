@@ -1,6 +1,5 @@
 import { createComponent, signal } from 'liteforge';
-import { createI18n } from 'liteforge/i18n';
-import type { TranslationTree } from 'liteforge/i18n';
+import { createI18n, defineLocale } from 'liteforge/i18n';
 import { DocSection } from '../components/DocSection.js';
 import { CodeBlock } from '../components/CodeBlock.js';
 import { LiveExample } from '../components/LiveExample.js';
@@ -12,19 +11,19 @@ import { setToc } from '../toc.js';
 
 // ─── Translations ──────────────────────────────────────────────────────────────
 
-const EN: TranslationTree = {
+const EN = defineLocale({
   greeting: 'Hello, {name}!',
   items: '{count} item | {count} items',
   nav: { home: 'Home', settings: 'Settings' },
   fallback: 'I only exist in English',
-};
+});
 
-const DE: TranslationTree = {
+const DE = defineLocale({
   greeting: 'Hallo, {name}!',
   items: '{count} Element | {count} Elemente',
   nav: { home: 'Startseite', settings: 'Einstellungen' },
   // 'fallback' key intentionally missing — falls back to EN
-};
+});
 
 // ─── Live example ──────────────────────────────────────────────────────────────
 
@@ -34,7 +33,7 @@ const I18nExample = createComponent({
     const i18n = createI18n({
       default: EN,
       fallback: 'en',
-      load: async (locale) => (locale === 'de' ? DE : EN),
+      load: async (locale): Promise<typeof EN> => (locale === 'de' ? DE as typeof EN : EN),
       persist: false,
     });
     const count = signal(1);
