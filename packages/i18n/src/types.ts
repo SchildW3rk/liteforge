@@ -38,8 +38,43 @@ export interface I18nApi<T extends Record<string, unknown> = Record<string, stri
   t(key: ExtractKeys<T>, params?: InterpolationParams, count?: number): string;
 }
 
-export type LocaleLoader = (locale: Locale) => Promise<TranslationTree>;
+export type LocaleLoader<T extends TranslationTree = TranslationTree> =
+  (locale: Locale) => Promise<T>;
 
+/**
+ * New options API — type T is inferred from the `default` object.
+ * No explicit generic needed at the call site.
+ *
+ * @example
+ * import en from './locales/en.js'
+ * createI18n({ default: en, fallback: 'en', localesDir: './locales' })
+ */
+export interface I18nOptions<T extends TranslationTree> {
+  /** The default locale object — T is inferred from this value */
+  default: T;
+  /** Key of the default locale (used for localStorage + loader) */
+  defaultLocaleKey?: Locale;
+  /** Fallback locale key — used when a key is missing in the current locale */
+  fallback?: Locale;
+  /**
+   * Directory path prefix for auto-loading locale files.
+   * When set (and no manual `load` is provided), locales are loaded via:
+   *   import(`${localesDir}/${locale}.js`)
+   * Convention: each file must export a `defineLocale({...})` as default.
+   */
+  localesDir?: string;
+  /** Manual load function — overrides localesDir when provided */
+  load?: LocaleLoader<T>;
+  /** Persist selected locale to localStorage (default: true) */
+  persist?: boolean;
+  /** localStorage key (default: 'lf-locale') */
+  storageKey?: string;
+}
+
+/**
+ * Legacy options API — still fully supported, no breaking change.
+ * @deprecated Prefer I18nOptions with `default:` for automatic type inference.
+ */
 export interface I18nPluginOptions {
   /** Default locale to load on startup */
   defaultLocale: Locale;

@@ -104,16 +104,15 @@ const I18nExample = createComponent({
 const INSTALL_CODE = `pnpm add @liteforge/i18n`;
 const IMPORT_CODE  = `import { i18nPlugin } from 'liteforge/i18n';`;
 
-const PLUGIN_CODE = `const app = await createApp({ root: App, target: '#app' })
+const PLUGIN_CODE = `import en from './locales/en.js'
+
+const app = await createApp({ root: App, target: '#app' })
   .use(i18nPlugin({
-    defaultLocale: 'en',
-    fallbackLocale: 'en',      // used when a key is missing in current locale
-    load: async (locale) => {
-      const mod = await import(\`./locales/\${locale}.js\`);
-      return mod.default;      // TranslationTree (plain object)
-    },
-    persist: true,             // saves to localStorage (default: true)
-    storageKey: 'my-locale',   // default: 'lf-locale'
+    default: en,              // T is inferred — no explicit generic needed
+    fallback: 'en',           // used when a key is missing in current locale
+    localesDir: './locales',  // auto-loads ./locales/{locale}.js
+    persist: true,            // saves to localStorage (default: true)
+    storageKey: 'my-locale',  // default: 'lf-locale'
   }))
   .mount();`;
 
@@ -201,15 +200,32 @@ const FALLBACK_DETAIL_CODE = `const i18n = createI18n({
 // → t('beta.feature') returns the English string, not undefined or the key
 // → No runtime errors, no visible breakage`;
 
-const LOCALE_FILE_CODE = `// locales/en.ts
-export default {
+const LOCALE_FILE_CODE = `// locales/en.ts — source of truth, defines the type
+import type { TranslationTree } from '@liteforge/i18n'
+
+const en = {
   greeting: 'Hello, {name}!',
   nav: {
     home: 'Home',
     settings: 'Settings',
   },
   items: '{count} item | {count} items',
-} satisfies TranslationTree;`;
+} satisfies TranslationTree
+
+export type AppTranslations = typeof en  // canonical type for all other locales
+export default en
+
+// locales/de.ts — zero imports, zero type annotations
+import { defineLocale } from '@liteforge/i18n'
+
+export default defineLocale({
+  greeting: 'Hallo, {name}!',
+  nav: {
+    home: 'Startseite',
+    settings: 'Einstellungen',
+  },
+  items: '{count} Eintrag | {count} Einträge',
+})`;
 
 const LIVE_CODE = `const i18n = use<I18nApi>('i18n');
 const { t, locale, setLocale } = i18n;
@@ -220,35 +236,30 @@ const { t, locale, setLocale } = i18n;
 
 <button onclick={() => setLocale('de')}>🇩🇪 Deutsch</button>`;
 
-const DEFINE_TRANSLATIONS_CODE = `// locales/en.ts
-export const en = {
-  greeting: 'Hello, {name}!',
-  nav: { home: 'Home', about: 'About' },
-}
+const DEFINE_LOCALE_CODE = `// locales/fr.ts — adding French takes exactly one file
+import { defineLocale } from '@liteforge/i18n'
 
-export type AppTranslations = typeof en
-export default en
-
-// locales/de.ts
-import { defineTranslations } from '@liteforge/i18n'
-import type { AppTranslations } from './en.js'
-
-export default defineTranslations<AppTranslations>({
-  greeting: 'Hallo, {name}!',
-  nav: { home: 'Startseite', about: 'Über uns' },
+export default defineLocale({
+  greeting: 'Bonjour, {name}!',
+  nav: {
+    home: 'Accueil',
+    settings: 'Paramètres',
+  },
+  items: '{count} élément | {count} éléments',
 })
 
-// Missing key → TypeScript error at the defineTranslations() call site.
-// No \`satisfies\`, no repeated type import — one import per locale file.`;
+// That's it. No imports, no type annotations, no changes to i18n.ts.
+// createI18n({ localesDir: './locales' }) picks it up automatically.`;
 
 // ─── API rows ──────────────────────────────────────────────────────────────────
 
 function getOptionsApi(): ApiRow[] { return [
-  { name: 'defaultLocale',  type: 'string',                                      description: t('i18n.apiDefaultLocale') },
-  { name: 'fallbackLocale', type: 'string',                       default: '—',  description: t('i18n.apiFallbackLocale') },
-  { name: 'load',           type: '(locale: string) => Promise<TranslationTree>', description: t('i18n.apiLoad') },
-  { name: 'persist',        type: 'boolean',                      default: 'true', description: t('i18n.apiPersist') },
-  { name: 'storageKey',     type: 'string',                       default: "'lf-locale'", description: t('i18n.apiStorageKey') },
+  { name: 'default',       type: 'T',                                             description: t('i18n.apiDefault') },
+  { name: 'fallback',      type: 'string',                        default: '—',   description: t('i18n.apiFallbackLocale') },
+  { name: 'localesDir',    type: 'string',                        default: '—',   description: t('i18n.apiLocalesDir') },
+  { name: 'load',          type: '(locale: string) => Promise<T>', default: '—',  description: t('i18n.apiLoad') },
+  { name: 'persist',       type: 'boolean',                       default: 'true', description: t('i18n.apiPersist') },
+  { name: 'storageKey',    type: 'string',                        default: "'lf-locale'", description: t('i18n.apiStorageKey') },
 ]; }
 
 function getApiApi(): ApiRow[] { return [
@@ -263,14 +274,14 @@ export const I18nPage = createComponent({
   name: 'I18nPage',
   component() {
     setToc([
-      { id: 'setup',                  label: () => t('i18n.setup'),               level: 2 },
-      { id: 'usage',                  label: () => t('i18n.usage'),               level: 2 },
-      { id: 'locale-files',           label: () => t('i18n.localeFiles'),         level: 2 },
-      { id: 'define-translations',    label: () => t('i18n.defineTranslations'),  level: 2 },
-      { id: 'interpolation',          label: () => t('i18n.interpolation'),       level: 2 },
-      { id: 'pluralization-detail',   label: () => t('i18n.pluralization'),       level: 2 },
-      { id: 'fallback-detail',        label: () => t('i18n.fallback'),            level: 2 },
-      { id: 'live',                   label: () => t('i18n.live'),                level: 2 },
+      { id: 'setup',               label: () => t('i18n.setup'),          level: 2 },
+      { id: 'usage',               label: () => t('i18n.usage'),          level: 2 },
+      { id: 'locale-files',        label: () => t('i18n.localeFiles'),    level: 2 },
+      { id: 'add-locale',          label: () => t('i18n.addLocale'),      level: 2 },
+      { id: 'interpolation',       label: () => t('i18n.interpolation'),  level: 2 },
+      { id: 'pluralization-detail', label: () => t('i18n.pluralization'), level: 2 },
+      { id: 'fallback-detail',     label: () => t('i18n.fallback'),       level: 2 },
+      { id: 'live',                label: () => t('i18n.live'),           level: 2 },
     ]);
     return (
       <div>
@@ -311,11 +322,11 @@ export const I18nPage = createComponent({
         </DocSection>
 
         <DocSection
-          title={() => t('i18n.defineTranslations')}
-          id="define-translations"
-          description={() => t('i18n.defineTranslationsDesc')}
+          title={() => t('i18n.addLocale')}
+          id="add-locale"
+          description={() => t('i18n.addLocaleDesc')}
         >
-          <CodeBlock code={DEFINE_TRANSLATIONS_CODE} language="typescript" title={t('i18n.defineTranslationsTitle')} />
+          <CodeBlock code={DEFINE_LOCALE_CODE} language="typescript" />
         </DocSection>
 
         <DocSection
