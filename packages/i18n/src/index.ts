@@ -1,7 +1,7 @@
 export type {
   I18nApi,
   I18nOptions,
-  I18nPluginOptions,
+  StandaloneI18nOptions,
   InterpolationParams,
   Locale,
   LocaleLoader,
@@ -12,12 +12,13 @@ export type {
 export type { I18nInstance } from './i18n.js';
 export { createI18n } from './i18n.js';
 export { i18nPlugin } from './plugin.js';
+export type { I18nPluginOptions } from './plugin.js';
 export { resolveKey, interpolate, resolvePlural } from './resolve.js';
 
 /**
  * Identity wrapper for locale definitions.
  * Signals intent ("this is a locale file") and enables future validation hooks.
- * Type safety is enforced at the createI18n() call site via the inferred default type.
+ * Type safety is enforced via PluginRegistry declaration merging.
  *
  * @example
  * // locales/de.ts
@@ -27,4 +28,3 @@ export { resolveKey, interpolate, resolvePlural } from './resolve.js';
 export function defineLocale<T extends Record<string, unknown>>(t: T): T {
   return t;
 }
-

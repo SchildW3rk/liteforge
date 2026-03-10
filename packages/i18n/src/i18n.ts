@@ -1,112 +1,72 @@
 /**
- * @liteforge/i18n — Core i18n factory
+ * @liteforge/i18n — Standalone createI18n factory
+ *
+ * For use outside the plugin system (e.g. tests, SSR, non-Vite environments).
+ * The plugin (plugin.ts) is self-contained and does not call this.
  */
 
 import { signal, batch } from '@liteforge/core';
 import type {
   I18nApi,
   I18nOptions,
-  I18nPluginOptions,
+  StandaloneI18nOptions,
   Locale,
-  LocaleLoader,
   TranslationTree,
   ExtractKeys,
 } from './types.js';
 import { resolveKey, interpolate, resolvePlural } from './resolve.js';
 
 export interface I18nInstance<T extends Record<string, unknown> = Record<string, string>> extends I18nApi<T> {
-  /** Internal: load translations for the given locale (used by plugin) */
+  /** Internal: load translations for a locale */
   _load(locale: Locale): Promise<void>;
-  /** Internal: preload fallback translations (used by plugin) */
+  /** Internal: preload fallback translations */
   _loadFallback(locale: Locale): Promise<void>;
 }
 
 // ─── Overloads ────────────────────────────────────────────────────────────────
 
 /**
- * New API — type T inferred from `default:` object.
+ * New API — T inferred from `default:` object, no explicit generic needed.
  * @example
  * import en from './locales/en.js'
- * const { t, locale, setLocale } = createI18n({ default: en, localesDir: './locales' })
+ * const { t, locale, setLocale } = createI18n({ default: en, load })
  */
 export function createI18n<T extends TranslationTree>(options: I18nOptions<T>): I18nInstance<T>;
 
 /**
- * Legacy API — explicit generic + defaultLocale + load function.
- * @deprecated Prefer createI18n({ default: en }) for automatic type inference.
+ * Legacy API — explicit generic + defaultLocale + load.
+ * @deprecated Prefer createI18n({ default: en, load }) for automatic type inference.
  */
 export function createI18n<T extends Record<string, unknown> = Record<string, string>>(
-  options: I18nPluginOptions,
+  options: StandaloneI18nOptions,
 ): I18nInstance<T>;
 
 // ─── Implementation ───────────────────────────────────────────────────────────
 
 export function createI18n<T extends Record<string, unknown>>(
-  options: I18nOptions<TranslationTree> | I18nPluginOptions,
+  options: I18nOptions<TranslationTree> | StandaloneI18nOptions,
 ): I18nInstance<T> {
-  // Normalize both option shapes into a single internal config
-  const isNewApi = 'default' in options;
+  const isNew = 'default' in options;
+  const o = options as I18nOptions<TranslationTree> & StandaloneI18nOptions;
 
-  const defaultObj: TranslationTree | undefined = isNewApi
-    ? (options as I18nOptions<TranslationTree>).default
-    : undefined;
+  const defaultLocale: Locale = isNew ? (o.defaultLocaleKey ?? 'en') : o.defaultLocale;
+  const fallbackLocale: Locale | undefined = isNew ? o.fallback : o.fallbackLocale;
+  const persist: boolean = o.persist ?? true;
+  const storageKey: string = o.storageKey ?? 'lf-locale';
 
-  const defaultLocale: Locale = isNewApi
-    ? ((options as I18nOptions<TranslationTree>).defaultLocaleKey ?? 'en')
-    : (options as I18nPluginOptions).defaultLocale;
+  const load = isNew
+    ? (o.load ?? (async (_locale: Locale) => o.default ?? {} as TranslationTree))
+    : o.load;
 
-  const fallbackLocale: Locale | undefined = isNewApi
-    ? (options as I18nOptions<TranslationTree>).fallback
-    : (options as I18nPluginOptions).fallbackLocale;
-
-  const persist: boolean = options.persist ?? true;
-  const storageKey: string = options.storageKey ?? 'lf-locale';
-
-  // Build the load function
-  const load: LocaleLoader = (() => {
-    if (isNewApi) {
-      const newOpts = options as I18nOptions<TranslationTree>;
-      if (newOpts.load) {
-        return newOpts.load as LocaleLoader;
-      }
-      if (newOpts.localesDir) {
-        const dir = newOpts.localesDir;
-        return async (locale: Locale): Promise<TranslationTree> => {
-          // Use the default object directly for the default locale — avoids a
-          // redundant network request and keeps the default available immediately.
-          if (defaultObj && locale === defaultLocale) {
-            return defaultObj;
-          }
-          // Dynamic import with vite-ignore so bundlers don't try to analyse the pattern.
-          const mod = await import(/* @vite-ignore */ `${dir}/${locale}.js`);
-          return (mod.default ?? mod) as TranslationTree;
-        };
-      }
-      // No localesDir and no load: return default object for every locale
-      return async (_locale: Locale): Promise<TranslationTree> => defaultObj ?? {};
-    }
-    // Legacy API — load is required
-    return (options as I18nPluginOptions).load as LocaleLoader;
-  })();
-
-  // ─── Signals ───────────────────────────────────────────────────────────────
-
-  // Determine initial locale: prefer localStorage, fall back to defaultLocale
-  let initialLocale = defaultLocale;
+  let initialLocale: Locale = defaultLocale;
   if (persist && typeof localStorage !== 'undefined') {
     const stored = localStorage.getItem(storageKey);
     if (stored) initialLocale = stored;
   }
 
   const currentLocale = signal<Locale>(initialLocale);
-
-  // When using the new API, seed the translations signal with the default object
-  // so t() is available synchronously before any async load completes.
-  const initialTranslations: TranslationTree = defaultObj ?? {};
-  const translations = signal<TranslationTree>(initialTranslations);
+  const translations = signal<TranslationTree>(isNew ? (o.default ?? {}) : {});
   const fallbackTranslations = signal<TranslationTree>({});
-
-  // ─── Internals ─────────────────────────────────────────────────────────────
 
   async function _load(locale: Locale): Promise<void> {
     const tree = await load(locale);
@@ -121,46 +81,24 @@ export function createI18n<T extends Record<string, unknown>>(
 
   async function _loadFallback(locale: Locale): Promise<void> {
     try {
-      const tree = await load(locale);
-      fallbackTranslations.set(tree);
+      fallbackTranslations.set(await load(locale));
     } catch {
-      // fallback locale failing is non-fatal
+      // non-fatal
     }
   }
 
   async function setLocale(locale: Locale): Promise<void> {
     const loads: Promise<void>[] = [_load(locale)];
-    if (fallbackLocale && fallbackLocale !== locale) {
-      loads.push(_loadFallback(fallbackLocale));
-    }
+    if (fallbackLocale && fallbackLocale !== locale) loads.push(_loadFallback(fallbackLocale));
     await Promise.all(loads);
   }
 
   function t(key: ExtractKeys<T>, params?: Record<string, string | number>, count?: number): string {
-    // Auto-subscribes to both signals — callers inside effects/JSX update automatically
-    const tree = translations();
-    const fallback = fallbackTranslations();
-
-    const keyStr = key as string;
-
-    let raw = resolveKey(tree, keyStr);
-    if (raw === undefined && fallback) {
-      raw = resolveKey(fallback, keyStr);
-    }
-    if (raw === undefined) return keyStr;
-
-    if (count !== undefined) {
-      raw = resolvePlural(raw, count);
-    }
-
-    return interpolate(raw, params);
+    const raw0 = resolveKey(translations(), key as string) ?? resolveKey(fallbackTranslations(), key as string);
+    if (raw0 === undefined) return key as string;
+    const raw1 = count !== undefined ? resolvePlural(raw0, count) : raw0;
+    return interpolate(raw1, params);
   }
 
-  return {
-    locale: currentLocale,
-    setLocale,
-    t,
-    _load,
-    _loadFallback,
-  } as I18nInstance<T>;
+  return { locale: currentLocale, setLocale, t, _load, _loadFallback };
 }

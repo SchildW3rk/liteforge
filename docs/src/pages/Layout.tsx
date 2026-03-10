@@ -1,8 +1,7 @@
-import { createComponent, signal, effect } from 'liteforge';
+import { createComponent, signal, effect, use } from 'liteforge';
 import { RouterOutlet, Link } from 'liteforge/router';
 import { tooltip } from 'liteforge/tooltip';
 import { themeStore } from '../stores/theme.js';
-import { t, locale, setLocale } from '../i18n.js';
 import type { ExtractKeys } from 'liteforge/i18n';
 import type { DocsTranslations } from '../locales/en.js';
 import { TableOfContents } from '../components/TableOfContents.js';
@@ -247,6 +246,7 @@ const TC_SWATCHES = [
 export const Layout = createComponent({
   name: 'DocsLayout',
   component() {
+    const { t, locale, setLocale } = use('i18n');
     const mobileOpen = signal(false);
     const toggleMobile = () => mobileOpen.update(v => !v);
     const closeMobile  = () => mobileOpen.set(false);

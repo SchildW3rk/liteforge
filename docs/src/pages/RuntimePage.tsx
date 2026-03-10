@@ -1,5 +1,4 @@
-import { createComponent } from 'liteforge';
-import { signal } from 'liteforge';
+import { createComponent, signal, effect, use } from 'liteforge';
 import { DocSection } from '../components/DocSection.js';
 import { CodeBlock } from '../components/CodeBlock.js';
 import { LiveExample } from '../components/LiveExample.js';
@@ -7,7 +6,7 @@ import { ApiTable } from '../components/ApiTable.js';
 import { btnClass } from '../components/Button.js';
 import { inputClass } from '../components/Input.js';
 import type { ApiRow } from '../components/ApiTable.js';
-import { t } from '../i18n.js';
+import { setToc } from '../toc.js';
 
 // ─── Live examples ────────────────────────────────────────────────────────────
 
@@ -216,27 +215,24 @@ const FOR_LIVE_CODE = `const items = signal(['Appointments', 'Patients', 'Invoic
   {(item) => <li>{item}</li>}
 </For>`;
 
-// ─── API rows ─────────────────────────────────────────────────────────────────
-
-function getComponentApi(): ApiRow[] { return [
-  { name: 'name', type: 'string', description: t('runtime.apiName') },
-  { name: 'component(args)', type: 'Node', description: t('runtime.apiComponent') },
-  { name: 'setup(args)', type: 'object', description: t('runtime.apiSetup') },
-  { name: 'load(args)', type: 'Promise<object>', description: t('runtime.apiLoad') },
-  { name: 'placeholder()', type: 'Node', description: t('runtime.apiPlaceholder') },
-  { name: 'error(args)', type: 'Node', description: t('runtime.apiError') },
-  { name: 'mounted({ el })', type: 'void', description: t('runtime.apiMounted') },
-  { name: 'destroyed()', type: 'void', description: t('runtime.apiDestroyed') },
-]; }
-
 // ─── Page ──────────────────────────────────────────────────────────────────────
-
-import { effect } from 'liteforge';
-import { setToc } from '../toc.js';
 
 export const RuntimePage = createComponent({
   name: 'RuntimePage',
   component() {
+    const { t } = use('i18n');
+
+    const getComponentApi = (): ApiRow[] => [
+      { name: 'name', type: 'string', description: t('runtime.apiName') },
+      { name: 'component(args)', type: 'Node', description: t('runtime.apiComponent') },
+      { name: 'setup(args)', type: 'object', description: t('runtime.apiSetup') },
+      { name: 'load(args)', type: 'Promise<object>', description: t('runtime.apiLoad') },
+      { name: 'placeholder()', type: 'Node', description: t('runtime.apiPlaceholder') },
+      { name: 'error(args)', type: 'Node', description: t('runtime.apiError') },
+      { name: 'mounted({ el })', type: 'void', description: t('runtime.apiMounted') },
+      { name: 'destroyed()', type: 'void', description: t('runtime.apiDestroyed') },
+    ];
+
     setToc([
       { id: 'create-component', label: () => t('runtime.createComponent'), level: 2 },
       { id: 'jsx',              label: () => t('runtime.jsx'),              level: 2 },

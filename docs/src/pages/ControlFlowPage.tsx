@@ -1,4 +1,4 @@
-import { createComponent, Show, For, Switch, Match } from 'liteforge';
+import { createComponent, Show, For, Switch, Match, use } from 'liteforge';
 import { Button } from '../components/Button.js';
 import { createTable } from 'liteforge/table';
 import { signal } from 'liteforge';
@@ -7,7 +7,6 @@ import { CodeBlock } from '../components/CodeBlock.js';
 import { LiveExample } from '../components/LiveExample.js';
 import { ApiTable } from '../components/ApiTable.js';
 import type { ApiRow } from '../components/ApiTable.js';
-import { t } from '../i18n.js';
 import { setToc } from '../toc.js';
 
 // =============================================================================
@@ -392,33 +391,6 @@ Switch({
 })`;
 
 // =============================================================================
-// API rows
-// =============================================================================
-
-function getShowApi(): ApiRow[] { return [
-  { name: 'when', type: '() => T | T', description: t('controlflow.apiShowWhen') },
-  { name: 'children', type: '(value: NonNullable<T>) => Node', description: t('controlflow.apiShowChildren') },
-  { name: 'fallback', type: '() => Node', default: 'nothing', description: t('controlflow.apiShowFallback') },
-]; }
-
-function getForApi(): ApiRow[] { return [
-  { name: 'each', type: 'Signal<T[]> | T[]', description: t('controlflow.apiForEach') },
-  { name: 'key', type: 'keyof T | (item: T, index: number) => string | number', default: 'index', description: t('controlflow.apiForKey') },
-  { name: 'children', type: '(item: T, index: number) => Node', description: t('controlflow.apiForChildren') },
-  { name: 'fallback', type: '() => Node', default: 'nothing', description: t('controlflow.apiForFallback') },
-]; }
-
-function getSwitchApi(): ApiRow[] { return [
-  { name: 'children', type: 'MatchCase[]', description: t('controlflow.apiSwitchChildren') },
-  { name: 'fallback', type: '() => Node', default: 'nothing', description: t('controlflow.apiSwitchFallback') },
-]; }
-
-function getMatchApi(): ApiRow[] { return [
-  { name: 'when', type: '() => boolean | boolean', description: t('controlflow.apiMatchWhen') },
-  { name: 'children', type: '() => Node', description: t('controlflow.apiMatchChildren') },
-]; }
-
-// =============================================================================
 // Decision guide data
 // =============================================================================
 
@@ -443,6 +415,31 @@ const DECISION_ROWS: DecisionRow[] = [
 export const ControlFlowPage = createComponent({
   name: 'ControlFlowPage',
   component() {
+    const { t } = use('i18n');
+
+    const getShowApi = (): ApiRow[] => [
+      { name: 'when', type: '() => T | T', description: t('controlflow.apiShowWhen') },
+      { name: 'children', type: '(value: NonNullable<T>) => Node', description: t('controlflow.apiShowChildren') },
+      { name: 'fallback', type: '() => Node', default: 'nothing', description: t('controlflow.apiShowFallback') },
+    ];
+
+    const getForApi = (): ApiRow[] => [
+      { name: 'each', type: 'Signal<T[]> | T[]', description: t('controlflow.apiForEach') },
+      { name: 'key', type: 'keyof T | (item: T, index: number) => string | number', default: 'index', description: t('controlflow.apiForKey') },
+      { name: 'children', type: '(item: T, index: number) => Node', description: t('controlflow.apiForChildren') },
+      { name: 'fallback', type: '() => Node', default: 'nothing', description: t('controlflow.apiForFallback') },
+    ];
+
+    const getSwitchApi = (): ApiRow[] => [
+      { name: 'children', type: 'MatchCase[]', description: t('controlflow.apiSwitchChildren') },
+      { name: 'fallback', type: '() => Node', default: 'nothing', description: t('controlflow.apiSwitchFallback') },
+    ];
+
+    const getMatchApi = (): ApiRow[] => [
+      { name: 'when', type: '() => boolean | boolean', description: t('controlflow.apiMatchWhen') },
+      { name: 'children', type: '() => Node', description: t('controlflow.apiMatchChildren') },
+    ];
+
     setToc([
       { id: 'decision-guide', label: () => t('controlflow.whenToUse'), level: 2 },
     ]);

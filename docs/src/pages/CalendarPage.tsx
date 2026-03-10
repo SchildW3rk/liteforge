@@ -1,4 +1,4 @@
-import { createComponent, signal, effect } from 'liteforge';
+import { createComponent, signal, effect, use } from 'liteforge';
 import { createCalendar, startOfWeek } from 'liteforge/calendar';
 import { tooltip } from 'liteforge/tooltip';
 import { toast } from 'liteforge/toast';
@@ -8,7 +8,6 @@ import { CodeBlock } from '../components/CodeBlock.js';
 import { LiveExample } from '../components/LiveExample.js';
 import { ApiTable } from '../components/ApiTable.js';
 import type { ApiRow } from '../components/ApiTable.js';
-import { t } from '../i18n.js';
 import { setToc } from '../toc.js';
 
 // ─── Resources ────────────────────────────────────────────────────────────────
@@ -567,79 +566,79 @@ calendar.getEvent(id);
 // Print
 calendar.print({ view: 'week', title: 'This Week' });`
 
-// ─── API tables ───────────────────────────────────────────────────────────────
-
-function getOptionsApi(): ApiRow[] { return [
-  { name: 'events',           type: '() => T[]',                        description: t('calendar.apiEvents') },
-  { name: 'view',             type: "CalendarView",                      default: "'week'",    description: t('calendar.apiView') },
-  { name: 'defaultDate',      type: 'Date',                             default: 'today',     description: t('calendar.apiDefaultDate') },
-  { name: 'resources',        type: 'Resource[]',                       description: t('calendar.apiResources') },
-  { name: 'editable',         type: 'boolean',                          default: 'false',     description: t('calendar.apiEditable') },
-  { name: 'selectable',       type: 'boolean',                          default: 'false',     description: t('calendar.apiSelectable') },
-  { name: 'selection',        type: 'SelectionConfig',                  description: t('calendar.apiSelection') },
-  { name: 'locale',           type: 'string',                           default: "'en-US'",   description: t('calendar.apiLocale') },
-  { name: 'time',             type: 'TimeConfig',                       description: t('calendar.apiTime') },
-  { name: 'eventTooltip',     type: 'EventTooltipConfig',               description: t('calendar.apiEventTooltip') },
-  { name: 'onEventConflict',  type: "(event, conflicts) => 'allow' | 'warn' | 'prevent'", description: t('calendar.apiOnEventConflict') },
-  { name: 'onEventDrop',      type: '(event, newStart, newEnd, resourceId?) => void', description: t('calendar.apiOnEventDrop') },
-  { name: 'onEventResize',    type: '(event, newEnd) => void',          description: t('calendar.apiOnEventResize') },
-  { name: 'onSlotClick',      type: '(start, end, resourceId?) => void', description: t('calendar.apiOnSlotClick') },
-  { name: 'onSlotSelect',     type: '(start, end, resourceId?) => void', description: t('calendar.apiOnSlotSelect') },
-  { name: 'onEventClick',     type: '(event) => void',                  description: t('calendar.apiOnEventClick') },
-  { name: 'onViewChange',     type: '(view, dateRange) => void',        description: t('calendar.apiOnViewChange') },
-  { name: 'translations',     type: 'Partial<CalendarTranslations>',    description: t('calendar.apiTranslations') },
-  { name: 'responsive',       type: 'ResponsiveConfig',                 description: t('calendar.apiResponsive') },
-  { name: 'eventContent',     type: '(event) => Node',                  description: t('calendar.apiEventContent') },
-  { name: 'slotContent',      type: '(date, resourceId?) => Node | null', description: t('calendar.apiSlotContent') },
-  { name: 'mapImportedEvent', type: '(event: CalendarEvent) => T',      description: t('calendar.apiMapImportedEvent') },
-  { name: 'unstyled',         type: 'boolean',                          default: 'false',     description: t('calendar.apiUnstyledOpt') },
-  { name: 'classes',          type: 'Partial<CalendarClasses>',         description: t('calendar.apiClasses') },
-  { name: 'timelineOptions',  type: 'TimelineOptions',                  description: t('calendar.apiTimelineOptions') },
-]; }
-
-function getEventApi(): ApiRow[] { return [
-  { name: 'id',         type: 'string',            description: t('calendar.apiEventId') },
-  { name: 'title',      type: 'string',            description: t('calendar.apiEventTitle') },
-  { name: 'start',      type: 'Date',              description: t('calendar.apiEventStart') },
-  { name: 'end',        type: 'Date',              description: t('calendar.apiEventEnd') },
-  { name: 'resourceId', type: 'string',            description: t('calendar.apiEventResourceId') },
-  { name: 'color',      type: 'string',            description: t('calendar.apiEventColor') },
-  { name: 'allDay',     type: 'boolean',           description: t('calendar.apiEventAllDay') },
-  { name: 'editable',   type: 'boolean',           description: "Per-event editable override — false disables drag & drop even when calendar.editable = true" },
-  { name: 'recurring',  type: 'RecurringRule',     description: t('calendar.apiEventRecurring') },
-  { name: 'indicators', type: 'EventIndicator[]',  description: t('calendar.apiEventIndicators') },
-]; }
-
-function getResultApi(): ApiRow[] { return [
-  { name: 'Root()',              type: '() => Node',     description: t('calendar.apiResultRoot') },
-  { name: 'Toolbar()',           type: '() => Node',     description: t('calendar.apiResultToolbar') },
-  { name: 'MiniCalendar()',      type: '() => Node',     description: t('calendar.apiResultMiniCalendar') },
-  { name: 'MobileResourceBar()', type: '() => Node',     description: t('calendar.apiResultMobileResourceBar') },
-  { name: 'currentDate()',        type: '() => Date',     description: t('calendar.apiResultCurrentDate') },
-  { name: 'currentView()',        type: '() => CalendarView', description: t('calendar.apiResultCurrentView') },
-  { name: 'dateRange()',          type: '() => DateRange', description: t('calendar.apiResultDateRange') },
-  { name: 'sizeClass()',          type: "() => 'mobile' | 'tablet' | 'desktop'", description: t('calendar.apiResultSizeClass') },
-  { name: 'next() / prev() / today()', type: '() => void', description: t('calendar.apiResultNavigation') },
-  { name: 'goTo(date)',           type: '(date: Date) => void', description: t('calendar.apiResultGoTo') },
-  { name: 'setView(view)',        type: '(view: CalendarView) => void', description: t('calendar.apiResultSetView') },
-  { name: 'addEvent(event)',      type: '(event: T) => void', description: t('calendar.apiResultAddEvent') },
-  { name: 'updateEvent(id, changes)', type: '(id: string, changes: Partial<T>) => void', description: t('calendar.apiResultUpdateEvent') },
-  { name: 'removeEvent(id)',      type: '(id: string) => void', description: t('calendar.apiResultRemoveEvent') },
-  { name: 'exportICal(opts?)',    type: '() => string',  description: t('calendar.apiResultExportICal') },
-  { name: 'downloadICal(opts?)',  type: '() => void',    description: t('calendar.apiResultDownloadICal') },
-  { name: 'importICal(str)',      type: '(str: string) => ICalImportResult', description: t('calendar.apiResultImportICal') },
-  { name: 'print(opts?)',         type: '(opts?: PrintOptions) => void', description: t('calendar.apiResultPrint') },
-  { name: 'selectedEvent()',      type: '() => T | null', description: t('calendar.apiResultSelectedEvent') },
-  { name: 'clearSelectedEvent()', type: '() => void',    description: t('calendar.apiResultClearSelectedEvent') },
-  { name: 'toggleWeekends()',     type: '() => void',    description: t('calendar.apiResultToggleWeekends') },
-  { name: 'toggleMiniCalendar()', type: '() => void',    description: t('calendar.apiResultToggleMiniCalendar') },
-]; }
-
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export const CalendarPage = createComponent({
   name: 'CalendarPage',
   component() {
+    const { t } = use('i18n');
+
+    const getOptionsApi = (): ApiRow[] => [
+      { name: 'events',           type: '() => T[]',                        description: t('calendar.apiEvents') },
+      { name: 'view',             type: "CalendarView",                      default: "'week'",    description: t('calendar.apiView') },
+      { name: 'defaultDate',      type: 'Date',                             default: 'today',     description: t('calendar.apiDefaultDate') },
+      { name: 'resources',        type: 'Resource[]',                       description: t('calendar.apiResources') },
+      { name: 'editable',         type: 'boolean',                          default: 'false',     description: t('calendar.apiEditable') },
+      { name: 'selectable',       type: 'boolean',                          default: 'false',     description: t('calendar.apiSelectable') },
+      { name: 'selection',        type: 'SelectionConfig',                  description: t('calendar.apiSelection') },
+      { name: 'locale',           type: 'string',                           default: "'en-US'",   description: t('calendar.apiLocale') },
+      { name: 'time',             type: 'TimeConfig',                       description: t('calendar.apiTime') },
+      { name: 'eventTooltip',     type: 'EventTooltipConfig',               description: t('calendar.apiEventTooltip') },
+      { name: 'onEventConflict',  type: "(event, conflicts) => 'allow' | 'warn' | 'prevent'", description: t('calendar.apiOnEventConflict') },
+      { name: 'onEventDrop',      type: '(event, newStart, newEnd, resourceId?) => void', description: t('calendar.apiOnEventDrop') },
+      { name: 'onEventResize',    type: '(event, newEnd) => void',          description: t('calendar.apiOnEventResize') },
+      { name: 'onSlotClick',      type: '(start, end, resourceId?) => void', description: t('calendar.apiOnSlotClick') },
+      { name: 'onSlotSelect',     type: '(start, end, resourceId?) => void', description: t('calendar.apiOnSlotSelect') },
+      { name: 'onEventClick',     type: '(event) => void',                  description: t('calendar.apiOnEventClick') },
+      { name: 'onViewChange',     type: '(view, dateRange) => void',        description: t('calendar.apiOnViewChange') },
+      { name: 'translations',     type: 'Partial<CalendarTranslations>',    description: t('calendar.apiTranslations') },
+      { name: 'responsive',       type: 'ResponsiveConfig',                 description: t('calendar.apiResponsive') },
+      { name: 'eventContent',     type: '(event) => Node',                  description: t('calendar.apiEventContent') },
+      { name: 'slotContent',      type: '(date, resourceId?) => Node | null', description: t('calendar.apiSlotContent') },
+      { name: 'mapImportedEvent', type: '(event: CalendarEvent) => T',      description: t('calendar.apiMapImportedEvent') },
+      { name: 'unstyled',         type: 'boolean',                          default: 'false',     description: t('calendar.apiUnstyledOpt') },
+      { name: 'classes',          type: 'Partial<CalendarClasses>',         description: t('calendar.apiClasses') },
+      { name: 'timelineOptions',  type: 'TimelineOptions',                  description: t('calendar.apiTimelineOptions') },
+    ];
+
+    const getEventApi = (): ApiRow[] => [
+      { name: 'id',         type: 'string',            description: t('calendar.apiEventId') },
+      { name: 'title',      type: 'string',            description: t('calendar.apiEventTitle') },
+      { name: 'start',      type: 'Date',              description: t('calendar.apiEventStart') },
+      { name: 'end',        type: 'Date',              description: t('calendar.apiEventEnd') },
+      { name: 'resourceId', type: 'string',            description: t('calendar.apiEventResourceId') },
+      { name: 'color',      type: 'string',            description: t('calendar.apiEventColor') },
+      { name: 'allDay',     type: 'boolean',           description: t('calendar.apiEventAllDay') },
+      { name: 'editable',   type: 'boolean',           description: "Per-event editable override — false disables drag & drop even when calendar.editable = true" },
+      { name: 'recurring',  type: 'RecurringRule',     description: t('calendar.apiEventRecurring') },
+      { name: 'indicators', type: 'EventIndicator[]',  description: t('calendar.apiEventIndicators') },
+    ];
+
+    const getResultApi = (): ApiRow[] => [
+      { name: 'Root()',              type: '() => Node',     description: t('calendar.apiResultRoot') },
+      { name: 'Toolbar()',           type: '() => Node',     description: t('calendar.apiResultToolbar') },
+      { name: 'MiniCalendar()',      type: '() => Node',     description: t('calendar.apiResultMiniCalendar') },
+      { name: 'MobileResourceBar()', type: '() => Node',     description: t('calendar.apiResultMobileResourceBar') },
+      { name: 'currentDate()',        type: '() => Date',     description: t('calendar.apiResultCurrentDate') },
+      { name: 'currentView()',        type: '() => CalendarView', description: t('calendar.apiResultCurrentView') },
+      { name: 'dateRange()',          type: '() => DateRange', description: t('calendar.apiResultDateRange') },
+      { name: 'sizeClass()',          type: "() => 'mobile' | 'tablet' | 'desktop'", description: t('calendar.apiResultSizeClass') },
+      { name: 'next() / prev() / today()', type: '() => void', description: t('calendar.apiResultNavigation') },
+      { name: 'goTo(date)',           type: '(date: Date) => void', description: t('calendar.apiResultGoTo') },
+      { name: 'setView(view)',        type: '(view: CalendarView) => void', description: t('calendar.apiResultSetView') },
+      { name: 'addEvent(event)',      type: '(event: T) => void', description: t('calendar.apiResultAddEvent') },
+      { name: 'updateEvent(id, changes)', type: '(id: string, changes: Partial<T>) => void', description: t('calendar.apiResultUpdateEvent') },
+      { name: 'removeEvent(id)',      type: '(id: string) => void', description: t('calendar.apiResultRemoveEvent') },
+      { name: 'exportICal(opts?)',    type: '() => string',  description: t('calendar.apiResultExportICal') },
+      { name: 'downloadICal(opts?)',  type: '() => void',    description: t('calendar.apiResultDownloadICal') },
+      { name: 'importICal(str)',      type: '(str: string) => ICalImportResult', description: t('calendar.apiResultImportICal') },
+      { name: 'print(opts?)',         type: '(opts?: PrintOptions) => void', description: t('calendar.apiResultPrint') },
+      { name: 'selectedEvent()',      type: '() => T | null', description: t('calendar.apiResultSelectedEvent') },
+      { name: 'clearSelectedEvent()', type: '() => void',    description: t('calendar.apiResultClearSelectedEvent') },
+      { name: 'toggleWeekends()',     type: '() => void',    description: t('calendar.apiResultToggleWeekends') },
+      { name: 'toggleMiniCalendar()', type: '() => void',    description: t('calendar.apiResultToggleMiniCalendar') },
+    ];
+
     setToc([
       { id: 'live',       label: () => t('calendar.live'),              level: 2 },
       { id: 'setup',      label: () => t('calendar.createCalendar'),    level: 2 },

@@ -1,4 +1,4 @@
-import { createComponent } from 'liteforge';
+import { createComponent, use } from 'liteforge';
 import { createModal, confirm, alert, prompt } from 'liteforge/modal';
 import { signal } from 'liteforge';
 import { DocSection } from '../components/DocSection.js';
@@ -7,7 +7,6 @@ import { LiveExample } from '../components/LiveExample.js';
 import { ApiTable } from '../components/ApiTable.js';
 import { Button } from '../components/Button.js';
 import type { ApiRow } from '../components/ApiTable.js';
-import { t } from '../i18n.js';
 import { setToc } from '../toc.js';
 
 // ─── Live example ─────────────────────────────────────────────────────────────
@@ -146,38 +145,38 @@ const ok    = await confirm('Proceed?');
 await alert('Done!');
 const value = await prompt('Enter name:', 'Ada');`;
 
-// ─── API rows ─────────────────────────────────────────────────────────────────
-
-function getConfigApi(): ApiRow[] { return [
-  { name: 'title', type: 'string', description: t('modal.apiTitle') },
-  { name: 'size', type: "'sm' | 'md' | 'lg' | 'xl' | 'full'", default: "'md'", description: t('modal.apiSize') },
-  { name: 'closable', type: 'boolean', default: 'true', description: t('modal.apiClosable') },
-  { name: 'closeOnBackdrop', type: 'boolean', default: 'true', description: t('modal.apiCloseOnBackdrop') },
-  { name: 'closeOnEsc', type: 'boolean', default: 'true', description: t('modal.apiCloseOnEsc') },
-  { name: 'unstyled', type: 'boolean', default: 'false', description: t('modal.apiUnstyled') },
-  { name: 'styles', type: 'ModalStyles', description: t('modal.apiStyles') },
-  { name: 'classes', type: 'ModalClasses', description: t('modal.apiClasses') },
-  { name: 'onOpen', type: '() => void', description: t('modal.apiOnOpen') },
-  { name: 'onClose', type: '() => void', description: t('modal.apiOnClose') },
-]; }
-
-function getInstanceApi(): ApiRow[] { return [
-  { name: 'isOpen', type: 'Signal<boolean>', description: t('modal.apiIsOpen') },
-  { name: 'open()', type: 'void', description: t('modal.apiOpen') },
-  { name: 'close()', type: 'void', description: t('modal.apiClose') },
-  { name: 'toggle()', type: 'void', description: t('modal.apiToggle') },
-  { name: 'destroy()', type: 'void', description: t('modal.apiDestroy') },
-]; }
-
-function getPresetApi(): ApiRow[] { return [
-  { name: 'confirm(message, config?)', type: 'Promise<boolean>', description: t('modal.apiConfirm') },
-  { name: 'alert(message, config?)', type: 'Promise<void>', description: t('modal.apiAlert') },
-  { name: 'prompt(message, default?, config?)', type: 'Promise<string | null>', description: t('modal.apiPrompt') },
-]; }
-
 export const ModalPage = createComponent({
   name: 'ModalPage',
   component() {
+    const { t } = use('i18n');
+
+    const getConfigApi = (): ApiRow[] => [
+      { name: 'title', type: 'string', description: t('modal.apiTitle') },
+      { name: 'size', type: "'sm' | 'md' | 'lg' | 'xl' | 'full'", default: "'md'", description: t('modal.apiSize') },
+      { name: 'closable', type: 'boolean', default: 'true', description: t('modal.apiClosable') },
+      { name: 'closeOnBackdrop', type: 'boolean', default: 'true', description: t('modal.apiCloseOnBackdrop') },
+      { name: 'closeOnEsc', type: 'boolean', default: 'true', description: t('modal.apiCloseOnEsc') },
+      { name: 'unstyled', type: 'boolean', default: 'false', description: t('modal.apiUnstyled') },
+      { name: 'styles', type: 'ModalStyles', description: t('modal.apiStyles') },
+      { name: 'classes', type: 'ModalClasses', description: t('modal.apiClasses') },
+      { name: 'onOpen', type: '() => void', description: t('modal.apiOnOpen') },
+      { name: 'onClose', type: '() => void', description: t('modal.apiOnClose') },
+    ];
+
+    const getInstanceApi = (): ApiRow[] => [
+      { name: 'isOpen', type: 'Signal<boolean>', description: t('modal.apiIsOpen') },
+      { name: 'open()', type: 'void', description: t('modal.apiOpen') },
+      { name: 'close()', type: 'void', description: t('modal.apiClose') },
+      { name: 'toggle()', type: 'void', description: t('modal.apiToggle') },
+      { name: 'destroy()', type: 'void', description: t('modal.apiDestroy') },
+    ];
+
+    const getPresetApi = (): ApiRow[] => [
+      { name: 'confirm(message, config?)', type: 'Promise<boolean>', description: t('modal.apiConfirm') },
+      { name: 'alert(message, config?)', type: 'Promise<void>', description: t('modal.apiAlert') },
+      { name: 'prompt(message, default?, config?)', type: 'Promise<string | null>', description: t('modal.apiPrompt') },
+    ];
+
     setToc([
       { id: 'setup',        label: () => t('modal.setup'),        level: 2 },
       { id: 'create-modal', label: () => t('modal.createModal'),  level: 2 },

@@ -1,12 +1,10 @@
-import { createComponent } from 'liteforge';
-import { signal, effect } from 'liteforge';
+import { createComponent, signal, effect, use } from 'liteforge';
 import { DocSection } from '../components/DocSection.js';
 import { CodeBlock } from '../components/CodeBlock.js';
 import { LiveExample } from '../components/LiveExample.js';
 import { ApiTable } from '../components/ApiTable.js';
 import type { ApiRow } from '../components/ApiTable.js';
 import { tooltip } from 'liteforge/tooltip';
-import { t } from '../i18n.js';
 import { setToc } from '../toc.js';
 
 // ─── Live examples ─────────────────────────────────────────────────────────────
@@ -196,37 +194,37 @@ const CSS_CODE = `:root {
 const AUTO_CODE = `// position: 'auto' — tries top first, flips if overflows viewport
 tooltip(el, { content: 'I find my own way', position: 'auto' });`;
 
-// ─── API rows ──────────────────────────────────────────────────────────────────
-
-function getOptionsApi(): ApiRow[] { return [
-  { name: 'content', type: 'string | Node', description: t('tooltip.apiContent') },
-  { name: 'position', type: "'top' | 'right' | 'bottom' | 'left' | 'auto'", default: "'top'", description: t('tooltip.apiPosition') },
-  { name: 'delay', type: 'number', default: '0', description: t('tooltip.apiDelay') },
-  { name: 'offset', type: 'number', default: '8', description: t('tooltip.apiOffset') },
-  { name: 'disabled', type: 'boolean', default: 'false', description: t('tooltip.apiDisabled') },
-  { name: 'showWhen', type: '() => boolean', description: t('tooltip.apiShowWhen') },
-]; }
-
-function getFuncApi(): ApiRow[] { return [
-  { name: 'tooltip(el, input)', type: '() => void', description: t('tooltip.apiFnSignature') },
-  { name: 'positionTooltip(el, target, position, offset)', type: 'void', description: t('tooltip.apiFnPositionTooltip') },
-]; }
-
-function getComponentApi(): ApiRow[] { return [
-  { name: 'content', type: 'string | Node', description: t('tooltip.apiCompContent') },
-  { name: 'position', type: 'TooltipPosition', default: "'top'", description: t('tooltip.apiCompPosition') },
-  { name: 'delay', type: 'number', description: t('tooltip.apiCompDelay') },
-  { name: 'offset', type: 'number', description: t('tooltip.apiCompOffset') },
-  { name: 'disabled', type: 'boolean', description: t('tooltip.apiCompDisabled') },
-  { name: 'showWhen', type: '() => boolean', description: t('tooltip.apiCompShowWhen') },
-  { name: 'children', type: 'Node', description: t('tooltip.apiCompChildren') },
-]; }
-
 // ─── Page ──────────────────────────────────────────────────────────────────────
 
 export const TooltipPage = createComponent({
   name: 'TooltipPage',
   component() {
+    const { t } = use('i18n');
+
+    const getOptionsApi = (): ApiRow[] => [
+      { name: 'content', type: 'string | Node', description: t('tooltip.apiContent') },
+      { name: 'position', type: "'top' | 'right' | 'bottom' | 'left' | 'auto'", default: "'top'", description: t('tooltip.apiPosition') },
+      { name: 'delay', type: 'number', default: '0', description: t('tooltip.apiDelay') },
+      { name: 'offset', type: 'number', default: '8', description: t('tooltip.apiOffset') },
+      { name: 'disabled', type: 'boolean', default: 'false', description: t('tooltip.apiDisabled') },
+      { name: 'showWhen', type: '() => boolean', description: t('tooltip.apiShowWhen') },
+    ];
+
+    const getFuncApi = (): ApiRow[] => [
+      { name: 'tooltip(el, input)', type: '() => void', description: t('tooltip.apiFnSignature') },
+      { name: 'positionTooltip(el, target, position, offset)', type: 'void', description: t('tooltip.apiFnPositionTooltip') },
+    ];
+
+    const getComponentApi = (): ApiRow[] => [
+      { name: 'content', type: 'string | Node', description: t('tooltip.apiCompContent') },
+      { name: 'position', type: 'TooltipPosition', default: "'top'", description: t('tooltip.apiCompPosition') },
+      { name: 'delay', type: 'number', description: t('tooltip.apiCompDelay') },
+      { name: 'offset', type: 'number', description: t('tooltip.apiCompOffset') },
+      { name: 'disabled', type: 'boolean', description: t('tooltip.apiCompDisabled') },
+      { name: 'showWhen', type: '() => boolean', description: t('tooltip.apiCompShowWhen') },
+      { name: 'children', type: 'Node', description: t('tooltip.apiCompChildren') },
+    ];
+
     setToc([
       { id: 'basic',         label: () => t('tooltip.basic'),         level: 2 },
       { id: 'ref',           label: () => t('tooltip.ref'),           level: 2 },

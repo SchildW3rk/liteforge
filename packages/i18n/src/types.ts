@@ -42,12 +42,11 @@ export type LocaleLoader<T extends TranslationTree = TranslationTree> =
   (locale: Locale) => Promise<T>;
 
 /**
- * New options API — type T is inferred from the `default` object.
- * No explicit generic needed at the call site.
+ * Standalone createI18n options — T inferred from `default:` object.
  *
  * @example
  * import en from './locales/en.js'
- * createI18n({ default: en, fallback: 'en', localesDir: './locales' })
+ * const { t, locale, setLocale } = createI18n({ default: en, load })
  */
 export interface I18nOptions<T extends TranslationTree> {
   /** The default locale object — T is inferred from this value */
@@ -56,14 +55,7 @@ export interface I18nOptions<T extends TranslationTree> {
   defaultLocaleKey?: Locale;
   /** Fallback locale key — used when a key is missing in the current locale */
   fallback?: Locale;
-  /**
-   * Directory path prefix for auto-loading locale files.
-   * When set (and no manual `load` is provided), locales are loaded via:
-   *   import(`${localesDir}/${locale}.js`)
-   * Convention: each file must export a `defineLocale({...})` as default.
-   */
-  localesDir?: string;
-  /** Manual load function — overrides localesDir when provided */
+  /** Manual load function */
   load?: LocaleLoader<T>;
   /** Persist selected locale to localStorage (default: true) */
   persist?: boolean;
@@ -72,18 +64,13 @@ export interface I18nOptions<T extends TranslationTree> {
 }
 
 /**
- * Legacy options API — still fully supported, no breaking change.
+ * Standalone createI18n options — legacy shape, still supported.
  * @deprecated Prefer I18nOptions with `default:` for automatic type inference.
  */
-export interface I18nPluginOptions {
-  /** Default locale to load on startup */
+export interface StandaloneI18nOptions {
   defaultLocale: Locale;
-  /** Fallback locale used when a key is missing in current locale */
   fallbackLocale?: Locale;
-  /** Function that returns the translation tree for a given locale */
   load: LocaleLoader;
-  /** Whether to persist the locale choice in localStorage (default: true) */
   persist?: boolean;
-  /** localStorage key name (default: 'lf-locale') */
   storageKey?: string;
 }

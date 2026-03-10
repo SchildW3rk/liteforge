@@ -1,8 +1,7 @@
-import { createComponent } from 'liteforge';
+import { createComponent, use } from 'liteforge';
 import { Link } from 'liteforge/router';
 import { clearToc } from '../toc.js';
 import { CodeBlock } from '../components/CodeBlock.js';
-import { t } from '../i18n.js';
 import type { ExtractKeys } from 'liteforge/i18n';
 import type { DocsTranslations } from '../locales/en.js';
 
@@ -73,6 +72,7 @@ const Counter = ${_cc}({
 export const Overview = createComponent({
   name: 'Overview',
   component() {
+    const { t } = use('i18n');
     clearToc();
     return (
       <div>

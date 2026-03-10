@@ -1,9 +1,8 @@
-import { createComponent } from 'liteforge';
+import { createComponent, use } from 'liteforge';
 import { DocSection } from '../components/DocSection.js';
 import { CodeBlock } from '../components/CodeBlock.js';
 import { ApiTable } from '../components/ApiTable.js';
 import type { ApiRow } from '../components/ApiTable.js';
-import { t } from '../i18n.js';
 import { setToc } from '../toc.js';
 
 // ─── Code strings ─────────────────────────────────────────────────────────────
@@ -50,28 +49,28 @@ const dt = createDevTools({
 dt.open();
 dt.close();`;
 
-// ─── API rows ─────────────────────────────────────────────────────────────────
-
-function getConfigApi(): ApiRow[] { return [
-  { name: 'shortcut', type: 'string', default: "'ctrl+shift+d'", description: t('devtools.apiShortcut') },
-  { name: 'position', type: "'right' | 'bottom' | 'floating'", default: "'right'", description: t('devtools.apiPosition') },
-  { name: 'defaultTab', type: "'signals' | 'stores' | 'router' | 'components' | 'performance'", default: "'signals'", description: t('devtools.apiDefaultTab') },
-  { name: 'width', type: 'number', default: '360', description: t('devtools.apiWidth') },
-  { name: 'height', type: 'number', default: '300', description: t('devtools.apiHeight') },
-  { name: 'maxEvents', type: 'number', default: '1000', description: t('devtools.apiMaxEvents') },
-]; }
-
-function getTabsInfo(): ApiRow[] { return [
-  { name: 'Signals', type: 'tab', description: t('devtools.tabSignals') },
-  { name: 'Stores', type: 'tab', description: t('devtools.tabStores') },
-  { name: 'Router', type: 'tab', description: t('devtools.tabRouter') },
-  { name: 'Components', type: 'tab', description: t('devtools.tabComponents') },
-  { name: 'Performance', type: 'tab', description: t('devtools.tabPerformance') },
-]; }
-
 export const DevtoolsPage = createComponent({
   name: 'DevtoolsPage',
   component() {
+    const { t } = use('i18n');
+
+    const getConfigApi = (): ApiRow[] => [
+      { name: 'shortcut', type: 'string', default: "'ctrl+shift+d'", description: t('devtools.apiShortcut') },
+      { name: 'position', type: "'right' | 'bottom' | 'floating'", default: "'right'", description: t('devtools.apiPosition') },
+      { name: 'defaultTab', type: "'signals' | 'stores' | 'router' | 'components' | 'performance'", default: "'signals'", description: t('devtools.apiDefaultTab') },
+      { name: 'width', type: 'number', default: '360', description: t('devtools.apiWidth') },
+      { name: 'height', type: 'number', default: '300', description: t('devtools.apiHeight') },
+      { name: 'maxEvents', type: 'number', default: '1000', description: t('devtools.apiMaxEvents') },
+    ];
+
+    const getTabsInfo = (): ApiRow[] => [
+      { name: 'Signals', type: 'tab', description: t('devtools.tabSignals') },
+      { name: 'Stores', type: 'tab', description: t('devtools.tabStores') },
+      { name: 'Router', type: 'tab', description: t('devtools.tabRouter') },
+      { name: 'Components', type: 'tab', description: t('devtools.tabComponents') },
+      { name: 'Performance', type: 'tab', description: t('devtools.tabPerformance') },
+    ];
+
     setToc([
       { id: 'integration', label: () => t('devtools.integration'),  level: 2 },
       { id: 'config',      label: () => t('devtools.config'),       level: 2 },

@@ -4,7 +4,6 @@ import { CodeBlock } from '../components/CodeBlock.js';
 import { LiveExample } from '../components/LiveExample.js';
 import { ApiTable } from '../components/ApiTable.js';
 import type { ApiRow } from '../components/ApiTable.js';
-import { t } from '../i18n.js';
 import { setToc } from '../toc.js';
 
 // ─── Live example: lifecycle log ───────────────────────────────────────────────
@@ -257,27 +256,27 @@ effect(() => {
 
 // destroyed() { analytics.trackPageLeave(); }  ← once only`;
 
-// ─── API rows ──────────────────────────────────────────────────────────────────
-
-function getHooksApi(): ApiRow[] { return [
-  { name: 'setup({ props, use })', type: 'object', description: t('lifecycle.apiSetup') },
-  { name: 'load({ props, setup, use })', type: 'Promise<object>', description: t('lifecycle.apiLoad') },
-  { name: 'placeholder()', type: 'Node', description: t('lifecycle.apiPlaceholder') },
-  { name: 'error({ error, retry })', type: 'Node', description: t('lifecycle.apiError') },
-  { name: 'component({ props, setup, data })', type: 'Node', description: t('lifecycle.apiComponent') },
-  { name: 'mounted({ el })', type: 'void', description: t('lifecycle.apiMounted') },
-  { name: 'destroyed()', type: 'void', description: t('lifecycle.apiDestroyed') },
-]; }
-
-function getUtilsApi(): ApiRow[] { return [
-  { name: 'onCleanup(fn)', type: 'void', description: t('lifecycle.apiOnCleanup') },
-]; }
-
 // ─── Page ──────────────────────────────────────────────────────────────────────
 
 export const LifecyclePage = createComponent({
   name: 'LifecyclePage',
-  component() {
+  component({ use }) {
+    const { t } = use('i18n');
+
+    const getHooksApi = (): ApiRow[] => [
+      { name: 'setup({ props, use })', type: 'object', description: t('lifecycle.apiSetup') },
+      { name: 'load({ props, setup, use })', type: 'Promise<object>', description: t('lifecycle.apiLoad') },
+      { name: 'placeholder()', type: 'Node', description: t('lifecycle.apiPlaceholder') },
+      { name: 'error({ error, retry })', type: 'Node', description: t('lifecycle.apiError') },
+      { name: 'component({ props, setup, data })', type: 'Node', description: t('lifecycle.apiComponent') },
+      { name: 'mounted({ el })', type: 'void', description: t('lifecycle.apiMounted') },
+      { name: 'destroyed()', type: 'void', description: t('lifecycle.apiDestroyed') },
+    ];
+
+    const getUtilsApi = (): ApiRow[] => [
+      { name: 'onCleanup(fn)', type: 'void', description: t('lifecycle.apiOnCleanup') },
+    ];
+
     setToc([
       { id: 'diagram',         label: () => t('lifecycle.diagram'),        level: 2 },
       { id: 'full',            label: () => t('lifecycle.fullExample'),    level: 2 },

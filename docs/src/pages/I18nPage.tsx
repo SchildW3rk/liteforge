@@ -1,4 +1,4 @@
-import { createComponent, signal } from 'liteforge';
+import { createComponent, signal, use } from 'liteforge';
 import { createI18n, defineLocale } from 'liteforge/i18n';
 import { DocSection } from '../components/DocSection.js';
 import { CodeBlock } from '../components/CodeBlock.js';
@@ -6,7 +6,6 @@ import { LiveExample } from '../components/LiveExample.js';
 import { ApiTable } from '../components/ApiTable.js';
 import { btnClass } from '../components/Button.js';
 import type { ApiRow } from '../components/ApiTable.js';
-import { t } from '../i18n.js';
 import { setToc } from '../toc.js';
 
 // ─── Translations ──────────────────────────────────────────────────────────────
@@ -258,28 +257,28 @@ export default defineLocale({
 // That's it. No type annotations, no changes to i18n.ts.
 // import.meta.glob('./locales/*.js') picks it up automatically.`;
 
-// ─── API rows ──────────────────────────────────────────────────────────────────
-
-function getOptionsApi(): ApiRow[] { return [
-  { name: 'default',       type: 'T',                                             description: t('i18n.apiDefault') },
-  { name: 'fallback',      type: 'string',                        default: '—',   description: t('i18n.apiFallbackLocale') },
-  { name: 'localesDir',    type: 'string',                        default: '—',   description: t('i18n.apiLocalesDir') },
-  { name: 'load',          type: '(locale: string) => Promise<T>', default: '—',  description: t('i18n.apiLoad') },
-  { name: 'persist',       type: 'boolean',                       default: 'true', description: t('i18n.apiPersist') },
-  { name: 'storageKey',    type: 'string',                        default: "'lf-locale'", description: t('i18n.apiStorageKey') },
-]; }
-
-function getApiApi(): ApiRow[] { return [
-  { name: 'locale()',             type: '() => string',                    description: t('i18n.apiLocale') },
-  { name: 'setLocale(locale)',    type: '(locale: string) => Promise<void>', description: t('i18n.apiSetLocale') },
-  { name: 't(key, params?, count?)', type: 'string',                       description: t('i18n.apiT') },
-]; }
-
 // ─── Page ──────────────────────────────────────────────────────────────────────
 
 export const I18nPage = createComponent({
   name: 'I18nPage',
   component() {
+    const { t } = use('i18n');
+
+    const getOptionsApi = (): ApiRow[] => [
+      { name: 'default',       type: 'T',                                             description: t('i18n.apiDefault') },
+      { name: 'fallback',      type: 'string',                        default: '—',   description: t('i18n.apiFallbackLocale') },
+      { name: 'localesDir',    type: 'string',                        default: '—',   description: t('i18n.apiLocalesDir') },
+      { name: 'load',          type: '(locale: string) => Promise<T>', default: '—',  description: t('i18n.apiLoad') },
+      { name: 'persist',       type: 'boolean',                       default: 'true', description: t('i18n.apiPersist') },
+      { name: 'storageKey',    type: 'string',                        default: "'lf-locale'", description: t('i18n.apiStorageKey') },
+    ];
+
+    const getApiApi = (): ApiRow[] => [
+      { name: 'locale()',             type: '() => string',                    description: t('i18n.apiLocale') },
+      { name: 'setLocale(locale)',    type: '(locale: string) => Promise<void>', description: t('i18n.apiSetLocale') },
+      { name: 't(key, params?, count?)', type: 'string',                       description: t('i18n.apiT') },
+    ];
+
     setToc([
       { id: 'setup',               label: () => t('i18n.setup'),          level: 2 },
       { id: 'usage',               label: () => t('i18n.usage'),          level: 2 },

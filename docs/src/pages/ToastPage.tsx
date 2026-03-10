@@ -1,11 +1,10 @@
-import { createComponent } from 'liteforge';
+import { createComponent, use } from 'liteforge';
 import { signal } from 'liteforge';
 import { DocSection } from '../components/DocSection.js';
 import { CodeBlock } from '../components/CodeBlock.js';
 import { LiveExample } from '../components/LiveExample.js';
 import { ApiTable } from '../components/ApiTable.js';
 import type { ApiRow } from '../components/ApiTable.js';
-import { t } from '../i18n.js';
 import { setToc } from '../toc.js';
 
 // ─── Live example ──────────────────────────────────────────────────────────────
@@ -121,35 +120,35 @@ const CSS_CODE = `:root {
   --lf-toast-gap:     10px;
 }`;
 
-// ─── API rows ──────────────────────────────────────────────────────────────────
-
-function getPluginApi(): ApiRow[] { return [
-  { name: 'position', type: 'ToastPosition', default: "'bottom-right'", description: t('toast.apiPosition') },
-  { name: 'maxToasts', type: 'number', default: '5', description: t('toast.apiMaxToasts') },
-  { name: 'duration', type: 'number', default: '4000', description: t('toast.apiDuration') },
-  { name: 'unstyled', type: 'boolean', default: 'false', description: t('toast.apiUnstyled') },
-]; }
-
-function getToastApi(): ApiRow[] { return [
-  { name: 'toast.success(message, opts?)', type: 'string', description: t('toast.apiSuccess') },
-  { name: 'toast.error(message, opts?)', type: 'string', description: t('toast.apiError') },
-  { name: 'toast.warning(message, opts?)', type: 'string', description: t('toast.apiWarning') },
-  { name: 'toast.info(message, opts?)', type: 'string', description: t('toast.apiInfo') },
-  { name: 'toast.promise(p, labels)', type: 'Promise<T>', description: t('toast.apiPromise') },
-  { name: 'toast.dismiss(id?)', type: 'void', description: t('toast.apiDismiss') },
-]; }
-
-function getOptsApi(): ApiRow[] { return [
-  { name: 'duration', type: 'number', description: t('toast.apiOptDuration') },
-  { name: 'closable', type: 'boolean', description: t('toast.apiClosable') },
-  { name: 'id', type: 'string', description: t('toast.apiId') },
-]; }
-
 // ─── Page ──────────────────────────────────────────────────────────────────────
 
 export const ToastPage = createComponent({
   name: 'ToastPage',
   component() {
+    const { t } = use('i18n');
+
+    const getPluginApi = (): ApiRow[] => [
+      { name: 'position', type: 'ToastPosition', default: "'bottom-right'", description: t('toast.apiPosition') },
+      { name: 'maxToasts', type: 'number', default: '5', description: t('toast.apiMaxToasts') },
+      { name: 'duration', type: 'number', default: '4000', description: t('toast.apiDuration') },
+      { name: 'unstyled', type: 'boolean', default: 'false', description: t('toast.apiUnstyled') },
+    ];
+
+    const getToastApi = (): ApiRow[] => [
+      { name: 'toast.success(message, opts?)', type: 'string', description: t('toast.apiSuccess') },
+      { name: 'toast.error(message, opts?)', type: 'string', description: t('toast.apiError') },
+      { name: 'toast.warning(message, opts?)', type: 'string', description: t('toast.apiWarning') },
+      { name: 'toast.info(message, opts?)', type: 'string', description: t('toast.apiInfo') },
+      { name: 'toast.promise(p, labels)', type: 'Promise<T>', description: t('toast.apiPromise') },
+      { name: 'toast.dismiss(id?)', type: 'void', description: t('toast.apiDismiss') },
+    ];
+
+    const getOptsApi = (): ApiRow[] => [
+      { name: 'duration', type: 'number', description: t('toast.apiOptDuration') },
+      { name: 'closable', type: 'boolean', description: t('toast.apiClosable') },
+      { name: 'id', type: 'string', description: t('toast.apiId') },
+    ];
+
     setToc([
       { id: 'setup',      label: () => t('toast.setup'),          level: 2 },
       { id: 'basic',      label: () => t('toast.basic'),          level: 2 },

@@ -1,74 +1,146 @@
 /**
  * @liteforge/i18n — i18nPlugin
  *
- * Async install: loads the default locale translations before the app mounts.
- * Fallback locale is loaded in parallel (non-blocking).
+ * Self-contained plugin — builds its own signals and i18n logic.
+ * Does NOT call createI18n. createI18n is only for standalone usage.
  *
- * Accepts either an already-created I18nInstance (singleton pattern) or
- * raw options (plugin creates its own instance).
+ * @example — Vite glob (recommended, zero maintenance)
+ * .use(i18nPlugin({
+ *   defaultLocale: 'en',
+ *   locales: import.meta.glob('./locales/*.js'),
+ *   persist: true,
+ *   storageKey: 'my-locale',
+ * }))
  *
- * @example — singleton pattern (recommended when pages import t() directly)
- * // i18n.ts
- * export const i18n = createI18n({ default: en, fallback: 'en', load })
- * export const { t, locale, setLocale } = i18n
- *
- * // main.tsx
- * import { i18n } from './i18n.js'
- * createApp({ root: App, target: '#app' }).use(i18nPlugin(i18n)).mount()
+ * @example — manual load (escape hatch for non-Vite / custom logic)
+ * .use(i18nPlugin({
+ *   defaultLocale: 'en',
+ *   load: async (locale) => (await import(`./locales/${locale}.js`)).default,
+ * }))
  */
 
+import { signal, batch } from '@liteforge/core';
 import type { LiteForgePlugin, PluginContext } from '@liteforge/runtime';
-import { createI18n, type I18nInstance } from './i18n.js';
-import type { I18nApi, I18nOptions, I18nPluginOptions, TranslationTree } from './types.js';
+import { resolveKey, interpolate, resolvePlural } from './resolve.js';
+import type { I18nApi, Locale, TranslationTree } from './types.js';
 
-export function i18nPlugin(instance: I18nInstance<Record<string, unknown>>): LiteForgePlugin;
-export function i18nPlugin(options: I18nOptions<TranslationTree> | I18nPluginOptions): LiteForgePlugin;
-export function i18nPlugin(
-  instanceOrOptions: I18nInstance<Record<string, unknown>> | I18nOptions<TranslationTree> | I18nPluginOptions,
-): LiteForgePlugin {
+export interface I18nPluginOptions {
+  /** Key of the default locale — must match a file in the locales glob */
+  defaultLocale: string;
+  /**
+   * Vite glob result — `import.meta.glob('./locales/*.js')`.
+   * Adding a new language = create one file, nothing else needed.
+   */
+  locales?: Record<string, () => Promise<unknown>>;
+  /**
+   * Manual load function — overrides `locales` when provided.
+   * Use as an escape hatch for non-Vite environments or custom fetch logic.
+   */
+  load?: (locale: string) => Promise<TranslationTree>;
+  /**
+   * Fallback locale key — used when a key is missing in the current locale.
+   * Defaults to `defaultLocale`.
+   */
+  fallback?: string;
+  /** Persist selected locale to localStorage (default: true) */
+  persist?: boolean;
+  /** localStorage key (default: 'lf-locale') */
+  storageKey?: string;
+}
+
+export function i18nPlugin(options: I18nPluginOptions): LiteForgePlugin {
   return {
     name: 'i18n',
     async install(context: PluginContext): Promise<() => void> {
-      let i18n: I18nInstance;
+      const {
+        defaultLocale,
+        locales,
+        load,
+        fallback,
+        persist = true,
+        storageKey = 'lf-locale',
+      } = options;
 
-      if ('_load' in instanceOrOptions) {
-        // Pre-created singleton — caller is responsible for preloading
-        i18n = instanceOrOptions as I18nInstance;
-      } else {
-        const options = instanceOrOptions as I18nOptions<TranslationTree> | I18nPluginOptions;
-        i18n = createI18n(options as I18nPluginOptions);
+      const fallbackLocale = fallback ?? defaultLocale;
 
-        const fallbackLocale = 'fallback' in options
-          ? (options as I18nOptions<TranslationTree>).fallback
-          : (options as I18nPluginOptions).fallbackLocale;
+      // Derive load function from glob or explicit loader — explicit wins
+      const loadFn = load ?? (async (locale: Locale): Promise<TranslationTree> => {
+        if (!locales) throw new Error('[i18n] Provide either locales or load in i18nPlugin options');
+        const entry = Object.entries(locales).find(([key]) => key.endsWith(`/${locale}.js`));
+        if (!entry) throw new Error(`[i18n] No locale file found for "${locale}"`);
+        const mod = await entry[1]() as { default: TranslationTree };
+        return mod.default;
+      });
 
-        // Load default (or persisted) locale — awaited to prevent FOUC
-        const loads: Promise<void>[] = [i18n._load(i18n.locale())];
-        if (fallbackLocale && fallbackLocale !== i18n.locale()) {
-          loads.push(i18n._loadFallback(fallbackLocale));
+      // Read persisted locale before creating signals
+      let initialLocale: Locale = defaultLocale;
+      if (persist && typeof localStorage !== 'undefined') {
+        const stored = localStorage.getItem(storageKey);
+        if (stored) initialLocale = stored;
+      }
+
+      const currentLocale = signal<Locale>(initialLocale);
+      const translations = signal<TranslationTree>({});
+      const fallbackTranslations = signal<TranslationTree>({});
+
+      async function doLoad(locale: Locale): Promise<void> {
+        const tree = await loadFn(locale);
+        batch(() => {
+          currentLocale.set(locale);
+          translations.set(tree);
+        });
+        if (persist && typeof localStorage !== 'undefined') {
+          localStorage.setItem(storageKey, locale);
         }
+      }
+
+      async function doLoadFallback(locale: Locale): Promise<void> {
+        try {
+          fallbackTranslations.set(await loadFn(locale));
+        } catch {
+          // non-fatal
+        }
+      }
+
+      // Seed translations before mount — prevents flash of untranslated keys
+      const toLoad: Promise<void>[] = [doLoad(initialLocale)];
+      if (fallbackLocale !== initialLocale) toLoad.push(doLoadFallback(fallbackLocale));
+      await Promise.all(toLoad);
+
+      function t(key: string, params?: Record<string, string | number>, count?: number): string {
+        const raw0 = resolveKey(translations(), key) ?? resolveKey(fallbackTranslations(), key);
+        if (raw0 === undefined) return key;
+        const raw1 = count !== undefined ? resolvePlural(raw0, count) : raw0;
+        return interpolate(raw1, params);
+      }
+
+      async function setLocale(locale: Locale): Promise<void> {
+        const loads: Promise<void>[] = [doLoad(locale)];
+        if (fallbackLocale !== locale) loads.push(doLoadFallback(fallbackLocale));
         await Promise.all(loads);
       }
 
-      const api: I18nApi = {
-        locale: i18n.locale,
-        setLocale: i18n.setLocale,
-        t: i18n.t,
+      const api: I18nApi<Record<string, string>> = {
+        locale: currentLocale,
+        setLocale,
+        t,
       };
-
       context.provide('i18n', api);
 
       return () => {
-        // No global state to clean up — signals are GC'd with the instance
+        // No global state to clean up — signals GC'd with the closure
       };
     },
   };
 }
 
-// Declaration Merging — augments @liteforge/runtime's PluginRegistry so that
-// use('i18n') returns I18nApi without a cast.
+// Declaration merging — use('i18n') returns I18nApi<TranslationTree> by default.
+// Apps override with a typed declaration for full key inference:
+//   declare module '@liteforge/runtime' {
+//     interface PluginRegistry { i18n: I18nApi<AppTranslations> }
+//   }
 declare module '@liteforge/runtime' {
   interface PluginRegistry {
-    i18n: I18nApi;
+    i18n: I18nApi<Record<string, string>>;
   }
 }

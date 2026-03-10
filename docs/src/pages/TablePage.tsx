@@ -1,4 +1,4 @@
-import { createComponent } from 'liteforge';
+import { createComponent, use } from 'liteforge';
 import { createTable } from 'liteforge/table';
 import { signal } from 'liteforge';
 import { DocSection } from '../components/DocSection.js';
@@ -6,7 +6,6 @@ import { CodeBlock } from '../components/CodeBlock.js';
 import { LiveExample } from '../components/LiveExample.js';
 import { ApiTable } from '../components/ApiTable.js';
 import type { ApiRow } from '../components/ApiTable.js';
-import { t } from '../i18n.js';
 import { setToc } from '../toc.js';
 
 // ─── Sample data ───────────────────────────────────────────────────────────────
@@ -235,41 +234,43 @@ const TAILWIND_CODE = `const table = createTable<Patient>({
   },
 });`;
 
-function getTableApi(): ApiRow[] { return [
-  { name: 'data', type: '() => T[]', description: t('table.apiData') },
-  { name: 'columns', type: 'ColumnDef<T>[]', description: t('table.apiColumns') },
-  { name: 'pagination', type: '{ pageSize: number }', description: t('table.apiPagination') },
-  { name: 'selection', type: "{ enabled: boolean, mode: 'single' | 'multi' }", description: t('table.apiSelection') },
-  { name: 'filters', type: 'FilterDef[]', description: t('table.apiFilters') },
-  { name: 'styles', type: 'TableStyles', description: t('table.apiStyles') },
-  { name: 'classes', type: 'Partial<TableClasses>', description: t('table.apiClasses') },
-  { name: 'unstyled', type: 'boolean', description: t('table.apiUnstyled') },
-]; }
-
-function getStyleTokensApi(): ApiRow[] { return [
-  { name: 'bg', type: 'string', description: t('table.styleBg') },
-  { name: 'border', type: 'string', description: t('table.styleBorder') },
-  { name: 'borderRadius', type: 'string', description: t('table.styleBorderRadius') },
-  { name: 'headerBg', type: 'string', description: t('table.styleHeaderBg') },
-  { name: 'headerColor', type: 'string', description: t('table.styleHeaderColor') },
-  { name: 'headerFontWeight', type: 'string', description: t('table.styleHeaderFontWeight') },
-  { name: 'rowBg', type: 'string', description: t('table.styleRowBg') },
-  { name: 'rowBgHover', type: 'string', description: t('table.styleRowBgHover') },
-  { name: 'rowBgSelected', type: 'string', description: t('table.styleRowBgSelected') },
-  { name: 'rowBgStriped', type: 'string', description: t('table.styleRowBgStriped') },
-  { name: 'cellPadding', type: 'string', description: t('table.styleCellPadding') },
-  { name: 'cellColor', type: 'string', description: t('table.styleCellColor') },
-  { name: 'cellFontSize', type: 'string', description: t('table.styleCellFontSize') },
-  { name: 'accentColor', type: 'string', description: t('table.styleAccentColor') },
-  { name: 'sortIconColor', type: 'string', description: t('table.styleSortIconColor') },
-  { name: 'paginationBg', type: 'string', description: t('table.stylePaginationBg') },
-  { name: 'searchBorder', type: 'string', description: t('table.styleSearchBorder') },
-  { name: 'searchFocus', type: 'string', description: t('table.styleSearchFocus') },
-]; }
-
 export const TablePage = createComponent({
   name: 'TablePage',
   component() {
+    const { t } = use('i18n');
+
+    const getTableApi = (): ApiRow[] => [
+      { name: 'data', type: '() => T[]', description: t('table.apiData') },
+      { name: 'columns', type: 'ColumnDef<T>[]', description: t('table.apiColumns') },
+      { name: 'pagination', type: '{ pageSize: number }', description: t('table.apiPagination') },
+      { name: 'selection', type: "{ enabled: boolean, mode: 'single' | 'multi' }", description: t('table.apiSelection') },
+      { name: 'filters', type: 'FilterDef[]', description: t('table.apiFilters') },
+      { name: 'styles', type: 'TableStyles', description: t('table.apiStyles') },
+      { name: 'classes', type: 'Partial<TableClasses>', description: t('table.apiClasses') },
+      { name: 'unstyled', type: 'boolean', description: t('table.apiUnstyled') },
+    ];
+
+    const getStyleTokensApi = (): ApiRow[] => [
+      { name: 'bg', type: 'string', description: t('table.styleBg') },
+      { name: 'border', type: 'string', description: t('table.styleBorder') },
+      { name: 'borderRadius', type: 'string', description: t('table.styleBorderRadius') },
+      { name: 'headerBg', type: 'string', description: t('table.styleHeaderBg') },
+      { name: 'headerColor', type: 'string', description: t('table.styleHeaderColor') },
+      { name: 'headerFontWeight', type: 'string', description: t('table.styleHeaderFontWeight') },
+      { name: 'rowBg', type: 'string', description: t('table.styleRowBg') },
+      { name: 'rowBgHover', type: 'string', description: t('table.styleRowBgHover') },
+      { name: 'rowBgSelected', type: 'string', description: t('table.styleRowBgSelected') },
+      { name: 'rowBgStriped', type: 'string', description: t('table.styleRowBgStriped') },
+      { name: 'cellPadding', type: 'string', description: t('table.styleCellPadding') },
+      { name: 'cellColor', type: 'string', description: t('table.styleCellColor') },
+      { name: 'cellFontSize', type: 'string', description: t('table.styleCellFontSize') },
+      { name: 'accentColor', type: 'string', description: t('table.styleAccentColor') },
+      { name: 'sortIconColor', type: 'string', description: t('table.styleSortIconColor') },
+      { name: 'paginationBg', type: 'string', description: t('table.stylePaginationBg') },
+      { name: 'searchBorder', type: 'string', description: t('table.styleSearchBorder') },
+      { name: 'searchFocus', type: 'string', description: t('table.styleSearchFocus') },
+    ];
+
     setToc([
       { id: 'create-table', label: () => t('table.createTable'),  level: 2 },
       { id: 'columns',      label: () => t('table.columns'),      level: 2 },

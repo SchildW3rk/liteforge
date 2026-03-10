@@ -1,4 +1,4 @@
-import { createComponent, For, Show } from 'liteforge';
+import { createComponent, For, Show, use } from 'liteforge';
 import { signal } from 'liteforge';
 import { DocSection } from '../components/DocSection.js';
 import { CodeBlock } from '../components/CodeBlock.js';
@@ -6,7 +6,6 @@ import { ApiTable } from '../components/ApiTable.js';
 import { LiveExample } from '../components/LiveExample.js';
 import { btnClass } from '../components/Button.js';
 import type { ApiRow } from '../components/ApiTable.js';
-import { t } from '../i18n.js';
 import { setToc } from '../toc.js';
 
 // ─── Live example ──────────────────────────────────────────────────────────────
@@ -296,19 +295,19 @@ const FETCH_DEMO_CODE = `const FetchDemo = ${_cc}({
   },
 });`;
 
-// ─── API rows ──────────────────────────────────────────────────────────────────
-
-function getClientApi(): ApiRow[] { return [
-  { name: 'baseUrl', type: 'string', description: t('client.apiBaseUrl') },
-  { name: 'headers', type: 'Record<string, string>', default: '{}', description: t('client.apiHeaders') },
-  { name: 'timeout', type: 'number', default: '30000', description: t('client.apiTimeout') },
-  { name: 'retry', type: 'number', default: '0', description: t('client.apiRetry') },
-  { name: 'query', type: '{ createQuery, createMutation }', default: 'undefined', description: t('client.apiQuery') },
-]; }
-
 export const ClientPage = createComponent({
   name: 'ClientPage',
   component() {
+    const { t } = use('i18n');
+
+    const getClientApi = (): ApiRow[] => [
+      { name: 'baseUrl', type: 'string', description: t('client.apiBaseUrl') },
+      { name: 'headers', type: 'Record<string, string>', default: '{}', description: t('client.apiHeaders') },
+      { name: 'timeout', type: 'number', default: '30000', description: t('client.apiTimeout') },
+      { name: 'retry', type: 'number', default: '0', description: t('client.apiRetry') },
+      { name: 'query', type: '{ createQuery, createMutation }', default: 'undefined', description: t('client.apiQuery') },
+    ];
+
     setToc([
       { id: 'contrast',      label: () => t('client.progressiveDx'),  level: 2 },
       { id: 'create-client', label: () => t('client.createClient'),   level: 2 },

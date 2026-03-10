@@ -1,7 +1,6 @@
-import { createComponent } from 'liteforge';
+import { createComponent, use } from 'liteforge';
 import { signal, computed } from 'liteforge';
 import { setToc } from '../toc.js';
-import { t } from '../i18n.js';
 import { DocSection } from '../components/DocSection.js';
 import { CodeBlock } from '../components/CodeBlock.js';
 import { LiveExample } from '../components/LiveExample.js';
@@ -33,6 +32,7 @@ const CounterExample = createComponent({
 const FullNameExample = createComponent({
   name: 'FullNameExample',
   component() {
+    const { t } = use('i18n');
     const firstName = signal('Anna');
     const lastName = signal('Müller');
     const fullName = computed(() => `${firstName()} ${lastName()}`);
@@ -136,28 +136,28 @@ const fullName  = computed(() => \`\${firstName()} \${lastName()}\`);
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
-// ─── API rows (reactive — rebuild when locale changes) ────────────────────────
-
-function getSignalApi(): ApiRow[] { return [
-  { name: 'signal(initial)', type: 'Signal<T>',         description: t('core.apiSignal')  },
-  { name: 'sig()',           type: 'T',                 description: t('core.apiRead')    },
-  { name: 'sig.set(value)',  type: 'void',              description: t('core.apiSet')     },
-  { name: 'sig.update(fn)',  type: 'void',              description: t('core.apiUpdate')  },
-]; }
-
-function getComputedApi(): ApiRow[] { return [
-  { name: 'computed(fn)',    type: 'ReadonlySignal<T>', description: t('core.apiComputed') },
-  { name: 'derived()',       type: 'T',                description: t('core.apiDerived')  },
-]; }
-
-function getEffectApi(): ApiRow[] { return [
-  { name: 'effect(fn)',      type: 'DisposeFn',        description: t('core.apiEffect')  },
-  { name: 'dispose()',       type: 'void',             description: t('core.apiDispose') },
-]; }
-
 export const CorePage = createComponent({
   name: 'CorePage',
   component() {
+    const { t } = use('i18n');
+
+    const getSignalApi = (): ApiRow[] => [
+      { name: 'signal(initial)', type: 'Signal<T>',         description: t('core.apiSignal')  },
+      { name: 'sig()',           type: 'T',                 description: t('core.apiRead')    },
+      { name: 'sig.set(value)',  type: 'void',              description: t('core.apiSet')     },
+      { name: 'sig.update(fn)',  type: 'void',              description: t('core.apiUpdate')  },
+    ];
+
+    const getComputedApi = (): ApiRow[] => [
+      { name: 'computed(fn)',    type: 'ReadonlySignal<T>', description: t('core.apiComputed') },
+      { name: 'derived()',       type: 'T',                description: t('core.apiDerived')  },
+    ];
+
+    const getEffectApi = (): ApiRow[] => [
+      { name: 'effect(fn)',      type: 'DisposeFn',        description: t('core.apiEffect')  },
+      { name: 'dispose()',       type: 'void',             description: t('core.apiDispose') },
+    ];
+
     setToc([
       { id: 'how-it-works', label: () => t('core.howItWorks'),    level: 2 },
       { id: 'signal',       label: () => t('core.signal'),         level: 2 },

@@ -1,4 +1,4 @@
-import { createComponent, For, Show } from 'liteforge';
+import { createComponent, For, Show, use } from 'liteforge';
 import { signal } from 'liteforge';
 import { DocSection } from '../components/DocSection.js';
 import { CodeBlock } from '../components/CodeBlock.js';
@@ -6,7 +6,6 @@ import { ApiTable } from '../components/ApiTable.js';
 import { LiveExample } from '../components/LiveExample.js';
 import { btnClass } from '../components/Button.js';
 import type { ApiRow } from '../components/ApiTable.js';
-import { t } from '../i18n.js';
 import { setToc } from '../toc.js';
 
 // ─── Live example ──────────────────────────────────────────────────────────────
@@ -369,22 +368,22 @@ const RouterDemo = ${_cc}({
   },
 });`;
 
-// ─── API rows ──────────────────────────────────────────────────────────────────
-
-function getRouteApi(): ApiRow[] { return [
-  { name: 'path', type: 'string', description: t('router.apiPath') },
-  { name: 'component', type: 'ComponentFactory | () => Promise', description: t('router.apiComponent') },
-  { name: 'export', type: 'string', description: t('router.apiExport') },
-  { name: 'guard', type: 'RouteGuard | RouteGuard[]', description: t('router.apiGuard') },
-  { name: 'children', type: 'RouteDefinition[]', description: t('router.apiChildren') },
-  { name: 'meta', type: 'Record<string, unknown>', description: t('router.apiMeta') },
-  { name: 'loading', type: '() => Node', description: t('router.apiLoading') },
-  { name: 'lazy', type: '{ delay?, timeout? }', description: t('router.apiLazy') },
-]; }
-
 export const RouterPage = createComponent({
   name: 'RouterPage',
   component() {
+    const { t } = use('i18n');
+
+    const getRouteApi = (): ApiRow[] => [
+      { name: 'path', type: 'string', description: t('router.apiPath') },
+      { name: 'component', type: 'ComponentFactory | () => Promise', description: t('router.apiComponent') },
+      { name: 'export', type: 'string', description: t('router.apiExport') },
+      { name: 'guard', type: 'RouteGuard | RouteGuard[]', description: t('router.apiGuard') },
+      { name: 'children', type: 'RouteDefinition[]', description: t('router.apiChildren') },
+      { name: 'meta', type: 'Record<string, unknown>', description: t('router.apiMeta') },
+      { name: 'loading', type: '() => Node', description: t('router.apiLoading') },
+      { name: 'lazy', type: '{ delay?, timeout? }', description: t('router.apiLazy') },
+    ];
+
     setToc([
       { id: 'setup',            label: () => t('router.setup'),            level: 2 },
       { id: 'nested',           label: () => t('router.nested'),           level: 2 },

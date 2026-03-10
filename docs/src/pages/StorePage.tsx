@@ -1,4 +1,4 @@
-import { createComponent } from 'liteforge';
+import { createComponent, use } from 'liteforge';
 import { defineStore } from 'liteforge/store';
 import { signal } from 'liteforge';
 import { DocSection } from '../components/DocSection.js';
@@ -8,7 +8,6 @@ import { ApiTable } from '../components/ApiTable.js';
 import { Button } from '../components/Button.js';
 import { Badge } from '../components/Badge.js';
 import type { ApiRow } from '../components/ApiTable.js';
-import { t } from '../i18n.js';
 import { setToc } from '../toc.js';
 
 // ─── Live example ─────────────────────────────────────────────────────────────
@@ -160,28 +159,28 @@ const TIME_TRAVEL_CODE = `import { devtoolsPlugin } from 'liteforge/devtools';
 const snap = myStore.$snapshot();   // { count: 5 }
 myStore.$restore(snap);             // rewind to that value`;
 
-// ─── API rows ─────────────────────────────────────────────────────────────────
-
-function getDefineStoreApi(): ApiRow[] { return [
-  { name: 'state', type: 'Record<string, unknown>', description: t('store.apiState') },
-  { name: 'getters', type: '(state) => Record<string, () => T>', description: t('store.apiGetters') },
-  { name: 'actions', type: '(state) => Record<string, Function>', description: t('store.apiActions') },
-  { name: 'plugins', type: 'StorePlugin[]', description: t('store.apiPlugins') },
-]; }
-
-function getStoreInstanceApi(): ApiRow[] { return [
-  { name: 'state[key]()', type: 'T', description: t('store.apiStateRead') },
-  { name: 'state[key].set(v)', type: 'void', description: t('store.apiStateSet') },
-  { name: 'state[key].update(fn)', type: 'void', description: t('store.apiStateUpdate') },
-  { name: 'getters[name]()', type: 'T', description: t('store.apiGetterRead') },
-  { name: 'actions[name](...)', type: 'void | Promise', description: t('store.apiActionCall') },
-  { name: '$snapshot()', type: 'object', description: t('store.apiSnapshot') },
-  { name: '$restore(snap)', type: 'void', description: t('store.apiRestore') },
-]; }
-
 export const StorePage = createComponent({
   name: 'StorePage',
   component() {
+    const { t } = use('i18n');
+
+    const getDefineStoreApi = (): ApiRow[] => [
+      { name: 'state', type: 'Record<string, unknown>', description: t('store.apiState') },
+      { name: 'getters', type: '(state) => Record<string, () => T>', description: t('store.apiGetters') },
+      { name: 'actions', type: '(state) => Record<string, Function>', description: t('store.apiActions') },
+      { name: 'plugins', type: 'StorePlugin[]', description: t('store.apiPlugins') },
+    ];
+
+    const getStoreInstanceApi = (): ApiRow[] => [
+      { name: 'state[key]()', type: 'T', description: t('store.apiStateRead') },
+      { name: 'state[key].set(v)', type: 'void', description: t('store.apiStateSet') },
+      { name: 'state[key].update(fn)', type: 'void', description: t('store.apiStateUpdate') },
+      { name: 'getters[name]()', type: 'T', description: t('store.apiGetterRead') },
+      { name: 'actions[name](...)', type: 'void | Promise', description: t('store.apiActionCall') },
+      { name: '$snapshot()', type: 'object', description: t('store.apiSnapshot') },
+      { name: '$restore(snap)', type: 'void', description: t('store.apiRestore') },
+    ];
+
     setToc([
       { id: 'define-store', label: () => t('store.defineStore'),  level: 2 },
       { id: 'instance',     label: () => t('store.instance'),     level: 2 },

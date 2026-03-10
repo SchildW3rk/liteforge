@@ -30,6 +30,8 @@ const contextStack: ContextValues[] = [];
  * @returns The value associated with the key
  * @throws Error if key is not found in any scope
  */
+export function use<K extends keyof import('./types.js').PluginRegistry>(key: K): import('./types.js').PluginRegistry[K];
+export function use<T = unknown>(key: string): T;
 export function use<T = unknown>(key: string): T {
   // Search from top of stack (innermost scope) to bottom (app scope)
   for (let i = contextStack.length - 1; i >= 0; i--) {

@@ -1,11 +1,10 @@
-import { createComponent, signal, effect } from 'liteforge';
+import { createComponent, signal, effect, use } from 'liteforge';
 import { createQuery } from 'liteforge/query';
 import { DocSection } from '../components/DocSection.js';
 import { CodeBlock } from '../components/CodeBlock.js';
 import { LiveExample } from '../components/LiveExample.js';
 import { ApiTable } from '../components/ApiTable.js';
 import type { ApiRow } from '../components/ApiTable.js';
-import { t } from '../i18n.js';
 import { setToc } from '../toc.js';
 
 // ─── Live example ─────────────────────────────────────────────────────────────
@@ -164,23 +163,23 @@ const post = createQuery({
 <Show when={() => post.isLoading()}>Loading…</Show>
 <p>{() => post.data()?.title}</p>`;
 
-// ─── API rows ─────────────────────────────────────────────────────────────────
-
-function getQueryApi(): ApiRow[] { return [
-  { name: 'key', type: 'string | unknown[] | () => unknown[]', description: t('query.apiKey') },
-  { name: 'fn', type: '() => Promise<T>', description: t('query.apiFn') },
-  { name: 'staleTime', type: 'number', default: '0', description: t('query.apiStaleTime') },
-  { name: 'enabled', type: 'boolean | () => boolean', default: 'true', description: t('query.apiEnabled') },
-]; }
-
-function getMutationApi(): ApiRow[] { return [
-  { name: 'fn', type: '(variables: TVariables) => Promise<TData>', description: t('query.apiMutationFn') },
-  { name: 'invalidate', type: 'string[]', default: '[]', description: t('query.apiInvalidate') },
-]; }
-
 export const QueryPage = createComponent({
   name: 'QueryPage',
   component() {
+    const { t } = use('i18n');
+
+    const getQueryApi = (): ApiRow[] => [
+      { name: 'key', type: 'string | unknown[] | () => unknown[]', description: t('query.apiKey') },
+      { name: 'fn', type: '() => Promise<T>', description: t('query.apiFn') },
+      { name: 'staleTime', type: 'number', default: '0', description: t('query.apiStaleTime') },
+      { name: 'enabled', type: 'boolean | () => boolean', default: 'true', description: t('query.apiEnabled') },
+    ];
+
+    const getMutationApi = (): ApiRow[] => [
+      { name: 'fn', type: '(variables: TVariables) => Promise<TData>', description: t('query.apiMutationFn') },
+      { name: 'invalidate', type: 'string[]', default: '[]', description: t('query.apiInvalidate') },
+    ];
+
     setToc([
       { id: 'problem',       label: () => t('query.problem'),        level: 2 },
       { id: 'create-query',  label: () => t('query.createQuery'),    level: 2 },
