@@ -252,6 +252,9 @@ const en = {
     apiLocale:  'Signal — current locale. Auto-subscribes callers inside effects / JSX.',
     apiSetLocale: 'Load translations for the new locale, update signal atomically via batch()',
     apiT:       'Translate a dot-notation key. Supports {param} interpolation and | pipe pluralization.',
+    defineTranslations:      'Type-safe locale definitions',
+    defineTranslationsDesc:  'Use defineTranslations() to validate your locale files without repeating the type import in every file. Missing or extra keys are caught at the call site.',
+    defineTranslationsTitle: 'defineTranslations() pattern',
   },
 
   // ─── Store page ──────────────────────────────────────────────────────

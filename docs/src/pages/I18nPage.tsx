@@ -220,6 +220,33 @@ const { t, locale, setLocale } = i18n;
 
 <button onclick={() => setLocale('de')}>🇩🇪 Deutsch</button>`;
 
+const DEFINE_TRANSLATIONS_CODE = `// locales/define.ts
+import type { AppTranslations } from './en.js'
+
+export function defineTranslations(t: AppTranslations): AppTranslations {
+  return t
+}
+
+// locales/en.ts
+export const en = {
+  greeting: 'Hello, {name}!',
+  nav: { home: 'Home', about: 'About' },
+}
+
+export type AppTranslations = typeof en
+export default en
+
+// locales/de.ts
+import { defineTranslations } from './define.js'
+
+export default defineTranslations({
+  greeting: 'Hallo, {name}!',
+  nav: { home: 'Startseite', about: 'Über uns' },
+})
+
+// Missing key → TypeScript error at the defineTranslations() call site.
+// No \`satisfies\`, no type import in every locale file.`;
+
 // ─── API rows ──────────────────────────────────────────────────────────────────
 
 function getOptionsApi(): ApiRow[] { return [
@@ -242,13 +269,14 @@ export const I18nPage = createComponent({
   name: 'I18nPage',
   component() {
     setToc([
-      { id: 'setup',                label: () => t('i18n.setup'),          level: 2 },
-      { id: 'usage',                label: () => t('i18n.usage'),          level: 2 },
-      { id: 'locale-files',         label: () => t('i18n.localeFiles'),    level: 2 },
-      { id: 'interpolation',        label: () => t('i18n.interpolation'),  level: 2 },
-      { id: 'pluralization-detail', label: () => t('i18n.pluralization'),  level: 2 },
-      { id: 'fallback-detail',      label: () => t('i18n.fallback'),       level: 2 },
-      { id: 'live',                 label: () => t('i18n.live'),           level: 2 },
+      { id: 'setup',                  label: () => t('i18n.setup'),               level: 2 },
+      { id: 'usage',                  label: () => t('i18n.usage'),               level: 2 },
+      { id: 'locale-files',           label: () => t('i18n.localeFiles'),         level: 2 },
+      { id: 'define-translations',    label: () => t('i18n.defineTranslations'),  level: 2 },
+      { id: 'interpolation',          label: () => t('i18n.interpolation'),       level: 2 },
+      { id: 'pluralization-detail',   label: () => t('i18n.pluralization'),       level: 2 },
+      { id: 'fallback-detail',        label: () => t('i18n.fallback'),            level: 2 },
+      { id: 'live',                   label: () => t('i18n.live'),                level: 2 },
     ]);
     return (
       <div>
@@ -286,6 +314,14 @@ export const I18nPage = createComponent({
           description={() => t('i18n.localeFilesDesc')}
         >
           <CodeBlock code={LOCALE_FILE_CODE} language="typescript" />
+        </DocSection>
+
+        <DocSection
+          title={() => t('i18n.defineTranslations')}
+          id="define-translations"
+          description={() => t('i18n.defineTranslationsDesc')}
+        >
+          <CodeBlock code={DEFINE_TRANSLATIONS_CODE} language="typescript" title={t('i18n.defineTranslationsTitle')} />
         </DocSection>
 
         <DocSection
