@@ -1,5 +1,11 @@
 # @liteforge/vite-plugin
 
+## 0.4.4
+
+### Patch Changes
+
+- fix: rewrite param refs in For() event handlers
+
 ## 0.4.3
 
 ### Patch Changes
