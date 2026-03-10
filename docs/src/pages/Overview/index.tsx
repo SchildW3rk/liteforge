@@ -85,6 +85,39 @@ export const Overview = createComponent({
           </div>
         </div>
 
+        {/* Live Demos */}
+        <div class="mb-10">
+          <h2 class="text-sm font-semibold text-[var(--content-secondary)] uppercase tracking-wider mb-1">{() => t('overview.liveDemos')}</h2>
+          <p class="text-sm text-[var(--content-muted)] mb-3">{() => t('overview.liveDemosDesc')}</p>
+          <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            {Link({
+              href: '/demo/calendar',
+              children: (
+                <div class="group flex flex-col gap-1.5 p-4 border border-[var(--line-default)] hover:border-indigo-500/50 bg-[var(--surface-raised)]/40 hover:bg-[var(--surface-raised)] transition-all" style="border-radius: var(--lf-radius)">
+                  <div class="flex items-center justify-between">
+                    <span class="text-sm font-semibold text-[var(--content-primary)] group-hover:text-indigo-400 transition-colors">{() => t('overview.demoCalendar')}</span>
+                    <span class="text-xs px-1.5 py-0.5 rounded bg-[var(--badge-indigo-bg)] text-[var(--badge-indigo-text)] border border-[var(--badge-indigo-border)]">internal</span>
+                  </div>
+                  <p class="text-xs text-[var(--content-muted)] leading-relaxed">{() => t('overview.demoCalendarDesc')}</p>
+                </div>
+              ),
+            })}
+            <a
+              href="https://stackblitz.com/~/github.com/CodingRuo/liteforge-dashboard-demo?startScript=dev"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="group flex flex-col gap-1.5 p-4 border border-[var(--line-default)] hover:border-emerald-500/50 bg-[var(--surface-raised)]/40 hover:bg-[var(--surface-raised)] transition-all"
+              style="border-radius: var(--lf-radius); text-decoration: none"
+            >
+              <div class="flex items-center justify-between">
+                <span class="text-sm font-semibold text-[var(--content-primary)] group-hover:text-emerald-400 transition-colors">{() => t('overview.demoDashboard')}</span>
+                <span class="text-xs px-1.5 py-0.5 rounded bg-[var(--badge-emerald-bg)] text-[var(--badge-emerald-text)] border border-[var(--badge-emerald-border)]">StackBlitz ↗</span>
+              </div>
+              <p class="text-xs text-[var(--content-muted)] leading-relaxed">{() => t('overview.demoDashboardDesc')}</p>
+            </a>
+          </div>
+        </div>
+
         {/* Install */}
         <div class="mb-10">
           <h2 class="text-sm font-semibold text-[var(--content-secondary)] uppercase tracking-wider mb-2">{() => t('overview.install')}</h2>
