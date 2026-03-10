@@ -1,5 +1,11 @@
 # @liteforge/runtime
 
+## 0.6.5
+
+### Patch Changes
+
+- fix: use setAttribute for all SVG element props — avoids silent failure on SVGAnimatedString properties like d, points, viewBox
+
 ## 0.6.4
 
 ### Patch Changes
