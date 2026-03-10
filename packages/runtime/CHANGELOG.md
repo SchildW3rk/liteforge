@@ -1,5 +1,11 @@
 # @liteforge/runtime
 
+## 0.6.6
+
+### Patch Changes
+
+- fix: restore context snapshot in For() children callbacks so use('router') works inside For() rendered components
+
 ## 0.6.5
 
 ### Patch Changes
