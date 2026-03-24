@@ -1,13 +1,13 @@
 // No imports — pure string constants
 
 export const SETUP_CODE = `// main.tsx
-import { toastPlugin } from 'liteforge/toast';
+import { toastPlugin } from '@liteforge/toast';
 
 await createApp({ root: App, target: '#app' })
   .use(toastPlugin({ position: 'bottom-right' }))
   .mount();`;
 
-export const BASIC_CODE = `import { toast } from 'liteforge/toast';
+export const BASIC_CODE = `import { toast } from '@liteforge/toast';
 
 toast.success('Saved!');
 toast.error('Something went wrong.');
@@ -17,7 +17,7 @@ toast.info('New version available.');
 // All accept an options object as the second argument
 toast.success('Saved!', { duration: 3000, closable: true });`;
 
-export const PROMISE_CODE = `import { toast } from 'liteforge/toast';
+export const PROMISE_CODE = `import { toast } from '@liteforge/toast';
 
 const p = fetch('/api/save', { method: 'POST', body: JSON.stringify(data) });
 

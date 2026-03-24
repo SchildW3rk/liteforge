@@ -1,5 +1,5 @@
 import { createComponent, signal, effect } from 'liteforge';
-import { toast } from 'liteforge/toast';
+import { toast } from '@liteforge/toast';
 
 export const ToastExample = createComponent({
   name: 'ToastExample',

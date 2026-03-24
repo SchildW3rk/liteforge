@@ -1,6 +1,6 @@
 import { createComponent, signal, effect, use } from 'liteforge';
-import { RouterOutlet, Link } from 'liteforge/router';
-import { tooltip } from 'liteforge/tooltip';
+import { RouterOutlet, Link } from '@liteforge/router';
+import { tooltip } from '@liteforge/tooltip';
 import { themeStore } from '../../stores/theme.js';
 import { TableOfContents } from '../../components/TableOfContents.js';
 import { tocEntries } from '../../toc.js';

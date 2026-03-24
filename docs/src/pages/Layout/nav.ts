@@ -1,4 +1,4 @@
-import type { ExtractKeys } from 'liteforge/i18n';
+import type { ExtractKeys } from '@liteforge/i18n';
 import type { DocsTranslations } from '../../locales/en.js';
 import type { IconNode } from './icons.js';
 import { IC } from './icons.js';

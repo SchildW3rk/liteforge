@@ -1,5 +1,5 @@
 import { signal } from 'liteforge';
-import { createTable } from 'liteforge/table';
+import { createTable } from '@liteforge/table';
 
 // ─── Sample data ───────────────────────────────────────────────────────────────
 

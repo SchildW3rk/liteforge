@@ -71,7 +71,7 @@ component() {
 
 export const TOOLTIP_CLEANUP_CODE = `// Real-world pattern: tooltip ref-callback + onCleanup
 import { onCleanup } from 'liteforge';
-import { tooltip } from 'liteforge/tooltip';
+import { tooltip } from '@liteforge/tooltip';
 
 component({ props }) {
   return (

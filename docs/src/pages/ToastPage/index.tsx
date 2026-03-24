@@ -32,7 +32,7 @@ export const ToastPage = createComponent({
             {() => t('toast.subtitle')}
           </p>
           <CodeBlock code="pnpm add @liteforge/toast" language="bash" />
-          <CodeBlock code="import { toast } from 'liteforge/toast';" language="typescript" />
+          <CodeBlock code="import { toast } from '@liteforge/toast';" language="typescript" />
         </div>
 
         <DocSection title={() => t('toast.setup')} id="setup" description={() => t('toast.setupDesc')}>

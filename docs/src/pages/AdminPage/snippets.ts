@@ -1,9 +1,9 @@
 // No imports — pure string constants
 
 export const INSTALL_CODE = `pnpm add @liteforge/admin`
-export const IMPORT_CODE  = `import { defineResource, registerResource, buildAdminRoutes, adminPlugin } from 'liteforge/admin';`
+export const IMPORT_CODE  = `import { defineResource, registerResource, buildAdminRoutes, adminPlugin } from '@liteforge/admin';`
 
-export const DEFINE_CODE = `import { defineResource, registerResource } from 'liteforge/admin';
+export const DEFINE_CODE = `import { defineResource, registerResource } from '@liteforge/admin';
 
 const posts = defineResource({
   name: 'posts',
@@ -39,9 +39,9 @@ const posts = defineResource({
 
 registerResource(posts);`
 
-export const ROUTER_CODE = `import { createRouter } from 'liteforge/router';
-import { buildAdminRoutes } from 'liteforge/admin';
-import { createClient } from 'liteforge/client';
+export const ROUTER_CODE = `import { createRouter } from '@liteforge/router';
+import { buildAdminRoutes } from '@liteforge/admin';
+import { createClient } from '@liteforge/client';
 
 const client = createClient({ baseUrl: 'https://api.example.com' });
 const resources = [...resourceRegistry.values()];

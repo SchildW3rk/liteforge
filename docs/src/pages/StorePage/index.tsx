@@ -29,7 +29,7 @@ export const StorePage = createComponent({
             {() => t('store.subtitle')}
           </p>
           <CodeBlock code={`pnpm add @liteforge/store`} language="bash" />
-          <CodeBlock code={`import { defineStore } from 'liteforge/store';`} language="typescript" />
+          <CodeBlock code={`import { defineStore } from '@liteforge/store';`} language="typescript" />
         </div>
 
         <DocSection

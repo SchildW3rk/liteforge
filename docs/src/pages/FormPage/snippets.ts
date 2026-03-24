@@ -1,6 +1,6 @@
 // No imports — pure string constants
 
-export const SETUP_CODE = `import { createForm } from 'liteforge/form';
+export const SETUP_CODE = `import { createForm } from '@liteforge/form';
 import { z } from 'zod';
 
 const form = createForm({

@@ -1,5 +1,5 @@
 import { createComponent, signal } from 'liteforge';
-import { defineStore } from 'liteforge/store';
+import { defineStore } from '@liteforge/store';
 import { Button } from '../../components/Button.js';
 import { Badge } from '../../components/Badge.js';
 

@@ -52,7 +52,7 @@ export const TooltipPage = createComponent({
             <code class="text-indigo-400 text-sm">showWhen</code>, {() => t('tooltip.subtitleSuffix')}
           </p>
           <CodeBlock code="pnpm add @liteforge/tooltip" language="bash" />
-          <CodeBlock code="import { tooltip } from 'liteforge/tooltip';" language="typescript" />
+          <CodeBlock code="import { tooltip } from '@liteforge/tooltip';" language="typescript" />
         </div>
 
         <DocSection title={() => t('tooltip.basic')} id="basic">

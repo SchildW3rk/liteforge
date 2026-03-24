@@ -1,8 +1,8 @@
 import { signal, effect } from 'liteforge';
-import { createCalendar, startOfWeek } from 'liteforge/calendar';
-import { tooltip } from 'liteforge/tooltip';
-import { toast } from 'liteforge/toast';
-import type { CalendarEvent, Resource } from 'liteforge/calendar';
+import { createCalendar, startOfWeek } from '@liteforge/calendar';
+import { tooltip } from '@liteforge/tooltip';
+import { toast } from '@liteforge/toast';
+import type { CalendarEvent, Resource } from '@liteforge/calendar';
 
 // ─── Resources ────────────────────────────────────────────────────────────────
 

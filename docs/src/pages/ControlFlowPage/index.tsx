@@ -1,5 +1,5 @@
 import { createComponent, use } from 'liteforge';
-import { createTable } from 'liteforge/table';
+import { createTable } from '@liteforge/table';
 import { DocSection } from '../../components/DocSection.js';
 import { CodeBlock } from '../../components/CodeBlock.js';
 import { LiveExample } from '../../components/LiveExample.js';

@@ -40,7 +40,7 @@ export const ClientPage = createComponent({
             {() => t('client.subtitle')}
           </p>
           <CodeBlock code={`pnpm add @liteforge/client`} language="bash" />
-          <CodeBlock code={`import { createClient, ApiError } from 'liteforge/client';`} language="typescript" />
+          <CodeBlock code={`import { createClient, ApiError } from '@liteforge/client';`} language="typescript" />
         </div>
 
         <DocSection

@@ -42,7 +42,7 @@ Show({
 })`;
 
 export const SHOW_REALISTIC_CODE = `import { Show } from 'liteforge';
-import { createQuery } from 'liteforge/query';
+import { createQuery } from '@liteforge/query';
 
 const patientQuery = createQuery({
   key: 'patients',
@@ -165,7 +165,7 @@ export const NESTED_CODE = `// Show inside For — conditional items in a list
 </Show>`;
 
 export const QUERY_SHOW_CODE = `import { Show } from 'liteforge';
-import { createQuery } from 'liteforge/query';
+import { createQuery } from '@liteforge/query';
 
 const appointments = createQuery({
   key: 'appointments',

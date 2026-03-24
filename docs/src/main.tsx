@@ -1,8 +1,8 @@
 import { createApp } from 'liteforge';
-import { createBrowserHistory, createRouter } from 'liteforge/router';
-import { modalPlugin } from 'liteforge/modal';
-import { toastPlugin } from 'liteforge/toast';
-import { i18nPlugin } from 'liteforge/i18n';
+import { createBrowserHistory, createRouter } from '@liteforge/router';
+import { modalPlugin } from '@liteforge/modal';
+import { toastPlugin } from '@liteforge/toast';
+import { i18nPlugin } from '@liteforge/i18n';
 import { routes } from './router';
 import { App } from './App';
 import { initTheme } from './stores/theme';

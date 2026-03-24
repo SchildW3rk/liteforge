@@ -1,8 +1,8 @@
 import { createComponent, use } from 'liteforge';
-import { Link } from 'liteforge/router';
+import { Link } from '@liteforge/router';
 import { clearToc } from '../../toc.js';
 import { CodeBlock } from '../../components/CodeBlock.js';
-import type { ExtractKeys } from 'liteforge/i18n';
+import type { ExtractKeys } from '@liteforge/i18n';
 import type { DocsTranslations } from '../../locales/en.js';
 import { QUICKSTART } from './snippets.js';
 

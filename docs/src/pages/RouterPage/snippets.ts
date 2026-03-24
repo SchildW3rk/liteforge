@@ -3,7 +3,7 @@
 // Prevent vite-plugin HMR transform from injecting __hmrId into demo strings
 const _cc = 'createComponent';
 
-export const SETUP_CODE = `import { createRouter, createBrowserHistory } from 'liteforge/router';
+export const SETUP_CODE = `import { createRouter, createBrowserHistory } from '@liteforge/router';
 import { createApp } from 'liteforge';
 import { App } from './App';
 
@@ -38,7 +38,7 @@ export const LAZY_CODE = `// Routes are lazy-loaded automatically — just use i
   lazy: { delay: 150, timeout: 8000 },
 }`;
 
-export const LINK_CODE = `import { Link, RouterOutlet } from 'liteforge/router';
+export const LINK_CODE = `import { Link, RouterOutlet } from '@liteforge/router';
 
 // Renders an <a> tag — activeClass applied when route matches
 <Link href="/patients" activeClass="font-bold text-indigo-400">
@@ -71,7 +71,7 @@ const MyComponent = ${_cc}({
   },
 });`;
 
-export const GUARD_CODE = `import { defineGuard } from 'liteforge/router';
+export const GUARD_CODE = `import { defineGuard } from '@liteforge/router';
 
 const authGuard = defineGuard('auth', async ({ to }) => {
   if (!isAuthenticated()) {
@@ -89,7 +89,7 @@ const authGuard = defineGuard('auth', async ({ to }) => {
   children: [ ... ],
 }`;
 
-export const MIDDLEWARE_CODE = `import { defineMiddleware } from 'liteforge/router';
+export const MIDDLEWARE_CODE = `import { defineMiddleware } from '@liteforge/router';
 
 const titleMiddleware = defineMiddleware('title', async (ctx, next) => {
   await next();
@@ -133,7 +133,7 @@ router.navigate('/search/:query', { query: 'hello world' })
 // → navigates to /search/hello%20world
 
 // Type utilities are exported for advanced use
-import type { FillParams, ExtractRoutePaths, TypedNavigationTarget, ExtractParamPaths } from 'liteforge/router';`;
+import type { FillParams, ExtractRoutePaths, TypedNavigationTarget, ExtractParamPaths } from '@liteforge/router';`;
 
 export const VIEW_TRANSITIONS_CODE = `// Option 1 — Native View Transitions API (CSS-driven, browser-native)
 const router = createRouter({
@@ -173,7 +173,7 @@ const router = createRouter({
   },
 })`;
 
-export const LAZY_WRAPPER_CODE = `import { lazy } from 'liteforge/router';
+export const LAZY_WRAPPER_CODE = `import { lazy } from '@liteforge/router';
 
 {
   path: '/reports',

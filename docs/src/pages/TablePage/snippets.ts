@@ -1,6 +1,6 @@
 // No imports — pure string constants
 
-export const SETUP_CODE = `import { createTable } from 'liteforge/table';
+export const SETUP_CODE = `import { createTable } from '@liteforge/table';
 import { signal } from 'liteforge';
 
 interface Patient {

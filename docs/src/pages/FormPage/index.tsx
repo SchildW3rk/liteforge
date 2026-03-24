@@ -40,7 +40,7 @@ export const FormPage = createComponent({
             {() => t('form.subtitle')}
           </p>
           <CodeBlock code={`pnpm add @liteforge/form zod`} language="bash" />
-          <CodeBlock code={`import { createForm } from 'liteforge/form';\nimport { z } from 'zod';`} language="typescript" />
+          <CodeBlock code={`import { createForm } from '@liteforge/form';\nimport { z } from 'zod';`} language="typescript" />
         </div>
 
         <DocSection

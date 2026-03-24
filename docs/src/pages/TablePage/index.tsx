@@ -42,7 +42,7 @@ export const TablePage = createComponent({
             {() => t('table.subtitle')}
           </p>
           <CodeBlock code={`pnpm add @liteforge/table`} language="bash" />
-          <CodeBlock code={`import { createTable } from 'liteforge/table';`} language="typescript" />
+          <CodeBlock code={`import { createTable } from '@liteforge/table';`} language="typescript" />
         </div>
 
         <DocSection

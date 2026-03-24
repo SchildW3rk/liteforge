@@ -47,7 +47,7 @@ export const RouterPage = createComponent({
             {() => t('router.subtitle')}
           </p>
           <CodeBlock code={`pnpm add @liteforge/router`} language="bash" />
-          <CodeBlock code={`import { createRouter, createBrowserHistory, Link, RouterOutlet } from 'liteforge/router';`} language="typescript" />
+          <CodeBlock code={`import { createRouter, createBrowserHistory, Link, RouterOutlet } from '@liteforge/router';`} language="typescript" />
         </div>
 
         <DocSection

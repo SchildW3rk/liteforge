@@ -6,11 +6,11 @@
  * - Slim top bar with back link and badge
  */
 import { createComponent, signal } from 'liteforge';
-import { Link } from 'liteforge/router';
-import { createCalendar, startOfWeek } from 'liteforge/calendar';
-import { tooltip } from 'liteforge/tooltip';
-import { toast } from 'liteforge/toast';
-import type { CalendarEvent, Resource } from 'liteforge/calendar';
+import { Link } from '@liteforge/router';
+import { createCalendar, startOfWeek } from '@liteforge/calendar';
+import { tooltip } from '@liteforge/tooltip';
+import { toast } from '@liteforge/toast';
+import type { CalendarEvent, Resource } from '@liteforge/calendar';
 
 // ─── Resources ────────────────────────────────────────────────────────────────
 

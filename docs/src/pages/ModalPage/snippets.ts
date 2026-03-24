@@ -1,13 +1,13 @@
 // No imports — pure string constants
 
 export const SETUP_CODE = `// main.tsx — mount ModalProvider once at app root
-import { ModalProvider } from 'liteforge/modal';
+import { ModalProvider } from '@liteforge/modal';
 
 document.body.appendChild(ModalProvider());
 
 await createApp({ root: App, target: '#app', router });`;
 
-export const BASIC_CODE = `import { createModal } from 'liteforge/modal';
+export const BASIC_CODE = `import { createModal } from '@liteforge/modal';
 
 const modal = createModal({
   config: {
@@ -51,7 +51,7 @@ modal.close();   // hide
 modal.toggle();  // toggle
 modal.destroy(); // remove from DOM`;
 
-export const PRESETS_CODE = `import { confirm, alert, prompt } from 'liteforge/modal';
+export const PRESETS_CODE = `import { confirm, alert, prompt } from '@liteforge/modal';
 
 // Confirm — resolves to boolean
 const ok = await confirm('Delete this record?');

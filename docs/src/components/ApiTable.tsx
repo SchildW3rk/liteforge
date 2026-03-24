@@ -1,5 +1,5 @@
 import { createComponent } from 'liteforge';
-import { createTable } from 'liteforge/table';
+import { createTable } from '@liteforge/table';
 
 export interface ApiRow {
   name: string;

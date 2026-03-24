@@ -1,5 +1,5 @@
 import { createComponent, use } from 'liteforge';
-import { Link } from 'liteforge/router';
+import { Link } from '@liteforge/router';
 import { DocSection } from '../../components/DocSection.js';
 import { CodeBlock } from '../../components/CodeBlock.js';
 import { ApiTable } from '../../components/ApiTable.js';

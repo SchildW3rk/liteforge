@@ -31,7 +31,7 @@ export const ModalPage = createComponent({
             <code class="text-indigo-400 text-sm">prompt()</code> {() => t('modal.subtitleSuffix')}
           </p>
           <CodeBlock code={`pnpm add @liteforge/modal`} language="bash" />
-          <CodeBlock code={`import { createModal, confirm, alert, prompt } from 'liteforge/modal';`} language="typescript" />
+          <CodeBlock code={`import { createModal, confirm, alert, prompt } from '@liteforge/modal';`} language="typescript" />
         </div>
 
         <DocSection

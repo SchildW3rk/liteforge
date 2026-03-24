@@ -1,5 +1,5 @@
 import { createComponent, signal, effect } from 'liteforge';
-import { createQuery } from 'liteforge/query';
+import { createQuery } from '@liteforge/query';
 
 export const QueryExample = createComponent({
   name: 'QueryExample',

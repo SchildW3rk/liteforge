@@ -1,6 +1,6 @@
 // No imports — pure string constants
 
-export const QUERY_CODE = `import { createQuery } from 'liteforge/query';
+export const QUERY_CODE = `import { createQuery } from '@liteforge/query';
 
 const patients = createQuery({
   key: 'patients',
@@ -27,7 +27,7 @@ const patients = createQuery({
 // Changing clinicId triggers automatic re-fetch
 clinicId.set(2);`;
 
-export const MUTATION_CODE = `import { createMutation } from 'liteforge/query';
+export const MUTATION_CODE = `import { createMutation } from '@liteforge/query';
 
 const createPatient = createMutation({
   fn: (data: NewPatient) =>

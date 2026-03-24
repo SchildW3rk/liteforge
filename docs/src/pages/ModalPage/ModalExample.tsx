@@ -1,5 +1,5 @@
 import { createComponent, signal } from 'liteforge';
-import { createModal, confirm, alert, prompt } from 'liteforge/modal';
+import { createModal, confirm, alert, prompt } from '@liteforge/modal';
 import { Button } from '../../components/Button.js';
 
 export const ModalExample = createComponent({

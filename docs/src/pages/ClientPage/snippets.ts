@@ -3,7 +3,7 @@
 // Prevent vite-plugin HMR transform from injecting __hmrId into demo strings
 const _cc = 'createComponent';
 
-export const SETUP_CODE = `import { createClient } from 'liteforge/client';
+export const SETUP_CODE = `import { createClient } from '@liteforge/client';
 
 const client = createClient({
   baseUrl: 'https://api.example.com',
@@ -34,8 +34,8 @@ await patients.action('discharge', { reason: 'recovered' }, 42);
 await patients.custom({ method: 'GET', path: 'count' });
 // → GET /patients/count`
 
-export const QUERY_CLIENT_CODE = `import { createClient } from 'liteforge/client';
-import { createQuery, createMutation } from 'liteforge/query';
+export const QUERY_CLIENT_CODE = `import { createClient } from '@liteforge/client';
+import { createQuery, createMutation } from '@liteforge/query';
 
 // createClient with query → returns QueryClient
 // resource() returns QueryResource — use* methods guaranteed, no ! needed
@@ -57,7 +57,7 @@ listQuery.data()       // Patient[] | undefined (via ListResponse)
 listQuery.isLoading()  // boolean
 createMut.mutate({ name: 'Anna', dob: '1990-01-15' });`
 
-export const ERROR_CODE = `import { ApiError } from 'liteforge/client';
+export const ERROR_CODE = `import { ApiError } from '@liteforge/client';
 
 try {
   const patient = await client.get<Patient>('/patients/99');

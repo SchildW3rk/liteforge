@@ -7,12 +7,12 @@ import { App } from './App.js';
 await createApp({ root: App, target: '#app' });`;
 
 export const FULL_CODE = `import { createApp } from 'liteforge';
-import { routerPlugin } from 'liteforge/router';
-import { queryPlugin } from 'liteforge/query';
-import { clientPlugin, queryIntegration } from 'liteforge/client';
-import { modalPlugin } from 'liteforge/modal';
-import { toastPlugin } from 'liteforge/toast';
-import { i18nPlugin } from 'liteforge/i18n';
+import { routerPlugin } from '@liteforge/router';
+import { queryPlugin } from '@liteforge/query';
+import { clientPlugin, queryIntegration } from '@liteforge/client';
+import { modalPlugin } from '@liteforge/modal';
+import { toastPlugin } from '@liteforge/toast';
+import { i18nPlugin } from '@liteforge/i18n';
 
 import { App } from './App.js';
 import { router } from './router.js';
@@ -35,7 +35,7 @@ const app = await createApp({
   .use(toastPlugin({ position: 'bottom-right' }))
   .use(i18nPlugin({ defaultLocale: 'en', load: loadLocale }))
   // useDev() — plugin is loaded only in dev, tree-shaken from prod build
-  .useDev(() => import('liteforge/devtools').then(m => m.devtoolsPlugin()))
+  .useDev(() => import('@liteforge/devtools').then(m => m.devtoolsPlugin()))
   .mount();
 
 export { app };`;
@@ -131,7 +131,7 @@ $lf.snapshot()    // full state snapshot of all stores
 $lf.unmount()     // unmount the app programmatically
 
 // Also enables @liteforge/devtools to connect:
-.useDev(() => import('liteforge/devtools').then(m => m.devtoolsPlugin({
+.useDev(() => import('@liteforge/devtools').then(m => m.devtoolsPlugin({
   shortcut: 'ctrl+shift+d',
   position: 'right',
   defaultTab: 'signals',

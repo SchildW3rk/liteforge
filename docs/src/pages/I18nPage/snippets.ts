@@ -1,7 +1,7 @@
 // No imports — pure string constants
 
 export const INSTALL_CODE = `pnpm add @liteforge/i18n`
-export const IMPORT_CODE  = `import { i18nPlugin } from 'liteforge/i18n';`
+export const IMPORT_CODE  = `import { i18nPlugin } from '@liteforge/i18n';`
 
 export const PLUGIN_CODE = `import en from './locales/en.js'
 

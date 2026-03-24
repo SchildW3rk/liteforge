@@ -36,7 +36,7 @@ export const QueryPage = createComponent({
             {() => t('query.subtitle')}
           </p>
           <CodeBlock code={`pnpm add @liteforge/query`} language="bash" />
-          <CodeBlock code={`import { createQuery, createMutation } from 'liteforge/query';`} language="typescript" />
+          <CodeBlock code={`import { createQuery, createMutation } from '@liteforge/query';`} language="typescript" />
         </div>
 
         <DocSection

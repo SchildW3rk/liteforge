@@ -1,5 +1,5 @@
 import { createComponent, signal } from 'liteforge';
-import { createI18n, defineLocale } from 'liteforge/i18n';
+import { createI18n, defineLocale } from '@liteforge/i18n';
 import { btnClass } from '../../components/Button.js';
 
 // ─── Translations ──────────────────────────────────────────────────────────────

@@ -5,7 +5,7 @@ import { createApp } from 'liteforge';
 
 await createApp({ root: App, target: '#app' })
   // useDev() is tree-shaken from production builds automatically
-  .useDev(() => import('liteforge/devtools').then(m => m.devtoolsPlugin({
+  .useDev(() => import('@liteforge/devtools').then(m => m.devtoolsPlugin({
     shortcut:   'ctrl+shift+d',   // toggle panel
     position:   'right',          // 'right' | 'bottom' | 'floating'
     defaultTab: 'signals',
@@ -15,7 +15,7 @@ await createApp({ root: App, target: '#app' })
   .mount();`
 
 export const INSTALL_CODE = `pnpm add -D @liteforge/devtools`
-export const IMPORT_CODE = `import { devtoolsPlugin } from 'liteforge/devtools';`
+export const IMPORT_CODE = `import { devtoolsPlugin } from '@liteforge/devtools';`
 
 export const TIME_TRAVEL_CODE = `// Stores tab → click any history entry to rewind
 
@@ -32,7 +32,7 @@ export const TIME_TRAVEL_CODE = `// Stores tab → click any history entry to re
 // Live effects and computed values re-run automatically.`
 
 export const STANDALONE_CODE = `// Attach DevTools without createApp — useful for plain scripts
-import { createDevTools } from 'liteforge/devtools';
+import { createDevTools } from '@liteforge/devtools';
 
 const dt = createDevTools({
   position: 'bottom',

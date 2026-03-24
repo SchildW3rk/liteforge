@@ -1,4 +1,4 @@
-import type { RouteDefinition } from 'liteforge/router';
+import type { RouteDefinition } from '@liteforge/router';
 import { Layout } from './pages/Layout/index.js';
 import { Overview } from './pages/Overview/index.js';
 

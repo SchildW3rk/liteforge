@@ -1,6 +1,6 @@
 // No imports — pure string constants
 
-export const BASIC_CODE = `import { tooltip } from 'liteforge/tooltip';
+export const BASIC_CODE = `import { tooltip } from '@liteforge/tooltip';
 
 // String shorthand
 tooltip(el, 'Save changes');
@@ -56,7 +56,7 @@ component({ props }) {
   );
 }`
 
-export const COMPONENT_CODE = `import { Tooltip } from 'liteforge/tooltip';
+export const COMPONENT_CODE = `import { Tooltip } from '@liteforge/tooltip';
 
 // Wraps children in display:contents span
 // Tooltip attaches to the first HTMLElement child

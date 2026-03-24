@@ -1,4 +1,4 @@
-import { defineLocale } from 'liteforge/i18n';
+import { defineLocale } from '@liteforge/i18n';
 
 const en = defineLocale({
   // ─── Layout / Nav ────────────────────────────────────────────────────

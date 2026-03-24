@@ -1,6 +1,6 @@
 // No imports — pure string constants
 
-export const SETUP_CODE = `import { defineStore } from 'liteforge/store';
+export const SETUP_CODE = `import { defineStore } from '@liteforge/store';
 
 const userStore = defineStore('users', {
   state: {
@@ -50,7 +50,7 @@ counter.increment();
 counter.decrement();
 counter.reset();`;
 
-export const PLUGINS_CODE = `import { defineStorePlugin, storeRegistry } from 'liteforge/store';
+export const PLUGINS_CODE = `import { defineStorePlugin, storeRegistry } from '@liteforge/store';
 
 // Logger plugin
 const loggerPlugin = defineStorePlugin({
@@ -72,7 +72,7 @@ const myStore = defineStore('example', {
 const allStores = storeRegistry.getAll();
 const store = storeRegistry.get('example');`;
 
-export const TIME_TRAVEL_CODE = `import { devtoolsPlugin } from 'liteforge/devtools';
+export const TIME_TRAVEL_CODE = `import { devtoolsPlugin } from '@liteforge/devtools';
 
 // Time-travel is built into devtools:
 // 1. Integrate devtoolsPlugin() in createApp()

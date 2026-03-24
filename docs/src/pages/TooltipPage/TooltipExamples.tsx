@@ -1,5 +1,5 @@
 import { signal, effect } from 'liteforge';
-import { tooltip } from 'liteforge/tooltip';
+import { tooltip } from '@liteforge/tooltip';
 
 export function BasicTooltipExample(): Node {
   const wrap = document.createElement('div');
