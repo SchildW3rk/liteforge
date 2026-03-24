@@ -1,13 +1,12 @@
 # liteforge
 
-**Signals-based frontend framework — No Virtual DOM, JSX, zero dependencies.**
+Signals-based frontend framework — No Virtual DOM, JSX, zero dependencies.
 
 ```bash
-pnpm add liteforge
+npm install liteforge @liteforge/vite-plugin
 ```
 
-> Single meta-package that re-exports all `@liteforge/*` packages via sub-path exports.
-> Use one import instead of managing 12 separate packages.
+> `liteforge` re-exports `@liteforge/core` and `@liteforge/runtime`. Use it as the single entry point for signals, effects, and component primitives. All other features are available as separate `@liteforge/*` packages.
 
 ---
 
@@ -24,39 +23,34 @@ pnpm add liteforge
 ## Quick Start
 
 ```bash
-pnpm add liteforge
-pnpm add -D vite typescript
+npm install liteforge @liteforge/vite-plugin
 ```
 
 **`vite.config.ts`**
 ```ts
-import { defineConfig } from 'vite';
-import liteforge from 'liteforge/vite-plugin';
+import { defineConfig } from 'vite'
+import { liteforge } from '@liteforge/vite-plugin'
 
 export default defineConfig({
-  plugins: [liteforge()],
-});
+  plugins: [liteforge()]
+})
 ```
 
 **`src/main.tsx`**
 ```tsx
-import { createApp } from 'liteforge';
-import { routerPlugin } from 'liteforge/router';
-import App from './App.js';
+import { createApp } from 'liteforge'
+import { App } from './App'
 
-await createApp({ root: App, target: '#app' })
-  .use(routerPlugin({ routes }))
-  .mount();
+createApp({ root: App, target: '#app' }).mount()
 ```
 
 **`src/App.tsx`**
 ```tsx
-import { createComponent, Show } from 'liteforge';
-import { signal } from 'liteforge';
+import { createComponent, signal, Show } from 'liteforge'
 
 export const App = createComponent({
   component() {
-    const count = signal(0);
+    const count = signal(0)
     return (
       <div>
         <h1>{() => count()}</h1>
@@ -65,82 +59,49 @@ export const App = createComponent({
           <p>Over 5!</p>
         </Show>
       </div>
-    );
-  },
-});
+    )
+  }
+})
 ```
-
----
-
-## Sub-path Imports
-
-| Import | Contents |
-|--------|----------|
-| `liteforge` | `@liteforge/core` + `@liteforge/runtime` — signals, effects, components, JSX |
-| `liteforge/router` | SPA router, guards, middleware, lazy routes, nested routes |
-| `liteforge/store` | Global state management with time-travel |
-| `liteforge/query` | Data fetching, caching, mutations |
-| `liteforge/client` | HTTP client with interceptors, middleware, query integration |
-| `liteforge/form` | Form management with Zod validation |
-| `liteforge/table` | Data tables — sort, filter, pagination, selection |
-| `liteforge/calendar` | Full scheduling calendar — 4 views, drag & drop, resources |
-| `liteforge/modal` | Signal-based modal system with focus trap |
-| `liteforge/devtools` | Debug panel — signal inspector, store explorer, time-travel |
-| `liteforge/vite-plugin` | Vite plugin for JSX transform & HMR |
-
----
-
-## Packages
-
-| Package | Version | Description |
-|---------|---------|-------------|
-| `@liteforge/core` | 0.1.0 | `signal`, `computed`, `effect`, `batch`, `onCleanup` |
-| `@liteforge/runtime` | 0.4.1 | `createComponent`, `createApp`, `Show`, `For`, `Switch`, plugin system |
-| `@liteforge/router` | 0.3.0 | Router with guards, middleware, nested routes, lazy loading |
-| `@liteforge/store` | 0.1.0 | `defineStore`, store registry, plugins, time-travel |
-| `@liteforge/query` | 0.1.0 | `createQuery`, `createMutation`, query cache |
-| `@liteforge/client` | 0.1.0 | `createClient`, `createResource`, interceptors |
-| `@liteforge/form` | 0.1.0 | `createForm` with Zod, nested & array fields |
-| `@liteforge/table` | 0.1.0 | `createTable` with sort, filter, pagination, selection |
-| `@liteforge/calendar` | 0.1.0 | `createCalendar` — Day/Week/Month/Agenda, drag & drop |
-| `@liteforge/modal` | 0.1.0 | `createModal`, `confirm`, `alert`, `prompt` presets |
-| `@liteforge/devtools` | 0.1.0 | 5-tab debug panel with signal & store inspection |
-| `@liteforge/vite-plugin` | 0.1.0 | JSX transform, template extraction, HMR |
 
 ---
 
 ## Reactivity
 
 ```ts
-import { signal, computed, effect, batch } from 'liteforge';
+import { signal, computed, effect, batch, onCleanup } from 'liteforge'
 
-const count  = signal(0);
-const double = computed(() => count() * 2);
+const count  = signal(0)
+const double = computed(() => count() * 2)
 
 effect(() => {
-  console.log(double()); // auto-tracks dependencies
-});
+  console.log(double()) // auto-tracks dependencies
+})
 
-count.set(5);             // → logs 10
-count.update(n => n + 1); // → logs 12
+count.set(5)              // → logs 10
+count.update(n => n + 1)  // → logs 12
 
 batch(() => {             // deferred notifications
-  count.set(1);
-});
+  count.set(1)
+})
+
+onCleanup(() => {         // runs when the enclosing effect/component is destroyed
+  console.log('cleaned up')
+})
 ```
 
 ## Components
 
 ```tsx
-import { createComponent, Show, For } from 'liteforge';
-import { signal } from 'liteforge';
+import { createComponent, Show, For } from 'liteforge'
 
 export const UserList = createComponent({
   async load() {
-    const users = await fetch('/api/users').then(r => r.json());
-    return { users };
+    const users = await fetch('/api/users').then(r => r.json())
+    return { users }
   },
   placeholder: () => <div class="skeleton" />,
+  error: ({ error, retry }) => <button onclick={retry}>Retry</button>,
   component({ data }) {
     return (
       <ul>
@@ -148,111 +109,58 @@ export const UserList = createComponent({
           {user => <li>{user.name}</li>}
         </For>
       </ul>
-    );
-  },
-});
+    )
+  }
+})
 ```
 
-## Router
+**Component lifecycle:** `setup()` → `placeholder` → `load()` → `component()` → `mounted()` → `destroyed()`
 
-```ts
-import { createRouter, createBrowserHistory, defineGuard } from 'liteforge/router';
+## Control Flow
 
-const auth = defineGuard(async ({ to }) => {
-  if (!isLoggedIn()) return '/login';
-});
+```tsx
+import { Show, For, Switch, Match } from 'liteforge'
 
-const router = createRouter({
-  history: createBrowserHistory(),
-  routes: [
-    { path: '/',       component: Home },
-    { path: '/login',  component: Login },
-    { path: '/dashboard', component: Dashboard, guard: auth,
-      children: [
-        { path: '/',      component: Overview },
-        { path: '/users', component: Users },
-      ],
-    },
-  ],
-});
-```
+// Conditional rendering
+<Show when={() => isLoggedIn()}>
+  <Dashboard />
+</Show>
 
-## Store
+// List rendering
+<For each={() => items()}>
+  {(item) => <li>{item.name}</li>}
+</For>
 
-```ts
-import { defineStore } from 'liteforge/store';
-
-const userStore = defineStore('users', {
-  state: { list: [], loading: false },
-  getters: state => ({
-    count: () => state.list().length,
-  }),
-  actions: state => ({
-    async fetch() {
-      state.loading.set(true);
-      state.list.set(await api.getUsers());
-      state.loading.set(false);
-    },
-  }),
-});
-```
-
-## Query
-
-```ts
-import { createQuery, createMutation } from 'liteforge/query';
-
-const users = createQuery({
-  key: 'users',
-  fn: () => fetch('/api/users').then(r => r.json()),
-  staleTime: 5 * 60 * 1000,
-});
-
-users.data()       // Signal: User[] | undefined
-users.isLoading()  // Signal: boolean
-
-const addUser = createMutation({
-  fn: data => api.createUser(data),
-  invalidate: ['users'],
-});
-```
-
-## Form
-
-```ts
-import { createForm } from 'liteforge/form';
-import { z } from 'zod';
-
-const form = createForm({
-  schema: z.object({
-    name:  z.string().min(2),
-    email: z.string().email(),
-  }),
-  initial: { name: '', email: '' },
-  onSubmit: async values => { await api.save(values); },
-  validateOn: 'blur',
-});
-
-form.field('name').value()  // Signal<string>
-form.field('name').error()  // Signal<string | undefined>
+// Switch / pattern matching
+<Switch fallback={<NotFound />}>
+  <Match when={() => route() === 'home'}><Home /></Match>
+  <Match when={() => route() === 'about'}><About /></Match>
+</Switch>
 ```
 
 ## Plugin System
 
-```ts
-import { createApp } from 'liteforge';
-import { routerPlugin } from 'liteforge/router';
-import { modalPlugin }  from 'liteforge/modal';
-import { queryPlugin }  from 'liteforge/query';
-import { devtoolsPlugin } from 'liteforge/devtools';
+Additional capabilities are added via plugins in `createApp`:
 
-await createApp({ root: App, target: '#app' })
-  .use(routerPlugin({ routes }))
+```ts
+import { createApp } from 'liteforge'
+import { routerPlugin } from '@liteforge/router'
+import { modalPlugin } from '@liteforge/modal'
+import { toastPlugin } from '@liteforge/toast'
+import { clientPlugin, queryIntegration } from '@liteforge/client'
+import { devtoolsPlugin } from '@liteforge/devtools'
+import { App } from './App'
+
+createApp({ root: App, target: '#app' })
+  .use(routerPlugin({ routes: [...] }))
   .use(modalPlugin())
-  .use(queryPlugin())
+  .use(toastPlugin({ position: 'bottom-right' }))
+  .use(clientPlugin({ baseUrl: '/api', query: queryIntegration() }))
   .use(devtoolsPlugin())
-  .mount();
+  .mount()
 ```
+
+Plugins registered via `.use()` are installed in order before the app mounts. Each plugin can provide values into the app context via `context.provide()` and returns an optional cleanup function.
 
 ---
 
@@ -261,10 +169,10 @@ await createApp({ root: App, target: '#app' })
 LiteForge JSX compiles to direct DOM operations — no diffing, no virtual tree.
 
 ```tsx
-// Reactive: wrap in () =>
+// Reactive text — wrap in () =>
 <span>{() => count()}</span>
 
-// Event handler: no wrapper needed
+// Event handler — no wrapper needed
 <button onclick={() => count.update(n => n + 1)}>Click</button>
 
 // Dynamic attribute
@@ -276,25 +184,48 @@ LiteForge JSX compiles to direct DOM operations — no diffing, no virtual tree.
 
 ---
 
-## Architecture
+## Install What You Need
 
-```
-core  ──────────────────────────────────────────────────┐
-  signal · computed · effect · batch · onCleanup        │
-                                                        │
-runtime ────────────────────────────────────────────────┤
-  createApp · createComponent · Show · For · Switch     │
-  Plugin System · HMR                                   │
-                                                        ├── liteforge (this package)
-store · router · query · client · form                  │
-  table · calendar · modal · devtools ──────────────────┤
-                                                        │
-vite-plugin ────────────────────────────────────────────┘
-  JSX transform · template extraction · HMR injection
+All packages are zero-dependency and published independently:
+
+| Package | Description |
+|---------|-------------|
+| `liteforge` | Umbrella: core + runtime |
+| `@liteforge/core` | `signal`, `computed`, `effect`, `batch`, `onCleanup` |
+| `@liteforge/runtime` | `createComponent`, `createApp`, `Show`, `For`, `Switch`, plugin system |
+| `@liteforge/vite-plugin` | JSX transform, signal-safe getter wrapping, HMR |
+| `@liteforge/router` | Client-side routing with guards, middleware, lazy loading |
+| `@liteforge/store` | Signal-based state management with devtools integration |
+| `@liteforge/query` | `createQuery`, `createMutation`, query cache |
+| `@liteforge/form` | Type-safe forms with Zod validation |
+| `@liteforge/table` | Data tables with sorting, filtering, pagination, selection |
+| `@liteforge/calendar` | Full scheduling calendar — 4 views, drag & drop, resources |
+| `@liteforge/modal` | Modal dialogs with `confirm`/`alert`/`prompt` presets |
+| `@liteforge/toast` | Toast notifications |
+| `@liteforge/tooltip` | Tooltip directive and component |
+| `@liteforge/client` | HTTP client with resources, interceptors, query integration |
+| `@liteforge/devtools` | 5-tab debug panel with time-travel |
+
+---
+
+## Types
+
+```ts
+import type {
+  Signal,
+  ReadonlySignal,
+  Computed,
+  ComponentFactory,
+  ComponentDefinition,
+  AppBuilder,
+  LiteForgePlugin,
+  PluginContext,
+  PluginRegistry
+} from 'liteforge'
 ```
 
 ---
 
 ## License
 
-MIT © [SchildW3rk](https://github.com/SchildW3rk)
+MIT
