@@ -163,8 +163,8 @@ describe('detectPackageManager', () => {
     expect(detectPackageManager()).toBe('bun');
   });
 
-  it('defaults to pnpm when env not set', () => {
+  it('defaults to npm when env not set', () => {
     delete process.env['npm_config_user_agent'];
-    expect(detectPackageManager()).toBe('pnpm');
+    expect(detectPackageManager()).toBe('npm');
   });
 });
