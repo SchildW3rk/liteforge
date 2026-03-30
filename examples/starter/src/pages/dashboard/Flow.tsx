@@ -16,7 +16,7 @@ import {
   FlowCanvas,
   applyNodeChanges,
   applyEdgeChanges,
-} from 'liteforge/flow';
+} from '@liteforge/flow';
 import type {
   FlowNode,
   FlowEdge,
@@ -24,7 +24,7 @@ import type {
   EdgeChange,
   Connection,
   NodeComponentFn,
-} from 'liteforge/flow';
+} from '@liteforge/flow';
 
 // =============================================================================
 // Types
