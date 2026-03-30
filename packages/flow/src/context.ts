@@ -26,6 +26,7 @@ export interface FlowContextValue {
   getNodes:            () => FlowNode[]
   getEdges:            () => FlowEdge[]
   transform:           Signal<Transform>
+  getRootRect:         () => DOMRect
   interactionState:    Signal<InteractionState>
   stateMgr:            InteractionStateManager
   handleRegistry:      HandleRegistry
@@ -38,6 +39,7 @@ export interface FlowContextValue {
   connectionLineType:  'bezier' | 'step' | 'straight'
   registerNodeSize:    (nodeId: string, width: number, height: number) => void
   getNodeSize:         (nodeId: string) => { width: number; height: number } | undefined
+  nodeSizeVersion:     Signal<number>
   interactionStateManager: InteractionStateManager
 }
 

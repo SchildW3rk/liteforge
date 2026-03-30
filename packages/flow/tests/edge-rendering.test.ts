@@ -52,6 +52,8 @@ function makeCtx(
     connectionLineType: 'bezier',
     registerNodeSize: vi.fn(),
     getNodeSize: () => undefined,
+    getRootRect: () => ({ left: 0, top: 0, right: 800, bottom: 600, width: 800, height: 600, x: 0, y: 0, toJSON: () => ({}) } as DOMRect),
+    nodeSizeVersion: signal(0),
     ...overrides,
   }
   return ctx

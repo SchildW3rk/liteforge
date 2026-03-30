@@ -28,13 +28,15 @@ export function createHandle(
   handleEl.dataset['handleId']   = handleId
   handleEl.dataset['handleType'] = type
 
-  // Measure position relative to node wrapper after layout has settled
+  // Measure position relative to node wrapper after layout has settled.
+  // getBoundingClientRect() is in screen-space, so divide by scale to get canvas-space.
   queueMicrotask(() => {
     const handleRect = handleEl.getBoundingClientRect()
     const nodeRect   = nodeWrapperEl.getBoundingClientRect()
+    const scale      = ctx.transform.peek().scale
     const offset: Point = {
-      x: handleRect.left - nodeRect.left + handleRect.width  / 2,
-      y: handleRect.top  - nodeRect.top  + handleRect.height / 2,
+      x: (handleRect.left - nodeRect.left + handleRect.width  / 2) / scale,
+      y: (handleRect.top  - nodeRect.top  + handleRect.height / 2) / scale,
     }
     ctx.handleRegistry.register(nodeId, handleId, offset, type)
   })
@@ -44,8 +46,9 @@ export function createHandle(
     e.stopPropagation() // prevent NodeWrapper from starting a drag
     e.preventDefault()
 
+    const rootRect = ctx.getRootRect()
     const canvasPos = screenToCanvas(
-      { x: e.clientX, y: e.clientY },
+      { x: e.clientX - rootRect.left, y: e.clientY - rootRect.top },
       ctx.transform.peek(),
     )
     ctx.stateMgr.toConnecting(nodeId, handleId, type, canvasPos)

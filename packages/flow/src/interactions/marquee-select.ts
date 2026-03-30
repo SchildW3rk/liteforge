@@ -17,8 +17,9 @@ export function setupMarqueeSelect(
   document.addEventListener('pointermove', (e: PointerEvent) => {
     const state = ctx.interactionState()
     if (state.type !== 'selecting') return
+    const rect = ctx.getRootRect()
     state.currentCanvasPoint.set(
-      screenToCanvas({ x: e.clientX, y: e.clientY }, getTransform()),
+      screenToCanvas({ x: e.clientX - rect.left, y: e.clientY - rect.top }, getTransform()),
     )
   })
 

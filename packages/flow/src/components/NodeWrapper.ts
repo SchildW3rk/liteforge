@@ -80,9 +80,10 @@ export function createNodeWrapper(
 
     // Transition interaction state to dragging
     // We need the canvas-space pointer position to anchor the drag
-    const transform = ctx.transform()
-    const canvasX = (e.clientX - transform.x) / transform.scale
-    const canvasY = (e.clientY - transform.y) / transform.scale
+    const transform = ctx.transform.peek()
+    const rootRect = ctx.getRootRect()
+    const canvasX = (e.clientX - rootRect.left - transform.x) / transform.scale
+    const canvasY = (e.clientY - rootRect.top  - transform.y) / transform.scale
     const startCanvasPoint = { x: canvasX, y: canvasY }
 
     ctx.stateMgr.toDragging(nodeId, e.pointerId, startCanvasPoint, currentNode.position)

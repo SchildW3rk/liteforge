@@ -15,7 +15,8 @@ export function setupConnect(
   document.addEventListener('pointermove', (e: PointerEvent) => {
     const state = ctx.interactionState()
     if (state.type !== 'connecting') return
-    state.currentPoint.set(screenToCanvas({ x: e.clientX, y: e.clientY }, getTransform()))
+    const rect = ctx.getRootRect()
+    state.currentPoint.set(screenToCanvas({ x: e.clientX - rect.left, y: e.clientY - rect.top }, getTransform()))
   })
 
   document.addEventListener('pointerup', (e: PointerEvent) => {

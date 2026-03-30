@@ -38,7 +38,8 @@ export function setupNodeDrag(
         return
       }
 
-      const canvasPoint = screenToCanvas({ x: e.clientX, y: e.clientY }, getTransform())
+      const rect = ctx.getRootRect()
+      const canvasPoint = screenToCanvas({ x: e.clientX - rect.left, y: e.clientY - rect.top }, getTransform())
       const delta: Point = {
         x: canvasPoint.x - startCanvasPoint.x,
         y: canvasPoint.y - startCanvasPoint.y,

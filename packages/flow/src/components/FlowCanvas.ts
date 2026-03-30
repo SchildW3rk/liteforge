@@ -38,6 +38,7 @@ export function FlowCanvas(props: FlowCanvasProps): Node {
 
   // ---- Node size registry ----
   const nodeSizeMap = new Map<string, { width: number; height: number }>()
+  const nodeSizeVersion = signal(0)
 
   // ---- Build FlowContext ----
   const ctx: FlowContextValue = {
@@ -61,8 +62,12 @@ export function FlowCanvas(props: FlowCanvasProps): Node {
     connectionLineType: props.flow.options.connectionLineType ?? 'bezier',
     registerNodeSize: (nodeId, width, height) => {
       nodeSizeMap.set(nodeId, { width, height })
+      nodeSizeVersion.update(v => v + 1)
     },
     getNodeSize: (nodeId) => nodeSizeMap.get(nodeId),
+    nodeSizeVersion,
+    // Lazy — root is assigned after ctx is built
+    getRootRect: () => root.getBoundingClientRect(),
   }
 
   // Push context so child components (when added later) can read it
@@ -244,8 +249,9 @@ export function FlowCanvas(props: FlowCanvasProps): Node {
     const target = e.target as Element
     if (target !== root && target !== transformLayer) return
 
+    const rootRect = root.getBoundingClientRect()
     const canvasPoint = screenToCanvas(
-      { x: e.clientX, y: e.clientY },
+      { x: e.clientX - rootRect.left, y: e.clientY - rootRect.top },
       transform.peek(),
     )
     ctx.interactionStateManager.toSelecting(canvasPoint, e.pointerId)

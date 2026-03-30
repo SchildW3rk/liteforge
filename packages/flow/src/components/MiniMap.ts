@@ -33,7 +33,8 @@ export function createMiniMap(
   rootEl.appendChild(el)
 
   const disposeEffect = effect(() => {
-    const nodes = ctx.getNodes()
+    const nodes = ctx.getNodes()   // subscribe to node array
+    ctx.nodeSizeVersion()          // subscribe to size changes
     const t = transform()
 
     if (nodes.length === 0) {
