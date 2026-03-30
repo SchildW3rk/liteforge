@@ -7,6 +7,8 @@ import type { FlowContextValue } from '../context.js'
 import { injectFlowStyles } from '../styles.js'
 import { createNodeWrapper } from './NodeWrapper.js'
 import type { NodeWrapperHandle } from './NodeWrapper.js'
+import { setupConnect } from '../interactions/connect.js'
+import { createGhostEdge } from './GhostEdge.js'
 
 const DEFAULT_MIN_ZOOM = 0.1
 const DEFAULT_MAX_ZOOM = 4
@@ -88,6 +90,10 @@ export function FlowCanvas(props: FlowCanvasProps): Node {
 
   // Pop context — the DOM is now built synchronously
   popFlowContext()
+
+  // ---- Connect interaction & GhostEdge ----
+  setupConnect(ctx, () => transform.peek())
+  createGhostEdge(ctx, edgesLayer)
 
   // ---- Effect: manage NodeWrapper instances ----
   const wrapperMap = new Map<string, NodeWrapperHandle>()
