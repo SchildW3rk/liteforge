@@ -27,9 +27,12 @@ function makeCtx(overrides: Partial<FlowContextValue> = {}): FlowContextValue {
     edges: () => [] as FlowEdge[],
     getNode: (id) => nodesArr.find(n => n.id === id),
     getEdge: () => undefined,
+    getNodes: () => nodesArr,
+    getEdges: () => [] as FlowEdge[],
     transform,
     interactionState: stateMgr.state,
     stateMgr,
+    interactionStateManager: stateMgr,
     handleRegistry,
     onNodesChange: vi.fn(),
     onEdgesChange: vi.fn(),
@@ -38,6 +41,8 @@ function makeCtx(overrides: Partial<FlowContextValue> = {}): FlowContextValue {
     nodeTypes: {},
     edgeTypes: undefined,
     connectionLineType: 'bezier',
+    registerNodeSize: vi.fn(),
+    getNodeSize: () => undefined,
     ...overrides,
   }
   return ctx

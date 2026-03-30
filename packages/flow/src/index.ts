@@ -22,6 +22,7 @@ export type { HandleHandle } from './components/Handle.js'
 // Geometry utilities
 export { screenToCanvas, canvasToScreen } from './geometry/coords.js'
 export { getBezierPath, getStepPath, getStraightPath } from './geometry/paths.js'
+export { rectsOverlap, rectFromPoints } from './geometry/aabb.js'
 
 // Pure change helpers
 export { applyNodeChanges, applyEdgeChanges } from './helpers/apply-changes.js'

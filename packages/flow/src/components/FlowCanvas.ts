@@ -10,6 +10,9 @@ import type { NodeWrapperHandle } from './NodeWrapper.js'
 import { setupConnect } from '../interactions/connect.js'
 import { createGhostEdge } from './GhostEdge.js'
 import { createEdgeLayer } from './EdgeLayer.js'
+import { setupMarqueeSelect } from '../interactions/marquee-select.js'
+import { createMarquee } from './Marquee.js'
+import { screenToCanvas } from '../geometry/coords.js'
 
 const DEFAULT_MIN_ZOOM = 0.1
 const DEFAULT_MAX_ZOOM = 4
@@ -30,15 +33,21 @@ export function FlowCanvas(props: FlowCanvasProps): Node {
   const stateMgr = createInteractionState()
   const handleRegistry = createHandleRegistry()
 
+  // ---- Node size registry ----
+  const nodeSizeMap = new Map<string, { width: number; height: number }>()
+
   // ---- Build FlowContext ----
   const ctx: FlowContextValue = {
     nodes: props.nodes,
     edges: props.edges,
     getNode: (id) => props.nodes().find(n => n.id === id),
     getEdge: (id) => props.edges().find(e => e.id === id),
+    getNodes: () => props.nodes(),
+    getEdges: () => props.edges(),
     transform,
     interactionState: stateMgr.state,
     stateMgr,
+    interactionStateManager: stateMgr,
     handleRegistry,
     onNodesChange: props.onNodesChange,
     onEdgesChange: props.onEdgesChange,
@@ -47,6 +56,10 @@ export function FlowCanvas(props: FlowCanvasProps): Node {
     nodeTypes: props.flow.options.nodeTypes,
     edgeTypes: props.flow.options.edgeTypes,
     connectionLineType: props.flow.options.connectionLineType ?? 'bezier',
+    registerNodeSize: (nodeId, width, height) => {
+      nodeSizeMap.set(nodeId, { width, height })
+    },
+    getNodeSize: (nodeId) => nodeSizeMap.get(nodeId),
   }
 
   // Push context so child components (when added later) can read it
@@ -97,6 +110,10 @@ export function FlowCanvas(props: FlowCanvasProps): Node {
   createEdgeLayer(ctx, edgesLayer)
   createGhostEdge(ctx, edgesLayer)
 
+  // ---- Marquee selection ----
+  createMarquee(ctx, transformLayer)
+  setupMarqueeSelect(ctx, () => transform.peek(), root)
+
   // ---- Effect: manage NodeWrapper instances ----
   const wrapperMap = new Map<string, NodeWrapperHandle>()
 
@@ -109,6 +126,7 @@ export function FlowCanvas(props: FlowCanvasProps): Node {
       if (!currentIds.has(id)) {
         handle.dispose()
         wrapperMap.delete(id)
+        nodeSizeMap.delete(id)
       }
     }
 
@@ -142,6 +160,28 @@ export function FlowCanvas(props: FlowCanvasProps): Node {
   }
   document.addEventListener('keydown', onKeyDown)
   document.addEventListener('keyup', onKeyUp)
+
+  // ---- Delete key handler ----
+  const handleKeyDown = (e: KeyboardEvent) => {
+    if (e.key !== 'Delete' && e.key !== 'Backspace') return
+    const tag = (e.target as Element).tagName.toLowerCase()
+    if (
+      tag === 'input' ||
+      tag === 'textarea' ||
+      (e.target as HTMLElement).isContentEditable
+    ) return
+
+    const nodesToRemove = ctx.getNodes().filter(n => n.selected)
+    const edgesToRemove = ctx.getEdges().filter(ed => ed.selected)
+
+    if (nodesToRemove.length > 0) {
+      ctx.onNodesChange?.(nodesToRemove.map(n => ({ type: 'remove' as const, id: n.id })))
+    }
+    if (edgesToRemove.length > 0) {
+      ctx.onEdgesChange?.(edgesToRemove.map(ed => ({ type: 'remove' as const, id: ed.id })))
+    }
+  }
+  document.addEventListener('keydown', handleKeyDown)
 
   // Zoom via wheel
   root.addEventListener('wheel', (e: WheelEvent) => {
@@ -189,6 +229,40 @@ export function FlowCanvas(props: FlowCanvasProps): Node {
   }
   transformLayer.addEventListener('pointerup', stopPan)
   transformLayer.addEventListener('pointercancel', stopPan)
+
+  // ---- Background pointerdown → start marquee selection ----
+  root.addEventListener('pointerdown', (e: PointerEvent) => {
+    if (e.button !== 0) return
+    if (spacePressed) return
+    const target = e.target as Element
+    if (target !== root && target !== transformLayer) return
+
+    const canvasPoint = screenToCanvas(
+      { x: e.clientX, y: e.clientY },
+      transform.peek(),
+    )
+    ctx.interactionStateManager.toSelecting(canvasPoint, e.pointerId)
+  })
+
+  // ---- Background click → deselect all ----
+  root.addEventListener('click', (e: MouseEvent) => {
+    const target = e.target as Element
+    if (target !== root && target !== transformLayer) return
+
+    const allNodes = ctx.getNodes()
+    const allEdges = ctx.getEdges()
+    const hasSelectedNodes = allNodes.some(n => n.selected)
+    const hasSelectedEdges = allEdges.some(ed => ed.selected)
+
+    if (hasSelectedNodes || hasSelectedEdges) {
+      if (hasSelectedNodes) {
+        ctx.onNodesChange?.(allNodes.map(n => ({ type: 'select' as const, id: n.id, selected: false })))
+      }
+      if (hasSelectedEdges) {
+        ctx.onEdgesChange?.(allEdges.map(ed => ({ type: 'select' as const, id: ed.id, selected: false })))
+      }
+    }
+  })
 
   return root
 }

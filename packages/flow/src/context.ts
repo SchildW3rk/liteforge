@@ -23,6 +23,8 @@ export interface FlowContextValue {
   edges:               () => FlowEdge[]
   getNode:             (id: string) => FlowNode | undefined
   getEdge:             (id: string) => FlowEdge | undefined
+  getNodes:            () => FlowNode[]
+  getEdges:            () => FlowEdge[]
   transform:           Signal<Transform>
   interactionState:    Signal<InteractionState>
   stateMgr:            InteractionStateManager
@@ -34,6 +36,9 @@ export interface FlowContextValue {
   nodeTypes:           Record<string, (node: FlowNode) => Node>
   edgeTypes:           Record<string, (edge: FlowEdge, src: Point, tgt: Point, sp: HandlePosition, tp: HandlePosition) => string> | undefined
   connectionLineType:  'bezier' | 'step' | 'straight'
+  registerNodeSize:    (nodeId: string, width: number, height: number) => void
+  getNodeSize:         (nodeId: string) => { width: number; height: number } | undefined
+  interactionStateManager: InteractionStateManager
 }
 
 // Extend PluginRegistry via declaration merging so `use()` is typed

@@ -90,14 +90,45 @@ export function createNodeWrapper(
 
   wrapperEl.addEventListener('pointerdown', onPointerDown)
 
+  // ---- Click select ----
+  const onClickNode = (e: MouseEvent) => {
+    e.stopPropagation()
+    if (e.shiftKey) {
+      // Toggle this node's selection
+      const currentNode = ctx.getNode(nodeId)
+      ctx.onNodesChange?.([{
+        type: 'select',
+        id: nodeId,
+        selected: !(currentNode?.selected ?? false),
+      }])
+    } else {
+      // Select only this node, deselect all others
+      const allNodes = ctx.getNodes()
+      const changes = allNodes.map(n => ({
+        type: 'select' as const,
+        id: n.id,
+        selected: n.id === nodeId,
+      }))
+      ctx.onNodesChange?.(changes)
+    }
+  }
+
+  wrapperEl.addEventListener('click', onClickNode)
+
   // ---- Append to layer ----
   nodesLayer.appendChild(wrapperEl)
+
+  // ---- Register node size (after layout) ----
+  queueMicrotask(() => {
+    ctx.registerNodeSize(nodeId, wrapperEl.offsetWidth, wrapperEl.offsetHeight)
+  })
 
   // ---- Dispose ----
   function dispose() {
     posEffect()   // calling the effect's dispose function
     selEffect()
     wrapperEl.removeEventListener('pointerdown', onPointerDown)
+    wrapperEl.removeEventListener('click', onClickNode)
     wrapperEl.remove()
   }
 

@@ -36,9 +36,12 @@ function makeCtx(
     edges: () => edgesSignal(),
     getNode: () => undefined,
     getEdge: (id) => edgesSignal().find(e => e.id === id),
+    getNodes: () => [] as FlowNode[],
+    getEdges: () => edgesSignal(),
     transform,
     interactionState: stateMgr.state,
     stateMgr,
+    interactionStateManager: stateMgr,
     handleRegistry,
     onNodesChange: vi.fn(),
     onEdgesChange: vi.fn(),
@@ -47,6 +50,8 @@ function makeCtx(
     nodeTypes: {},
     edgeTypes: undefined,
     connectionLineType: 'bezier',
+    registerNodeSize: vi.fn(),
+    getNodeSize: () => undefined,
     ...overrides,
   }
   return ctx
