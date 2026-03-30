@@ -39,13 +39,39 @@
 }
 
 .lf-handle {
+  position: absolute;
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: var(--lf-flow-handle-bg, #555);
-  border: 2px solid var(--lf-flow-handle-border, #888);
+  background: var(--lf-flow-handle-bg, #6366f1);
+  border: 2px solid var(--lf-flow-handle-border, #fff);
   cursor: crosshair;
   pointer-events: all;
+  z-index: 1;
+}
+
+.lf-handle--left {
+  left: -6px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.lf-handle--right {
+  right: -6px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.lf-handle--top {
+  top: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.lf-handle--bottom {
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
 }
 
 .lf-ghost-edge {
@@ -56,16 +82,18 @@
   pointer-events: none;
 }
 
-.lf-flow-edge {
-  stroke: var(--lf-flow-edge-color, #555);
+.lf-edge {
+  stroke: var(--lf-flow-edge-color, #6366f1);
   stroke-width: 2;
   fill: none;
   cursor: pointer;
   pointer-events: stroke;
+  opacity: 0.7;
 }
 
-.lf-flow-edge.selected {
-  stroke: var(--lf-flow-edge-selected, #6366f1);
+.lf-edge-selected {
+  stroke: var(--lf-flow-edge-selected, #f59e0b);
+  opacity: 1;
 }
 
 .lf-marquee {
@@ -89,19 +117,20 @@
 .lf-controls-btn {
   width: 28px;
   height: 28px;
-  background: var(--lf-flow-bg-controls, #fff);
-  border: 1px solid var(--lf-flow-border, #e2e8f0);
+  background: var(--lf-flow-bg-controls, #1e293b);
+  border: 1px solid var(--lf-flow-border, #334155);
   border-radius: 4px;
   cursor: pointer;
   font-size: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--lf-flow-text, #1a202c);
+  color: var(--lf-flow-text, #e2e8f0);
+  line-height: 1;
 }
 
 .lf-controls-btn:hover {
-  background: var(--lf-flow-bg-controls-hover, #f7fafc);
+  background: var(--lf-flow-bg-controls-hover, #334155);
 }
 
 /* MiniMap */
@@ -111,8 +140,8 @@
   right: 16px;
   width: 160px;
   height: 100px;
-  background: var(--lf-flow-bg-minimap, rgba(255,255,255,0.9));
-  border: 1px solid var(--lf-flow-border, #e2e8f0);
+  background: var(--lf-flow-bg-minimap, #1e293b);
+  border: 1px solid var(--lf-flow-border, #334155);
   border-radius: 6px;
   overflow: hidden;
   z-index: 5;
@@ -124,7 +153,8 @@
 }
 
 .lf-minimap-node {
-  fill: var(--lf-flow-minimap-node, #94a3b8);
+  fill: var(--lf-flow-minimap-node, #475569);
+  rx: 2;
 }
 
 .lf-minimap-node-selected {

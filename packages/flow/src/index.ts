@@ -12,6 +12,9 @@ export type {
 // Factory
 export { createFlow } from './flow.js'
 
+// Context (for use inside nodeType renderers)
+export { getFlowContext } from './context.js'
+
 // Canvas component
 export { FlowCanvas } from './components/FlowCanvas.js'
 

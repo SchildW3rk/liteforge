@@ -16,6 +16,8 @@ import {
   FlowCanvas,
   applyNodeChanges,
   applyEdgeChanges,
+  createHandle,
+  getFlowContext,
 } from '@liteforge/flow';
 import type {
   FlowNode,
@@ -43,9 +45,14 @@ function makeNodeEl(
   typeClass: string,
   typeLabel: string,
   node: FlowNode<NodeData>,
+  hasIn: boolean,
+  hasOut: boolean,
 ): HTMLElement {
+  const ctx = getFlowContext();
+
   const wrap = document.createElement('div');
   wrap.className = `flow-node flow-node--${typeClass}`;
+  wrap.style.position = 'relative';
 
   const badge = document.createElement('span');
   badge.className = 'flow-node-type';
@@ -64,13 +71,27 @@ function makeNodeEl(
     wrap.appendChild(desc);
   }
 
+  // Handles — added after wrap so they overlap the border
+  // We need the wrapperEl (the .lf-node-wrapper parent) for measurement.
+  // Since createHandle uses queueMicrotask, we can grab parentElement lazily.
+  const getWrapper = (): HTMLElement => wrap.parentElement as HTMLElement ?? wrap;
+
+  if (hasIn) {
+    const { el } = createHandle(node.id, 'in', 'target', 'left', ctx, getWrapper());
+    wrap.appendChild(el);
+  }
+  if (hasOut) {
+    const { el } = createHandle(node.id, 'out', 'source', 'right', ctx, getWrapper());
+    wrap.appendChild(el);
+  }
+
   return wrap;
 }
 
 const nodeTypes: Record<string, NodeComponentFn> = {
-  input:   (n) => makeNodeEl('input',   'INPUT',   n as FlowNode<NodeData>),
-  process: (n) => makeNodeEl('process', 'PROCESS', n as FlowNode<NodeData>),
-  output:  (n) => makeNodeEl('output',  'OUTPUT',  n as FlowNode<NodeData>),
+  input:   (n) => makeNodeEl('input',   'INPUT',   n as FlowNode<NodeData>, false, true),
+  process: (n) => makeNodeEl('process', 'PROCESS', n as FlowNode<NodeData>, true,  true),
+  output:  (n) => makeNodeEl('output',  'OUTPUT',  n as FlowNode<NodeData>, true,  false),
 };
 
 // =============================================================================

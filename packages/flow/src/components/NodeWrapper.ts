@@ -1,5 +1,6 @@
 import { effect } from '@liteforge/core'
 import type { FlowContextValue } from '../context.js'
+import { pushFlowContext, popFlowContext } from '../context.js'
 import type { Point } from '../types.js'
 import { setupNodeDrag } from '../interactions/drag-node.js'
 
@@ -36,7 +37,9 @@ export function createNodeWrapper(
   if (node) {
     const nodeTypeFn = ctx.nodeTypes[node.type]
     if (nodeTypeFn) {
+      pushFlowContext(ctx)
       const content = nodeTypeFn(node)
+      popFlowContext()
       wrapperEl.appendChild(content)
     }
   }
