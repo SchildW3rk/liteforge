@@ -1,6 +1,6 @@
 {
   "name": "create-liteforge",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Scaffold a new LiteForge project",
   "author": "SchildW3rk <contact@schildw3rk.dev>",
   "license": "MIT",
