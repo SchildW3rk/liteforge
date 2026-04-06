@@ -130,7 +130,6 @@ describe('createProject', () => {
 
     expect(main).toContain("from 'liteforge'");
     expect(main).toContain("from '@liteforge/router'");
-    expect(main).toContain("from '@liteforge/modal'");
   });
 });
 
