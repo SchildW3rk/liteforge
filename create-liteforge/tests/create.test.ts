@@ -61,6 +61,8 @@ describe('createProject', () => {
     ) as { dependencies: Record<string, string> };
 
     expect(pkg.dependencies['liteforge']).toBeDefined();
+    expect(pkg.dependencies['@liteforge/store']).toBeDefined();
+    expect(pkg.dependencies['@liteforge/router']).toBeDefined();
   });
 
   it('replaces {{name}} placeholder in index.html title', () => {
