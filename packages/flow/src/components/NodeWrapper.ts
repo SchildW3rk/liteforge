@@ -48,7 +48,7 @@ export function createNodeWrapper(
   const posEffect = effect(() => {
     const state = ctx.interactionState()
     const offset: Point =
-      state.type === 'dragging' && state.nodeId === nodeId
+      state.type === 'dragging' && state.draggedNodes.has(nodeId)
         ? state.localOffset()
         : { x: 0, y: 0 }
 
@@ -86,7 +86,16 @@ export function createNodeWrapper(
     const canvasY = (e.clientY - rootRect.top  - transform.y) / transform.scale
     const startCanvasPoint = { x: canvasX, y: canvasY }
 
-    ctx.stateMgr.toDragging(nodeId, e.pointerId, startCanvasPoint, currentNode.position)
+    // Collect all currently selected nodes for group drag.
+    // If the dragged node is not selected (or nothing else is selected), drag only it.
+    const selectedIds = ctx.getNodes()
+      .filter(n => n.selected)
+      .map(n => n.id)
+    const draggedNodes = selectedIds.includes(nodeId) && selectedIds.length > 1
+      ? new Set(selectedIds)
+      : new Set([nodeId])
+
+    ctx.stateMgr.toDragging(nodeId, e.pointerId, startCanvasPoint, currentNode.position, draggedNodes)
 
     // Start listening for move / up
     startDrag(nodeId, e.pointerId, startCanvasPoint, wrapperEl)

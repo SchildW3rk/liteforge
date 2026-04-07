@@ -45,8 +45,7 @@ export function setupNodeDrag(
         y: canvasPoint.y - startCanvasPoint.y,
       }
 
-      // Update the Signal that lives inside DraggingState — this triggers
-      // NodeWrapper's positioning effect for visual drag feedback.
+      // Update the shared Signal — all nodes in draggedNodes react to this.
       ;(state as DraggingState).localOffset.set(delta)
     }
 
@@ -73,17 +72,19 @@ export function setupNodeDrag(
 
       const dragging = state as DraggingState
       const offset = dragging.localOffset()
-      const node = ctx.getNode(nodeId)
 
-      if (node && ctx.onNodesChange) {
-        ctx.onNodesChange([{
-          type: 'position',
-          id: nodeId,
-          position: {
-            x: node.position.x + offset.x,
-            y: node.position.y + offset.y,
-          },
-        }])
+      if (ctx.onNodesChange) {
+        // Commit final positions for every node in the drag group
+        const changes = Array.from(dragging.draggedNodes).flatMap(id => {
+          const n = ctx.getNode(id)
+          if (!n) return []
+          return [{
+            type: 'position' as const,
+            id,
+            position: { x: n.position.x + offset.x, y: n.position.y + offset.y },
+          }]
+        })
+        if (changes.length > 0) ctx.onNodesChange(changes)
       }
 
       ctx.stateMgr.toIdle()

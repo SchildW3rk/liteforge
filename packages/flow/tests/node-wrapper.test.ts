@@ -184,4 +184,75 @@ describe('createNodeWrapper', () => {
     dispose()
     expect(container.contains(el)).toBe(false)
   })
+
+  // ---- Multi-node (group) drag ----
+
+  it('applies shared offset when this node is in a multi-node drag group', () => {
+    const nodesArr = [makeNode('n1', 100, 200, true), makeNode('n2', 300, 400, true)]
+    const ctx = makeCtx(nodesArr[0]!, {
+      nodes: () => nodesArr,
+      getNode: (id) => nodesArr.find(n => n.id === id),
+      getNodes: () => nodesArr,
+    })
+    const { el, dispose } = createNodeWrapper('n1', ctx, container)
+
+    // Group drag: both n1 and n2 are selected, drag initiated on n2
+    const draggedNodes = new Set(['n1', 'n2'])
+    ctx.stateMgr.toDragging('n2', 1, { x: 300, y: 400 }, { x: 300, y: 400 }, draggedNodes)
+    const state = ctx.interactionState()
+    if (state.type === 'dragging') {
+      state.localOffset.set({ x: 50, y: 25 })
+    }
+
+    // n1 is in the group → must move
+    expect(el.style.left).toBe('150px')
+    expect(el.style.top).toBe('225px')
+    dispose()
+  })
+
+  it('does NOT apply offset to a non-selected node during group drag', () => {
+    const nodesArr = [makeNode('n1', 100, 200, false), makeNode('n2', 300, 400, true)]
+    const ctx = makeCtx(nodesArr[0]!, {
+      nodes: () => nodesArr,
+      getNode: (id) => nodesArr.find(n => n.id === id),
+      getNodes: () => nodesArr,
+    })
+    const { el, dispose } = createNodeWrapper('n1', ctx, container)
+
+    // n1 is NOT selected — only n2 is being dragged
+    const draggedNodes = new Set(['n2'])
+    ctx.stateMgr.toDragging('n2', 1, { x: 300, y: 400 }, { x: 300, y: 400 }, draggedNodes)
+    const state = ctx.interactionState()
+    if (state.type === 'dragging') {
+      state.localOffset.set({ x: 99, y: 99 })
+    }
+
+    // n1 must stay at its base position
+    expect(el.style.left).toBe('100px')
+    expect(el.style.top).toBe('200px')
+    dispose()
+  })
+
+  it('group drag offset resets to zero after toIdle', () => {
+    const nodesArr = [makeNode('n1', 100, 200, true), makeNode('n2', 300, 400, true)]
+    const ctx = makeCtx(nodesArr[0]!, {
+      nodes: () => nodesArr,
+      getNode: (id) => nodesArr.find(n => n.id === id),
+      getNodes: () => nodesArr,
+    })
+    const { el, dispose } = createNodeWrapper('n1', ctx, container)
+
+    const draggedNodes = new Set(['n1', 'n2'])
+    ctx.stateMgr.toDragging('n1', 1, { x: 100, y: 200 }, { x: 100, y: 200 }, draggedNodes)
+    const state = ctx.interactionState()
+    if (state.type === 'dragging') {
+      state.localOffset.set({ x: 40, y: 60 })
+    }
+    expect(el.style.left).toBe('140px')
+
+    ctx.stateMgr.toIdle()
+    expect(el.style.left).toBe('100px')
+    expect(el.style.top).toBe('200px')
+    dispose()
+  })
 })

@@ -81,6 +81,8 @@ export interface IdleState      { type: 'idle' }
 export interface DraggingState  {
   type: 'dragging'
   nodeId: string
+  /** All node IDs moving together (always includes nodeId). Size > 1 = group drag. */
+  draggedNodes: ReadonlySet<string>
   pointerId: number
   startCanvasPoint: Point
   startPosition: Point

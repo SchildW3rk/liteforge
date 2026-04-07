@@ -42,7 +42,6 @@ export function createEdgeLayer(
           // Subscribe to drag state so edges track live node movement
           const istate = ctx.interactionState()
           const dragOffset = istate.type === 'dragging' ? istate.localOffset() : null
-          const draggedId  = istate.type === 'dragging' ? istate.nodeId : null
 
           // Read current edge without subscribing to ctx.edges() again
           const currentEdge = ctx.edges().find(e => e.id === edge.id)
@@ -60,12 +59,13 @@ export function createEdgeLayer(
             nodes,
           )
 
-          // Fold in live drag offset for edges connected to the dragged node
+          // Fold in live drag offset for edges connected to any dragged node
           if (dragOffset) {
-            if (src && currentEdge.source === draggedId) {
+            const draggedNodes = istate.type === 'dragging' ? istate.draggedNodes : null
+            if (src && draggedNodes?.has(currentEdge.source)) {
               src = { x: src.x + dragOffset.x, y: src.y + dragOffset.y }
             }
-            if (tgt && currentEdge.target === draggedId) {
+            if (tgt && draggedNodes?.has(currentEdge.target)) {
               tgt = { x: tgt.x + dragOffset.x, y: tgt.y + dragOffset.y }
             }
           }

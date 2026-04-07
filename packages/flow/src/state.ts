@@ -10,7 +10,7 @@ import type {
 export interface InteractionStateManager {
   readonly state: Signal<InteractionState>
   toIdle(): void
-  toDragging(nodeId: string, pointerId: number, startCanvasPoint: Point, startPosition: Point): void
+  toDragging(nodeId: string, pointerId: number, startCanvasPoint: Point, startPosition: Point, draggedNodes?: ReadonlySet<string>): void
   toConnecting(sourceNodeId: string, sourceHandleId: string, sourceHandleType: HandleType, sourcePoint: Point): void
   toSelecting(startCanvasPoint: Point, pointerId: number): void
 }
@@ -27,10 +27,11 @@ export function createInteractionState(): InteractionStateManager {
       state.set(IDLE)
     },
 
-    toDragging(nodeId, pointerId, startCanvasPoint, startPosition) {
+    toDragging(nodeId, pointerId, startCanvasPoint, startPosition, draggedNodes) {
       state.set({
         type: 'dragging',
         nodeId,
+        draggedNodes: draggedNodes ?? new Set([nodeId]),
         pointerId,
         startCanvasPoint,
         startPosition,

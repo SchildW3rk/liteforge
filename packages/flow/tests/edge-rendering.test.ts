@@ -325,6 +325,49 @@ describe('createEdgeLayer', () => {
     dispose()
   })
 
+  it('edge between two group-dragged nodes: both endpoints move together', async () => {
+    // n1 and n2 are both selected and dragged together
+    const nodes: FlowNode[] = [
+      { id: 'n1', type: 'default', position: { x: 0,   y: 0 }, data: null },
+      { id: 'n2', type: 'default', position: { x: 200, y: 0 }, data: null },
+    ]
+    const edges = signal<FlowEdge[]>([
+      { id: 'e1', source: 'n1', sourceHandle: 'out', target: 'n2', targetHandle: 'in' },
+    ])
+    const stateMgr = createInteractionState()
+    const ctx = makeCtx(edges, {
+      nodes: () => nodes,
+      interactionState: stateMgr.state,
+      stateMgr,
+      interactionStateManager: stateMgr,
+    })
+    registerHandle(ctx, 'n1', 'out', { x: 0, y: 0 })
+    registerHandle(ctx, 'n2', 'in',  { x: 0, y: 0 })
+
+    const { dispose } = createEdgeLayer(ctx, svg)
+    await tick()
+
+    const path = svg.querySelector('path.lf-edge') as SVGPathElement
+    const dBefore = path.getAttribute('d')
+
+    // Group drag both n1 + n2
+    stateMgr.toDragging('n1', 1, { x: 0, y: 0 }, { x: 0, y: 0 }, new Set(['n1', 'n2']))
+    const state = stateMgr.state()
+    if (state.type === 'dragging') {
+      state.localOffset.set({ x: 50, y: 30 })
+    }
+
+    const dDuring = path.getAttribute('d')
+    // Path must change (both endpoints move)
+    expect(dDuring).not.toBe(dBefore)
+    // Source: n1(0,0) + offset(50,30) = (50,30) — path starts there
+    expect(dDuring).toMatch(/^M 50 30/)
+    // Target: n2(200,0) + offset(50,30) = (250,30) — path ends there
+    expect(dDuring).toMatch(/250 30$/)
+
+    dispose()
+  })
+
   it('only the source endpoint moves when source node is dragged', async () => {
     const nodes: FlowNode[] = [
       { id: 'n1', type: 'default', position: { x: 0,   y: 0 }, data: null },
