@@ -1123,8 +1123,8 @@ input, select {
   font-size: 0.7rem;
   font-weight: 600;
   padding: 2px 8px;
-  background: #ede9fe;
-  color: #7c3aed;
+  background: var(--color-primary-subtle, rgba(99, 102, 241, 0.12));
+  color: var(--color-primary, #6366f1);
   border-radius: 999px;
   font-family: var(--font-mono, monospace);
 }
@@ -1158,11 +1158,11 @@ input, select {
 
 .flow-btn-secondary {
   background: transparent;
-  color: var(--color-text, #1e293b);
+  color: var(--color-text);
 }
 
 .flow-btn-secondary:hover {
-  background: var(--color-bg-hover, #f1f5f9);
+  background: var(--color-bg-tertiary);
 }
 
 .flow-canvas-wrapper {
@@ -1197,18 +1197,18 @@ input, select {
   padding: 10px 14px;
   border-radius: 8px;
   border: 2px solid transparent;
-  background: #fff;
+  background: var(--color-bg-secondary);
   box-shadow: 0 1px 4px rgba(0,0,0,0.12);
   font-size: 0.8rem;
   user-select: none;
 }
 
-.flow-node--input   { border-color: #3b82f6; background: #eff6ff; }
-.flow-node--process { border-color: #8b5cf6; background: #f5f3ff; }
-.flow-node--output  { border-color: #10b981; background: #ecfdf5; }
+.flow-node--input   { border-color: #3b82f6; background: var(--flow-node-bg-input,   rgba(59, 130, 246, 0.08)); }
+.flow-node--process { border-color: #8b5cf6; background: var(--flow-node-bg-process, rgba(139, 92, 246, 0.08)); }
+.flow-node--output  { border-color: #10b981; background: var(--flow-node-bg-output,  rgba(16, 185, 129, 0.08)); }
 
 .lf-node-selected .flow-node {
-  outline: 2px solid #f59e0b;
+  outline: 2px solid var(--color-warning, #f59e0b);
   outline-offset: 2px;
 }
 
@@ -1223,11 +1223,11 @@ input, select {
 
 .flow-node-label {
   font-weight: 600;
-  color: #1e293b;
+  color: var(--color-text);
 }
 
 .flow-node-desc {
   font-size: 0.72rem;
-  color: #64748b;
+  color: var(--color-text-secondary);
   margin-top: 2px;
 }
