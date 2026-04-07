@@ -29,6 +29,8 @@ export { rectsOverlap, rectFromPoints } from './geometry/aabb.js'
 
 // Pure change helpers
 export { applyNodeChanges, applyEdgeChanges } from './helpers/apply-changes.js'
+export { createFlowHistory } from './helpers/flow-history.js'
+export type { FlowHistorySnapshot, FlowHistoryOptions, FlowHistoryResult } from './helpers/flow-history.js'
 
 // Edge layer
 export { createEdgeLayer } from './components/EdgeLayer.js'
