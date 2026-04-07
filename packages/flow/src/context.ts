@@ -41,6 +41,7 @@ export interface FlowContextValue {
   getNodeSize:         (nodeId: string) => { width: number; height: number } | undefined
   nodeSizeVersion:     Signal<number>
   interactionStateManager: InteractionStateManager
+  snapToGrid:          [number, number] | undefined
 }
 
 // Extend PluginRegistry via declaration merging so `use()` is typed

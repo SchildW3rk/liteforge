@@ -2,6 +2,19 @@ import type { FlowContextValue } from '../context.js'
 import type { Point, Transform, DraggingState } from '../types.js'
 import { screenToCanvas } from '../geometry/coords.js'
 
+/** Round a value to the nearest multiple of step. */
+function snap(value: number, step: number): number {
+  return Math.round(value / step) * step
+}
+
+/** Quantize a delta so that base + delta snaps to the grid. */
+function snapDelta(base: Point, delta: Point, grid: [number, number]): Point {
+  return {
+    x: snap(base.x + delta.x, grid[0]) - base.x,
+    y: snap(base.y + delta.y, grid[1]) - base.y,
+  }
+}
+
 /**
  * Sets up pointer-event driven node drag behaviour.
  *
@@ -40,9 +53,17 @@ export function setupNodeDrag(
 
       const rect = ctx.getRootRect()
       const canvasPoint = screenToCanvas({ x: e.clientX - rect.left, y: e.clientY - rect.top }, getTransform())
-      const delta: Point = {
+      let delta: Point = {
         x: canvasPoint.x - startCanvasPoint.x,
         y: canvasPoint.y - startCanvasPoint.y,
+      }
+
+      // Quantize visual offset so the node snaps to grid during drag.
+      // We snap relative to startPosition (the first node in the group)
+      // so all group members snap consistently.
+      if (ctx.snapToGrid) {
+        const startNode = ctx.getNode(nodeId)
+        if (startNode) delta = snapDelta(startNode.position, delta, ctx.snapToGrid)
       }
 
       // Update the shared Signal — all nodes in draggedNodes react to this.
@@ -74,15 +95,17 @@ export function setupNodeDrag(
       const offset = dragging.localOffset()
 
       if (ctx.onNodesChange) {
-        // Commit final positions for every node in the drag group
+        // Commit final positions for every node in the drag group.
+        // Snap each node's final position to the grid independently so all
+        // nodes land on grid intersections regardless of their start position.
         const changes = Array.from(dragging.draggedNodes).flatMap(id => {
           const n = ctx.getNode(id)
           if (!n) return []
-          return [{
-            type: 'position' as const,
-            id,
-            position: { x: n.position.x + offset.x, y: n.position.y + offset.y },
-          }]
+          const raw = { x: n.position.x + offset.x, y: n.position.y + offset.y }
+          const position = ctx.snapToGrid
+            ? { x: snap(raw.x, ctx.snapToGrid[0]), y: snap(raw.y, ctx.snapToGrid[1]) }
+            : raw
+          return [{ type: 'position' as const, id, position }]
         })
         if (changes.length > 0) ctx.onNodesChange(changes)
       }

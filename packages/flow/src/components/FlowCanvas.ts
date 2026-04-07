@@ -66,6 +66,7 @@ export function FlowCanvas(props: FlowCanvasProps): Node {
     },
     getNodeSize: (nodeId) => nodeSizeMap.get(nodeId),
     nodeSizeVersion,
+    snapToGrid: props.snapToGrid,
     // Lazy — root is assigned after ctx is built
     getRootRect: () => root.getBoundingClientRect(),
   }

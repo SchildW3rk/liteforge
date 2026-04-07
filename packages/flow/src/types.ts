@@ -74,6 +74,12 @@ export interface FlowCanvasProps {
   minZoom?:         number
   maxZoom?:         number
   defaultViewport?: Transform
+  /**
+   * Snap node positions to a grid during drag.
+   * Tuple [x, y] — cell size in canvas units.
+   * @example snapToGrid={[20, 20]}
+   */
+  snapToGrid?:      [number, number]
 }
 
 // Interaction State Machine
