@@ -37,6 +37,11 @@ export function createMiniMap(
     ctx.nodeSizeVersion()          // subscribe to size changes
     const t = transform()
 
+    // Subscribe to drag state so MiniMap stays live during node drags.
+    // localOffset lives inside DraggingState and is updated on every pointermove.
+    const istate = ctx.interactionState()
+    const dragOffset = istate.type === 'dragging' ? istate.localOffset() : null
+
     if (nodes.length === 0) {
       svg.setAttribute('viewBox', `0 0 ${MINI_W} ${MINI_H}`)
 
@@ -57,16 +62,19 @@ export function createMiniMap(
       return
     }
 
-    // Compute bounding box of all nodes
+    // Compute bounding box of all nodes, folding in live drag offset
     let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity
+    const draggedId = istate.type === 'dragging' ? istate.nodeId : null
     for (const node of nodes) {
       const size = ctx.getNodeSize(node.id) ?? { width: 80, height: 40 }
-      if (node.position.x < minX) minX = node.position.x
-      if (node.position.y < minY) minY = node.position.y
-      const nx = node.position.x + size.width
-      const ny = node.position.y + size.height
-      if (nx > maxX) maxX = nx
-      if (ny > maxY) maxY = ny
+      const ox = (dragOffset && node.id === draggedId) ? dragOffset.x : 0
+      const oy = (dragOffset && node.id === draggedId) ? dragOffset.y : 0
+      const px = node.position.x + ox
+      const py = node.position.y + oy
+      if (px < minX) minX = px
+      if (py < minY) minY = py
+      if (px + size.width  > maxX) maxX = px + size.width
+      if (py + size.height > maxY) maxY = py + size.height
     }
 
     const contentW = maxX - minX + PADDING * 2
@@ -94,8 +102,10 @@ export function createMiniMap(
         svg.insertBefore(rect, viewportRect)
       }
       const size = ctx.getNodeSize(node.id) ?? { width: 80, height: 40 }
-      rect.setAttribute('x', String(node.position.x))
-      rect.setAttribute('y', String(node.position.y))
+      const ox = (dragOffset && node.id === draggedId) ? dragOffset.x : 0
+      const oy = (dragOffset && node.id === draggedId) ? dragOffset.y : 0
+      rect.setAttribute('x', String(node.position.x + ox))
+      rect.setAttribute('y', String(node.position.y + oy))
       rect.setAttribute('width', String(size.width))
       rect.setAttribute('height', String(size.height))
       if (node.selected) {
