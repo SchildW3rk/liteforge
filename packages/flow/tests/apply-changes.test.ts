@@ -157,3 +157,16 @@ describe('applyEdgeChanges', () => {
     expect(result).toEqual([])
   })
 })
+
+  it('type:data updates node data field', () => {
+    const nodes = [makeNode('1')]
+    const result = applyNodeChanges([{ type: 'data', id: '1', data: { label: 'Updated' } }], nodes)
+    expect((result[0]!.data as { label: string }).label).toBe('Updated')
+  })
+
+  it('type:data preserves other node fields', () => {
+    const nodes = [makeNode('1', 50, 80)]
+    const result = applyNodeChanges([{ type: 'data', id: '1', data: { x: 99 } }], nodes)
+    expect(result[0]!.position).toEqual({ x: 50, y: 80 })
+    expect(result[0]!.id).toBe('1')
+  })

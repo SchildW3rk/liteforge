@@ -13,6 +13,7 @@ export interface InteractionStateManager {
   toDragging(nodeId: string, pointerId: number, startCanvasPoint: Point, startPosition: Point, draggedNodes?: ReadonlySet<string>): void
   toConnecting(sourceNodeId: string, sourceHandleId: string, sourceHandleType: HandleType, sourcePoint: Point): void
   toSelecting(startCanvasPoint: Point, pointerId: number): void
+  toReconnecting(edgeId: string, movingEnd: 'source' | 'target', fixedPoint: Point, startPoint: Point): void
 }
 
 const IDLE: IdleState = { type: 'idle' }
@@ -56,6 +57,16 @@ export function createInteractionState(): InteractionStateManager {
         startCanvasPoint,
         pointerId,
         currentCanvasPoint: signal<Point>({ ...startCanvasPoint }),
+      })
+    },
+
+    toReconnecting(edgeId, movingEnd, fixedPoint, startPoint) {
+      state.set({
+        type: 'reconnecting',
+        edgeId,
+        movingEnd,
+        fixedPoint,
+        currentPoint: signal<Point>({ ...startPoint }),
       })
     },
   }

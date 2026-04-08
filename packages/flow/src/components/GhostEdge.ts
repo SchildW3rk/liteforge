@@ -25,16 +25,25 @@ export function createGhostEdge(
   const disposeEffect = effect(() => {
     const state = ctx.interactionState()
 
-    if (state.type !== 'connecting') {
-      pathEl.style.display = 'none'
-      pathEl.removeAttribute('d')
+    if (state.type === 'connecting') {
+      const cur = state.currentPoint()
+      pathEl.style.display = ''
+      pathEl.setAttribute('d', getBezierPath(state.sourcePoint, cur))
       return
     }
 
-    const cur = state.currentPoint()   // subscribes to per-state Signal
-    pathEl.style.display = ''
-    const src = state.sourcePoint
-    pathEl.setAttribute('d', getBezierPath(src, cur))
+    if (state.type === 'reconnecting') {
+      const cur = state.currentPoint()
+      pathEl.style.display = ''
+      // Fixed end is always drawn as source visually (left side of bezier)
+      const src = state.movingEnd === 'source' ? cur : state.fixedPoint
+      const tgt = state.movingEnd === 'source' ? state.fixedPoint : cur
+      pathEl.setAttribute('d', getBezierPath(src, tgt))
+      return
+    }
+
+    pathEl.style.display = 'none'
+    pathEl.removeAttribute('d')
   })
 
   function dispose() {

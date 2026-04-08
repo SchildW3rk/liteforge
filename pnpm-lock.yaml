@@ -27,30 +27,18 @@ importers:
         specifier: ^2.1.8
         version: 2.1.9(@types/node@25.3.2)(happy-dom@15.11.7)(jsdom@25.0.1)(lightningcss@1.31.1)
 
-  create-liteforge:
-    devDependencies:
-      '@types/node':
-        specifier: ^22.0.0
-        version: 22.19.13
-      typescript:
-        specifier: ^5.7.2
-        version: 5.9.3
-      vitest:
-        specifier: ^2.1.8
-        version: 2.1.9(@types/node@22.19.13)(happy-dom@15.11.7)(jsdom@25.0.1)(lightningcss@1.31.1)
-
-  docs:
+  apps/docs-site:
     dependencies:
       liteforge:
         specifier: workspace:*
-        version: link:../packages/liteforge
+        version: link:../../packages/liteforge
       zod:
         specifier: ^3.24.0
         version: 3.25.76
     devDependencies:
       '@liteforge/vite-plugin':
         specifier: workspace:*
-        version: link:../packages/vite-plugin
+        version: link:../../packages/vite-plugin
       '@tailwindcss/vite':
         specifier: ^4.1.0
         version: 4.2.1(vite@6.4.1(@types/node@25.3.2)(jiti@2.6.1)(lightningcss@1.31.1))
@@ -66,6 +54,18 @@ importers:
       vite:
         specifier: ^6.0.0
         version: 6.4.1(@types/node@25.3.2)(jiti@2.6.1)(lightningcss@1.31.1)
+
+  create-liteforge:
+    devDependencies:
+      '@types/node':
+        specifier: ^22.0.0
+        version: 22.19.13
+      typescript:
+        specifier: ^5.7.2
+        version: 5.9.3
+      vitest:
+        specifier: ^2.1.8
+        version: 2.1.9(@types/node@22.19.13)(happy-dom@15.11.7)(jsdom@25.0.1)(lightningcss@1.31.1)
 
   examples/starter:
     dependencies:

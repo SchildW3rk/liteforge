@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { clearContext } from '@liteforge/runtime'
 import { createFlow, FlowCanvas } from '../src/index.js'
 import type { FlowNode, FlowEdge } from '../src/types.js'
@@ -64,6 +64,156 @@ describe('FlowCanvas', () => {
     }) as HTMLElement
 
     container.appendChild(root)
+    await tick()
+
+    const layer = root.querySelector('.lf-transform-layer') as HTMLElement
+    expect(layer.style.transform).toContain('translate(0px,0px)')
+    expect(layer.style.transform).toContain('scale(1)')
+  })
+})
+
+describe('fitView prop', () => {
+  let container: HTMLDivElement
+  // Capture and synchronously flush rAF callbacks without fake timers
+  let rafCallbacks: FrameRequestCallback[]
+  let originalRaf: typeof requestAnimationFrame
+
+  function flushRaf() {
+    const cbs = rafCallbacks.splice(0)
+    cbs.forEach(cb => cb(0))
+  }
+
+  beforeEach(() => {
+    container = document.createElement('div')
+    document.body.appendChild(container)
+    clearContext()
+    rafCallbacks = []
+    originalRaf = globalThis.requestAnimationFrame
+    globalThis.requestAnimationFrame = (cb: FrameRequestCallback) => {
+      rafCallbacks.push(cb)
+      return rafCallbacks.length
+    }
+  })
+
+  afterEach(() => {
+    container.remove()
+    clearContext()
+    globalThis.requestAnimationFrame = originalRaf
+  })
+
+  const makeNodes = (): FlowNode[] => [
+    { id: 'a', type: 'default', position: { x: 0,   y: 0   }, data: {} },
+    { id: 'b', type: 'default', position: { x: 200, y: 100 }, data: {} },
+  ]
+
+  it('does NOT schedule rAF when fitView is absent', () => {
+    const flow = createFlow({ nodeTypes: {} })
+    FlowCanvas({
+      flow,
+      nodes: makeNodes,
+      edges: () => [],
+      defaultViewport: { x: 99, y: 77, scale: 2 },
+    })
+    expect(rafCallbacks.length).toBe(0)
+  })
+
+  it('does NOT schedule rAF when fitView is false', () => {
+    const flow = createFlow({ nodeTypes: {} })
+    FlowCanvas({
+      flow,
+      nodes: makeNodes,
+      edges: () => [],
+      fitView: false,
+    })
+    expect(rafCallbacks.length).toBe(0)
+  })
+
+  it('preserves defaultViewport when fitView is absent (no rAF override)', async () => {
+    const flow = createFlow({ nodeTypes: {} })
+    const root = FlowCanvas({
+      flow,
+      nodes: makeNodes,
+      edges: () => [],
+      defaultViewport: { x: 99, y: 77, scale: 2 },
+    }) as HTMLElement
+    container.appendChild(root)
+    await tick()
+
+    const layer = root.querySelector('.lf-transform-layer') as HTMLElement
+    expect(layer.style.transform).toContain('translate(99px,77px)')
+    expect(layer.style.transform).toContain('scale(2)')
+  })
+
+  it('schedules rAF when fitView is true', () => {
+    const flow = createFlow({ nodeTypes: {} })
+    FlowCanvas({
+      flow,
+      nodes: makeNodes,
+      edges: () => [],
+      fitView: true,
+    })
+    expect(rafCallbacks.length).toBe(1)
+  })
+
+  it('updates transform after rAF fires with fitView:true', async () => {
+    const flow = createFlow({ nodeTypes: {} })
+    const root = FlowCanvas({
+      flow,
+      nodes: makeNodes,
+      edges: () => [],
+      fitView: true,
+    }) as HTMLElement
+    container.appendChild(root)
+
+    const layer = root.querySelector('.lf-transform-layer') as HTMLElement
+    const before = layer.style.transform
+
+    flushRaf()
+    await tick()
+
+    const after = layer.style.transform
+    expect(after).toMatch(/translate\([\d.-]+px,[\d.-]+px\)/)
+    expect(after).toMatch(/scale\([\d.]+\)/)
+    expect(after).not.toBe(before)
+  })
+
+  it('forwards fitViewOptions.padding — different padding produces different transforms', async () => {
+    const flow = createFlow({ nodeTypes: {} })
+    const root1 = FlowCanvas({
+      flow,
+      nodes: makeNodes,
+      edges: () => [],
+      fitView: true,
+      fitViewOptions: { padding: 0 },
+    }) as HTMLElement
+    const root2 = FlowCanvas({
+      flow,
+      nodes: makeNodes,
+      edges: () => [],
+      fitView: true,
+      fitViewOptions: { padding: 200 },
+    }) as HTMLElement
+
+    container.appendChild(root1)
+    container.appendChild(root2)
+    flushRaf()
+    await tick()
+
+    const t1 = (root1.querySelector('.lf-transform-layer') as HTMLElement).style.transform
+    const t2 = (root2.querySelector('.lf-transform-layer') as HTMLElement).style.transform
+    expect(t1).not.toBe(t2)
+  })
+
+  it('fitView with no nodes keeps identity transform', async () => {
+    const flow = createFlow({ nodeTypes: {} })
+    const root = FlowCanvas({
+      flow,
+      nodes: () => [],
+      edges: () => [],
+      fitView: true,
+    }) as HTMLElement
+    container.appendChild(root)
+    flushRaf()
     await tick()
 
     const layer = root.querySelector('.lf-transform-layer') as HTMLElement

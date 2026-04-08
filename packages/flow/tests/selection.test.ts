@@ -33,6 +33,8 @@ function makeCtx(
     getEdge: () => undefined,
     getNodes: () => nodesArr,
     getEdges: () => [] as FlowEdge[],
+    getChildren: () => [],
+    getAbsolutePosition: (id) => nodesArr.find(n => n.id === id)?.position ?? { x: 0, y: 0 },
     transform,
     interactionState: stateMgr.state,
     stateMgr,
@@ -55,6 +57,10 @@ function makeCtx(
     getNodeSize: () => undefined,
     getRootRect: () => ({ left: 0, top: 0, right: 800, bottom: 600, width: 800, height: 600, x: 0, y: 0, toJSON: () => ({}) } as DOMRect),
     nodeSizeVersion: signal(0),
+    snapToGrid: undefined,
+    nodeContextMenu: undefined,
+    edgeContextMenu: undefined,
+    paneContextMenu: undefined,
     ...overrides,
   }
   return ctx

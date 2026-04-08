@@ -1,10 +1,23 @@
 import type { FlowContextValue } from '../context.js'
-import type { Point, Transform, DraggingState } from '../types.js'
+import type { FlowNode, Point, Transform, DraggingState } from '../types.js'
 import { screenToCanvas } from '../geometry/coords.js'
 
 /** Round a value to the nearest multiple of step. */
 function snap(value: number, step: number): number {
   return Math.round(value / step) * step
+}
+
+/**
+ * Collect the given nodeId and all its direct and indirect children into `out`.
+ * Exported so NodeWrapper can use it when building draggedNodes.
+ */
+export function collectDragGroup(nodeId: string, nodes: FlowNode[], out: Set<string>): void {
+  out.add(nodeId)
+  for (const n of nodes) {
+    if (n.parentId === nodeId && !out.has(n.id)) {
+      collectDragGroup(n.id, nodes, out)
+    }
+  }
 }
 
 /** Quantize a delta so that base + delta snaps to the grid. */
@@ -95,12 +108,15 @@ export function setupNodeDrag(
       const offset = dragging.localOffset()
 
       if (ctx.onNodesChange) {
-        // Commit final positions for every node in the drag group.
-        // Snap each node's final position to the grid independently so all
-        // nodes land on grid intersections regardless of their start position.
+        // Commit final positions.
+        // Only emit position changes for "root" drag nodes — nodes whose parent
+        // is NOT also in draggedNodes. Child nodes follow their parent's DOM
+        // element automatically (positions are parent-relative, parent moves).
         const changes = Array.from(dragging.draggedNodes).flatMap(id => {
           const n = ctx.getNode(id)
           if (!n) return []
+          // Skip if this node's parent is also being dragged — it's handled implicitly
+          if (n.parentId && dragging.draggedNodes.has(n.parentId)) return []
           const raw = { x: n.position.x + offset.x, y: n.position.y + offset.y }
           const position = ctx.snapToGrid
             ? { x: snap(raw.x, ctx.snapToGrid[0]), y: snap(raw.y, ctx.snapToGrid[1]) }

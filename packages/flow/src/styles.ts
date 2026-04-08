@@ -32,6 +32,16 @@ function getFlowCSS(): string {
   --lf-flow-minimap-node:         #475569;
   --lf-flow-minimap-node-selected:#3b82f6;
   --lf-flow-minimap-viewport:     #3b82f6;
+  --lf-flow-edge-label-bg:        #1e293b;
+  --lf-flow-edge-label-border:    #334155;
+  --lf-flow-edge-label-color:     #e2e8f0;
+  --lf-flow-edge-label-size:      11px;
+  --lf-flow-ctx-menu-bg:          #1e293b;
+  --lf-flow-ctx-menu-border:      #334155;
+  --lf-flow-ctx-menu-text:        #e2e8f0;
+  --lf-flow-ctx-menu-hover-bg:    #334155;
+  --lf-flow-ctx-menu-disabled:    #64748b;
+  --lf-flow-grid-color:           rgba(255,255,255,0.08);
 }
 /* Light mode overrides */
 @media (prefers-color-scheme: light) {
@@ -52,6 +62,15 @@ function getFlowCSS(): string {
     --lf-flow-minimap-node:         #94a3b8;
     --lf-flow-minimap-node-selected:#3b82f6;
     --lf-flow-minimap-viewport:     #3b82f6;
+    --lf-flow-edge-label-bg:        #ffffff;
+    --lf-flow-edge-label-border:    #cbd5e1;
+    --lf-flow-edge-label-color:     #0f172a;
+    --lf-flow-ctx-menu-bg:          #ffffff;
+    --lf-flow-ctx-menu-border:      #e2e8f0;
+    --lf-flow-ctx-menu-text:        #0f172a;
+    --lf-flow-ctx-menu-hover-bg:    #f1f5f9;
+    --lf-flow-ctx-menu-disabled:    #94a3b8;
+    --lf-flow-grid-color:           rgba(0,0,0,0.12);
   }
 }
 [data-theme="light"] .lf-flow-root,
@@ -72,6 +91,15 @@ function getFlowCSS(): string {
   --lf-flow-minimap-node:         #94a3b8;
   --lf-flow-minimap-node-selected:#3b82f6;
   --lf-flow-minimap-viewport:     #3b82f6;
+  --lf-flow-edge-label-bg:        #ffffff;
+  --lf-flow-edge-label-border:    #cbd5e1;
+  --lf-flow-edge-label-color:     #0f172a;
+  --lf-flow-ctx-menu-bg:          #ffffff;
+  --lf-flow-ctx-menu-border:      #e2e8f0;
+  --lf-flow-ctx-menu-text:        #0f172a;
+  --lf-flow-ctx-menu-hover-bg:    #f1f5f9;
+  --lf-flow-ctx-menu-disabled:    #94a3b8;
+  --lf-flow-grid-color:           rgba(0,0,0,0.12);
 }
 
 /* ---- Layout ---- */
@@ -107,6 +135,12 @@ function getFlowCSS(): string {
   position: absolute;
   pointer-events: all;
 }
+.lf-node-group {
+  z-index: 0;
+}
+.lf-node-group > .lf-node-wrapper {
+  z-index: 1;
+}
 .lf-handle {
   position: absolute;
   width: 10px;
@@ -131,6 +165,7 @@ function getFlowCSS(): string {
 }
 .lf-edge {
   stroke: var(--lf-flow-edge-color);
+  color: var(--lf-flow-edge-color);
   stroke-width: 2;
   fill: none;
   cursor: pointer;
@@ -139,7 +174,20 @@ function getFlowCSS(): string {
 }
 .lf-edge-selected {
   stroke: var(--lf-flow-edge-selected);
+  color: var(--lf-flow-edge-selected);
   opacity: 1;
+}
+.lf-edge-label { pointer-events: none; }
+.lf-edge-label-bg {
+  fill: var(--lf-flow-edge-label-bg);
+  stroke: var(--lf-flow-edge-label-border);
+  stroke-width: 1;
+}
+.lf-edge-label-text {
+  fill: var(--lf-flow-edge-label-color);
+  font-size: var(--lf-flow-edge-label-size, 11px);
+  font-family: inherit;
+  user-select: none;
 }
 .lf-marquee {
   position: absolute;
@@ -196,5 +244,117 @@ function getFlowCSS(): string {
   stroke-width: 1;
   opacity: 0.5;
 }
+.lf-context-menu {
+  position: absolute;
+  z-index: 50;
+  background: var(--lf-flow-ctx-menu-bg);
+  border: 1px solid var(--lf-flow-ctx-menu-border);
+  border-radius: 6px;
+  padding: 4px;
+  min-width: 140px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+.lf-context-menu-item {
+  display: block;
+  width: 100%;
+  padding: 6px 10px;
+  background: none;
+  border: none;
+  border-radius: 4px;
+  text-align: left;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--lf-flow-ctx-menu-text);
+}
+.lf-context-menu-item:hover {
+  background: var(--lf-flow-ctx-menu-hover-bg);
+}
+.lf-context-menu-item--disabled {
+  color: var(--lf-flow-ctx-menu-disabled);
+  cursor: not-allowed;
+  pointer-events: none;
+}
+/* ---- Node Toolbar ---- */
+.lf-node-toolbar {
+  position: absolute;
+  z-index: 10;
+  display: none;
+  pointer-events: all;
+  background: var(--lf-flow-bg-controls);
+  border: 1px solid var(--lf-flow-border);
+  border-radius: 6px;
+  padding: 4px;
+  gap: 4px;
+  align-items: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+  white-space: nowrap;
+  user-select: none;
+}
+.lf-toolbar-btn {
+  padding: 4px 8px;
+  background: none;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--lf-flow-text);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  line-height: 1;
+}
+.lf-toolbar-btn:hover {
+  background: var(--lf-flow-bg-controls-hover);
+}
+.lf-toolbar-btn--danger { color: #ef4444; }
+.lf-toolbar-btn--danger:hover { background: rgba(239,68,68,0.12); }
+.lf-toolbar-divider {
+  width: 1px;
+  height: 16px;
+  background: var(--lf-flow-border);
+  margin: 0 2px;
+}
+/* ---- Grid Background ---- */
+.lf-grid-svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: visible;
+}
+.lf-grid-dot {
+  fill: var(--lf-flow-grid-color);
+}
+/* ---- Node Resizer ---- */
+.lf-node-resizer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.lf-resize-handle {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background: var(--lf-flow-handle-bg);
+  border: 2px solid var(--lf-flow-handle-border);
+  border-radius: 2px;
+  pointer-events: all;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.lf-node-wrapper:hover .lf-resize-handle,
+.lf-node-selected .lf-resize-handle {
+  opacity: 1;
+}
+.lf-resize-handle--n  { top: -4px;    left: 50%; transform: translateX(-50%); cursor: n-resize; }
+.lf-resize-handle--s  { bottom: -4px; left: 50%; transform: translateX(-50%); cursor: s-resize; }
+.lf-resize-handle--e  { right: -4px;  top: 50%;  transform: translateY(-50%); cursor: e-resize; }
+.lf-resize-handle--w  { left: -4px;   top: 50%;  transform: translateY(-50%); cursor: w-resize; }
+.lf-resize-handle--ne { top: -4px;    right: -4px;   cursor: ne-resize; }
+.lf-resize-handle--nw { top: -4px;    left: -4px;    cursor: nw-resize; }
+.lf-resize-handle--se { bottom: -4px; right: -4px;   cursor: se-resize; }
+.lf-resize-handle--sw { bottom: -4px; left: -4px;    cursor: sw-resize; }
 `
 }

@@ -8,6 +8,7 @@ import { injectFlowStyles } from '../styles.js'
 import { createNodeWrapper } from './NodeWrapper.js'
 import type { NodeWrapperHandle } from './NodeWrapper.js'
 import { setupConnect } from '../interactions/connect.js'
+import { setupReconnect } from '../interactions/reconnect.js'
 import { createGhostEdge } from './GhostEdge.js'
 import { createEdgeLayer } from './EdgeLayer.js'
 import { setupMarqueeSelect } from '../interactions/marquee-select.js'
@@ -16,9 +17,35 @@ import { screenToCanvas } from '../geometry/coords.js'
 import { createControls } from './Controls.js'
 import { createMiniMap } from './MiniMap.js'
 import { computeFitView } from '../helpers/fit-view.js'
+import { createContextMenu } from './ContextMenu.js'
+import { setupKeyboard } from '../interactions/keyboard.js'
+import { setupPanZoom } from '../interactions/pan-zoom.js'
 
 const DEFAULT_MIN_ZOOM = 0.1
 const DEFAULT_MAX_ZOOM = 4
+
+/**
+ * Sort nodes so parents always appear before their children.
+ * Root nodes (no parentId) come first, then children in BFS order.
+ */
+function sortNodesByDepth(nodes: import('../types.js').FlowNode[]): import('../types.js').FlowNode[] {
+  const byId = new Map(nodes.map(n => [n.id, n]))
+  const result: import('../types.js').FlowNode[] = []
+  const visited = new Set<string>()
+
+  function visit(node: import('../types.js').FlowNode) {
+    if (visited.has(node.id)) return
+    if (node.parentId && !visited.has(node.parentId)) {
+      const parent = byId.get(node.parentId)
+      if (parent) visit(parent)
+    }
+    visited.add(node.id)
+    result.push(node)
+  }
+
+  for (const node of nodes) visit(node)
+  return result
+}
 
 export function FlowCanvas(props: FlowCanvasProps): Node {
   const minZoom = props.minZoom ?? DEFAULT_MIN_ZOOM
@@ -48,6 +75,20 @@ export function FlowCanvas(props: FlowCanvasProps): Node {
     getEdge: (id) => props.edges().find(e => e.id === id),
     getNodes: () => props.nodes(),
     getEdges: () => props.edges(),
+    getChildren: (parentId) => props.nodes().filter(n => n.parentId === parentId),
+    getAbsolutePosition: (nodeId) => {
+      const visited = new Set<string>()
+      let pos = { x: 0, y: 0 }
+      let current = props.nodes().find(n => n.id === nodeId)
+      while (current) {
+        if (visited.has(current.id)) break // cycle guard
+        visited.add(current.id)
+        pos = { x: pos.x + current.position.x, y: pos.y + current.position.y }
+        if (!current.parentId) break
+        current = props.nodes().find(n => n.id === current!.parentId)
+      }
+      return pos
+    },
     transform,
     interactionState: stateMgr.state,
     stateMgr,
@@ -56,6 +97,10 @@ export function FlowCanvas(props: FlowCanvasProps): Node {
     onNodesChange: props.onNodesChange,
     onEdgesChange: props.onEdgesChange,
     onConnect: props.onConnect,
+    onNodeMouseEnter: props.onNodeMouseEnter,
+    onNodeMouseLeave: props.onNodeMouseLeave,
+    onEdgeMouseEnter: props.onEdgeMouseEnter,
+    onEdgeMouseLeave: props.onEdgeMouseLeave,
     isValidConnection: props.flow.options.isValidConnection,
     nodeTypes: props.flow.options.nodeTypes,
     edgeTypes: props.flow.options.edgeTypes,
@@ -67,6 +112,9 @@ export function FlowCanvas(props: FlowCanvasProps): Node {
     getNodeSize: (nodeId) => nodeSizeMap.get(nodeId),
     nodeSizeVersion,
     snapToGrid: props.snapToGrid,
+    nodeContextMenu: props.nodeContextMenu,
+    edgeContextMenu: props.edgeContextMenu,
+    paneContextMenu: props.paneContextMenu,
     // Lazy — root is assigned after ctx is built
     getRootRect: () => root.getBoundingClientRect(),
   }
@@ -97,6 +145,49 @@ export function FlowCanvas(props: FlowCanvasProps): Node {
   const root = document.createElement('div')
   root.className = 'lf-flow-root'
   root.style.cssText = 'overflow:hidden;position:relative;width:100%;height:100%;user-select:none'
+  // ARIA: "application" landmark — screen readers expose keyboard interaction hints.
+  root.setAttribute('role', 'application')
+  root.setAttribute('aria-label', 'Flow canvas')
+
+  // ---- Grid Background (SVG pattern, sits behind transform layer) ----
+  // Only rendered when showGrid !== false
+  let gridPatternEl: SVGCircleElement | null = null
+  let gridPatternTransform: SVGPatternElement | null = null
+
+  if (props.showGrid !== false) {
+    const gridSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+    gridSvg.setAttribute('class', 'lf-grid-svg')
+    gridSvg.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;overflow:visible'
+
+    const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs')
+    const pattern = document.createElementNS('http://www.w3.org/2000/svg', 'pattern')
+    pattern.setAttribute('id', 'lf-grid-pattern')
+    pattern.setAttribute('patternUnits', 'userSpaceOnUse')
+    pattern.setAttribute('width', '20')
+    pattern.setAttribute('height', '20')
+
+    const dot = document.createElementNS('http://www.w3.org/2000/svg', 'circle')
+    dot.setAttribute('cx', '1')
+    dot.setAttribute('cy', '1')
+    dot.setAttribute('r', '1')
+    dot.setAttribute('class', 'lf-grid-dot')
+
+    pattern.appendChild(dot)
+    defs.appendChild(pattern)
+    gridSvg.appendChild(defs)
+
+    const gridRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect')
+    gridRect.setAttribute('width', '100%')
+    gridRect.setAttribute('height', '100%')
+    gridRect.setAttribute('fill', 'url(#lf-grid-pattern)')
+
+    gridSvg.appendChild(gridRect)
+    root.appendChild(gridSvg)
+
+    gridPatternEl = dot
+    gridPatternTransform = pattern
+  }
+
   root.appendChild(transformLayer)
 
   // Pop context — the DOM is now built synchronously
@@ -108,8 +199,19 @@ export function FlowCanvas(props: FlowCanvasProps): Node {
       ctx.getNodes(),
       root.offsetWidth || 800,
       root.offsetHeight || 600,
+      props.fitViewOptions,
+      (nodeId) => ctx.getAbsolutePosition(nodeId),
     )
     transform.set(t)
+  }
+
+  // fitView prop — fit all nodes into view once after the canvas is mounted.
+  // requestAnimationFrame defers until the root element has a real layout
+  // (offsetWidth / offsetHeight are 0 when FlowCanvas() first returns because
+  // the element is not yet inserted into the DOM).
+  // Takes precedence over defaultViewport.
+  if (props.fitView) {
+    requestAnimationFrame(fitView)
   }
 
   // Controls overlay (appended outside transform layer)
@@ -118,8 +220,29 @@ export function FlowCanvas(props: FlowCanvasProps): Node {
   // MiniMap overlay (appended outside transform layer)
   createMiniMap(ctx, transform, root)
 
+  // ---- Context Menu ----
+  const contextMenuHandle = createContextMenu(ctx, root)
+  ctx.contextMenu = contextMenuHandle
+
+  // Pane right-click → show pane context menu
+  root.addEventListener('contextmenu', (e: MouseEvent) => {
+    const target = e.target as Element
+    // Only fire if the user clicked on the root background or transform layer
+    // (nodes and edges call stopPropagation on their own contextmenu handlers)
+    if (target !== root && target !== transformLayer) return
+    e.preventDefault()
+    const rootRect = root.getBoundingClientRect()
+    const t = transform.peek()
+    const canvasPos = screenToCanvas(
+      { x: e.clientX - rootRect.left, y: e.clientY - rootRect.top },
+      t,
+    )
+    ctx.contextMenu?.showForPane(canvasPos, e.clientX, e.clientY)
+  })
+
   // ---- Connect interaction, EdgeLayer & GhostEdge ----
   setupConnect(ctx, () => transform.peek())
+  setupReconnect(ctx, () => transform.peek())
   createEdgeLayer(ctx, edgesLayer)
   createGhostEdge(ctx, edgesLayer)
 
@@ -143,12 +266,24 @@ export function FlowCanvas(props: FlowCanvasProps): Node {
       }
     }
 
-    // Create wrappers for newly added nodes
-    for (const node of currentNodes) {
-      if (!wrapperMap.has(node.id)) {
-        const handle = createNodeWrapper(node.id, ctx, nodesLayer)
-        wrapperMap.set(node.id, handle)
+    // Create wrappers for newly added nodes.
+    // Parent nodes must be created before their children so the child can
+    // find the parent wrapper element to nest inside.
+    // Sort: nodes without parentId first, then by depth.
+    const sorted = sortNodesByDepth(currentNodes)
+    for (const node of sorted) {
+      if (wrapperMap.has(node.id)) continue
+
+      // If this node has a parent, nest inside the parent wrapper's element.
+      // Otherwise use the shared nodesLayer.
+      let container: HTMLElement = nodesLayer
+      if (node.parentId) {
+        const parentHandle = wrapperMap.get(node.parentId)
+        if (parentHandle) container = parentHandle.el
       }
+
+      const handle = createNodeWrapper(node.id, ctx, container)
+      wrapperMap.set(node.id, handle)
     }
   })
 
@@ -158,8 +293,40 @@ export function FlowCanvas(props: FlowCanvasProps): Node {
     transformLayer.style.transform = `translate(${t.x}px,${t.y}px) scale(${t.scale})`
   })
 
-  // ---- Pan / Zoom ----
-  const panState = { active: false, lastX: 0, lastY: 0, pointerId: -1 }
+  // ---- Effect: viewport change callback ----
+  if (props.onViewportChange) {
+    const cb = props.onViewportChange
+    effect(() => {
+      const { x, y, scale } = transform()
+      cb({ x, y, zoom: scale })
+    })
+  }
+
+  // ---- Effect: sync grid pattern with pan + zoom ----
+  // patternTransform="translate(tx ty) scale(s)" keeps the dot grid
+  // locked to canvas-space so it moves/scales exactly with the nodes.
+  if (gridPatternTransform) {
+    const pt = gridPatternTransform
+    effect(() => {
+      const t = transform()
+      // Scale the pattern cell size with zoom (20px grid cell × scale)
+      const cellSize = 20 * t.scale
+      pt.setAttribute('width',  String(cellSize))
+      pt.setAttribute('height', String(cellSize))
+      // Offset the origin so dots stay aligned to canvas position 0,0
+      // mod wraps the pan offset into [0, cellSize) so the pattern tiles seamlessly
+      const ox = ((t.x % cellSize) + cellSize) % cellSize
+      const oy = ((t.y % cellSize) + cellSize) % cellSize
+      pt.setAttribute('patternTransform', `translate(${ox} ${oy})`)
+      // Scale the dot radius slightly with zoom (min 0.8, max 1.8)
+      if (gridPatternEl) {
+        const r = Math.min(1.8, Math.max(0.8, t.scale))
+        gridPatternEl.setAttribute('r', String(r))
+      }
+    })
+  }
+
+  // ---- Pan / Zoom (mouse, touch, stylus) ----
   let spacePressed = false
 
   const onKeyDown = (e: KeyboardEvent) => {
@@ -174,79 +341,25 @@ export function FlowCanvas(props: FlowCanvasProps): Node {
   document.addEventListener('keydown', onKeyDown)
   document.addEventListener('keyup', onKeyUp)
 
-  // ---- Delete key handler ----
-  const handleKeyDown = (e: KeyboardEvent) => {
-    if (e.key !== 'Delete' && e.key !== 'Backspace') return
-    const tag = (e.target as Element).tagName.toLowerCase()
-    if (
-      tag === 'input' ||
-      tag === 'textarea' ||
-      (e.target as HTMLElement).isContentEditable
-    ) return
+  // ---- Keyboard handler (Delete/Backspace) — scoped to root element ----
+  setupKeyboard(ctx, root)
 
-    const nodesToRemove = ctx.getNodes().filter(n => n.selected)
-    const edgesToRemove = ctx.getEdges().filter(ed => ed.selected)
-
-    if (nodesToRemove.length > 0) {
-      ctx.onNodesChange?.(nodesToRemove.map(n => ({ type: 'remove' as const, id: n.id })))
-    }
-    if (edgesToRemove.length > 0) {
-      ctx.onEdgesChange?.(edgesToRemove.map(ed => ({ type: 'remove' as const, id: ed.id })))
-    }
-  }
-  document.addEventListener('keydown', handleKeyDown)
-
-  // Zoom via wheel
-  root.addEventListener('wheel', (e: WheelEvent) => {
-    e.preventDefault()
-    const rect = root.getBoundingClientRect()
-    const mouseX = e.clientX - rect.left
-    const mouseY = e.clientY - rect.top
-    const current = transform.peek()
-    const delta = e.ctrlKey ? -e.deltaY * 0.01 : -e.deltaY * 0.001
-    const newScale = Math.min(maxZoom, Math.max(minZoom, current.scale * (1 + delta)))
-    const scaleRatio = newScale / current.scale
-    transform.set({
-      x: mouseX - (mouseX - current.x) * scaleRatio,
-      y: mouseY - (mouseY - current.y) * scaleRatio,
-      scale: newScale,
-    })
-  }, { passive: false })
-
-  // Pan via middle-button or space + left-button
-  transformLayer.addEventListener('pointerdown', (e: PointerEvent) => {
-    const isMiddle = e.button === 1
-    const isSpacePan = e.button === 0 && spacePressed
-    if (!isMiddle && !isSpacePan) return
-    e.preventDefault()
-    panState.active = true
-    panState.lastX = e.clientX
-    panState.lastY = e.clientY
-    panState.pointerId = e.pointerId
-    transformLayer.setPointerCapture(e.pointerId)
+  // setupPanZoom handles: wheel zoom, middle-button pan, space+drag pan,
+  // single-touch pan, two-finger pinch-zoom (touch + trackpad).
+  // Sets touch-action:none on root.
+  setupPanZoom(root, transform, {
+    minZoom,
+    maxZoom,
+    isSpacePressed: () => spacePressed,
   })
-
-  transformLayer.addEventListener('pointermove', (e: PointerEvent) => {
-    if (!panState.active || e.pointerId !== panState.pointerId) return
-    const dx = e.clientX - panState.lastX
-    const dy = e.clientY - panState.lastY
-    panState.lastX = e.clientX
-    panState.lastY = e.clientY
-    transform.update(t => ({ x: t.x + dx, y: t.y + dy, scale: t.scale }))
-  })
-
-  const stopPan = (e: PointerEvent) => {
-    if (e.pointerId !== panState.pointerId) return
-    panState.active = false
-    panState.pointerId = -1
-  }
-  transformLayer.addEventListener('pointerup', stopPan)
-  transformLayer.addEventListener('pointercancel', stopPan)
 
   // ---- Background pointerdown → start marquee selection ----
+  // Only fires for primary button on the canvas background when not panning.
   root.addEventListener('pointerdown', (e: PointerEvent) => {
     if (e.button !== 0) return
     if (spacePressed) return
+    // Only touch that hits non-background targets is handled by node/handle listeners
+    if (e.pointerType === 'touch') return
     const target = e.target as Element
     if (target !== root && target !== transformLayer) return
 
@@ -276,6 +389,18 @@ export function FlowCanvas(props: FlowCanvasProps): Node {
         ctx.onEdgesChange?.(allEdges.map(ed => ({ type: 'select' as const, id: ed.id, selected: false })))
       }
     }
+  })
+
+  // ---- Register imperative API internals on the flow handle ----
+  props.flow._register({
+    getTransform:  () => transform.peek(),
+    setTransform:  (t) => transform.set(t),
+    getRootSize:   () => ({ width: root.offsetWidth || 800, height: root.offsetHeight || 600 }),
+    getNodes:      () => props.nodes(),
+    getEdges:      () => props.edges(),
+    getNodeSize:   (id) => nodeSizeMap.get(id),
+    minZoom,
+    maxZoom,
   })
 
   return root

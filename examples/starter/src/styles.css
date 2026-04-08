@@ -1165,6 +1165,24 @@ input, select {
   background: var(--color-bg-tertiary);
 }
 
+.flow-btn-icon {
+  padding: 6px 10px;
+  background: transparent;
+  color: var(--color-text);
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.flow-btn-icon:hover {
+  background: var(--color-bg-tertiary);
+  opacity: 1;
+}
+
+.flow-btn-icon:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
 .flow-canvas-wrapper {
   flex: 1;
   min-height: 0;
@@ -1230,4 +1248,422 @@ input, select {
   font-size: 0.72rem;
   color: var(--color-text-secondary);
   margin-top: 2px;
+}
+
+/* =============================================================================
+   API Pipeline Node Styles
+   ============================================================================= */
+
+/* ── Node wrapper ── */
+.pipe-node {
+  min-width: 180px;
+  border-radius: 10px;
+  border: 2px solid var(--pipe-accent, #6366f1);
+  background: var(--color-bg-secondary);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  font-size: 0.78rem;
+  user-select: none;
+  overflow: hidden;
+}
+
+.pipe-node-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 10px;
+  background: color-mix(in srgb, var(--pipe-accent, #6366f1) 14%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--pipe-accent, #6366f1) 30%, transparent);
+}
+
+.pipe-node-icon {
+  font-size: 0.9rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.pipe-node-title {
+  font-weight: 600;
+  color: var(--color-text);
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pipe-node-badge {
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  color: var(--pipe-accent, #6366f1);
+  background: color-mix(in srgb, var(--pipe-accent, #6366f1) 10%, transparent);
+  padding: 2px 5px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.pipe-node-body {
+  padding: 6px 10px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.pipe-node-field {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 0.72rem;
+}
+
+.pipe-node-field-label {
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+  font-weight: 500;
+  min-width: 44px;
+}
+
+.pipe-node-field-value {
+  color: var(--color-text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--font-mono, monospace);
+  font-size: 0.7rem;
+}
+
+/* ── Selected state ── */
+.lf-node-selected .pipe-node {
+  outline: 2px solid var(--pipe-accent, #6366f1);
+  outline-offset: 2px;
+}
+
+/* ── Condition node true/false handles ── */
+.pipe-handle-true {
+  top: 30% !important;
+}
+
+.pipe-handle-false {
+  top: 70% !important;
+}
+
+.pipe-handle-label {
+  position: absolute;
+  font-size: 0.5rem;
+  font-weight: 700;
+  pointer-events: none;
+  right: -14px;
+  top: 50%;
+  transform: translateY(-50%);
+  line-height: 1;
+}
+
+.pipe-handle-label--true  { color: #10b981; }
+.pipe-handle-label--false { color: #ef4444; }
+
+/* ── Legend ── */
+.pipe-legend {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: 6px var(--spacing-lg);
+  border-top: 1px solid var(--color-border);
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+
+.pipe-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.72rem;
+  color: var(--color-text-secondary);
+}
+
+.pipe-legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ── API Pipeline: Page Layout ── */
+.pipe-page {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.pipe-body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.pipe-body .flow-canvas-wrapper {
+  flex: 1;
+  min-width: 0;
+}
+
+/* ── Node Edit Hint ── */
+.pipe-node-edit-hint {
+  margin-left: auto;
+  font-size: 0.65rem;
+  opacity: 0;
+  transition: opacity 0.15s;
+  cursor: pointer;
+}
+
+.pipe-node-header:hover .pipe-node-edit-hint {
+  opacity: 0.7;
+}
+
+/* ── Properties Panel Container ── */
+.pipe-props-container {
+  width: 0;
+  overflow: hidden;
+  flex-shrink: 0;
+  transition: width 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+  border-left: 1px solid transparent;
+}
+
+.pipe-props-container--open {
+  width: 300px;
+  border-left-color: var(--color-border);
+}
+
+/* ── Properties Panel ── */
+.pipe-props-panel {
+  width: 300px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-surface);
+  overflow: hidden;
+}
+
+.pipe-props-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--color-border);
+  flex-shrink: 0;
+}
+
+.pipe-props-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.pipe-props-close {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text-secondary);
+  font-size: 0.8rem;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  line-height: 1;
+  transition: background 0.15s, color 0.15s;
+}
+
+.pipe-props-close:hover {
+  background: var(--color-hover);
+  color: var(--color-text);
+}
+
+/* ── Form ── */
+.pipe-props-form {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.pipe-props-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.pipe-props-label {
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.pipe-props-input,
+.pipe-props-select,
+.pipe-props-textarea {
+  background: var(--color-background);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-text);
+  font-size: 0.82rem;
+  padding: 6px 10px;
+  font-family: inherit;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.pipe-props-input:focus,
+.pipe-props-select:focus,
+.pipe-props-textarea:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-primary) 20%, transparent);
+}
+
+.pipe-props-textarea {
+  resize: vertical;
+  min-height: 72px;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+  font-size: 0.78rem;
+}
+
+/* ── Footer ── */
+.pipe-props-footer {
+  display: flex;
+  gap: 8px;
+  padding: 12px 16px;
+  border-top: 1px solid var(--color-border);
+  justify-content: flex-end;
+  flex-shrink: 0;
+}
+
+/* =============================================================================
+   Execution Engine — Node State Styles
+   ============================================================================= */
+
+/* Running: yellow ring + pulse animation */
+.pipe-node--running {
+  box-shadow: 0 0 0 2px #fbbf24, 0 2px 12px rgba(251,191,36,0.35);
+  animation: pipe-node-pulse 1s ease-in-out infinite;
+}
+
+@keyframes pipe-node-pulse {
+  0%, 100% { box-shadow: 0 0 0 2px #fbbf24, 0 2px 12px rgba(251,191,36,0.25); }
+  50%       { box-shadow: 0 0 0 4px #fbbf24, 0 2px 20px rgba(251,191,36,0.50); }
+}
+
+/* Success: green ring */
+.pipe-node--success {
+  box-shadow: 0 0 0 2px #10b981, 0 2px 12px rgba(16,185,129,0.25);
+  border-color: #10b981 !important;
+}
+
+/* Error: red ring */
+.pipe-node--error {
+  box-shadow: 0 0 0 2px #ef4444, 0 2px 12px rgba(239,68,68,0.25);
+  border-color: #ef4444 !important;
+}
+
+/* Output preview strip below node body */
+.pipe-node-output {
+  padding: 4px 10px;
+  font-size: 0.68rem;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  border-top: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  background: color-mix(in srgb, var(--color-background) 60%, transparent);
+}
+
+.pipe-node-output--hidden {
+  display: none;
+}
+
+.pipe-node--error .pipe-node-output {
+  color: #ef4444;
+}
+
+.pipe-node--success .pipe-node-output {
+  color: #10b981;
+}
+
+/* ── Edge flow animation ── */
+.pipe-edge--active {
+  stroke: #fbbf24 !important;
+  stroke-width: 2.5px;
+  stroke-dasharray: 8 4;
+  animation: pipe-edge-flow 0.6s linear infinite;
+  filter: drop-shadow(0 0 3px rgba(251,191,36,0.6));
+}
+
+@keyframes pipe-edge-flow {
+  from { stroke-dashoffset: 24; }
+  to   { stroke-dashoffset: 0;  }
+}
+
+/* ── Run button ── */
+.flow-btn-run {
+  background: #10b981;
+  color: #fff;
+  border-color: #10b981;
+  font-weight: 600;
+  min-width: 90px;
+}
+
+.flow-btn-run:hover:not(:disabled) {
+  background: #059669;
+  border-color: #059669;
+}
+
+.flow-btn-run--running {
+  background: #f59e0b;
+  border-color: #f59e0b;
+  cursor: not-allowed;
+}
+
+/* ── Execution Log ── */
+.pipe-log {
+  border-top: 1px solid var(--color-border);
+  background: var(--color-bg-secondary);
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  max-height: 160px;
+}
+
+.pipe-log--hidden {
+  display: none;
+}
+
+.pipe-log-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 5px 14px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  border-bottom: 1px solid var(--color-border);
+  flex-shrink: 0;
+}
+
+.pipe-log-body {
+  overflow-y: auto;
+  padding: 6px 14px;
+  flex: 1;
+}
+
+.pipe-log-line {
+  font-size: 0.75rem;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  color: var(--color-text);
+  padding: 1px 0;
+  white-space: pre;
 }

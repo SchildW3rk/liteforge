@@ -41,7 +41,7 @@ export interface FlowHistoryResult {
 
 /** Changes that mutate graph structure and should be pushed to the undo stack. */
 function isStructural(change: NodeChange | EdgeChange): boolean {
-  return change.type === 'position' || change.type === 'remove'
+  return change.type === 'position' || change.type === 'remove' || change.type === 'data'
 }
 
 /**

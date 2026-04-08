@@ -405,4 +405,501 @@ describe('createEdgeLayer', () => {
 
     dispose()
   })
+
+  // ---- Edge Labels ----
+
+  it('creates a label group element for each edge', async () => {
+    const edges = signal<FlowEdge[]>([
+      { id: 'e1', source: 'n1', sourceHandle: 'h1', target: 'n2', targetHandle: 'h2' },
+    ])
+    const ctx = makeCtx(edges)
+    const { dispose } = createEdgeLayer(ctx, svg)
+    await tick()
+    expect(svg.querySelectorAll('g.lf-edge-label').length).toBe(1)
+    dispose()
+  })
+
+  it('label group is hidden when edge has no label', async () => {
+    const edges = signal<FlowEdge[]>([
+      { id: 'e1', source: 'n1', sourceHandle: 'h1', target: 'n2', targetHandle: 'h2' },
+    ])
+    const ctx = makeCtx(edges)
+    registerHandle(ctx, 'n1', 'h1', { x: 0, y: 0 })
+    registerHandle(ctx, 'n2', 'h2', { x: 0, y: 0 })
+    const { dispose } = createEdgeLayer(ctx, svg)
+    await tick()
+    const labelG = svg.querySelector('g.lf-edge-label') as SVGGElement
+    expect(labelG.style.display).toBe('none')
+    dispose()
+  })
+
+  it('label group is visible when edge has a label and handles are resolved', async () => {
+    const nodes: FlowNode[] = [
+      { id: 'n1', type: 'default', position: { x: 0,   y: 0 }, data: null },
+      { id: 'n2', type: 'default', position: { x: 200, y: 0 }, data: null },
+    ]
+    const edges = signal<FlowEdge[]>([
+      { id: 'e1', source: 'n1', sourceHandle: 'h1', target: 'n2', targetHandle: 'h2', label: 'hello' },
+    ])
+    const ctx = makeCtx(edges, { nodes: () => nodes })
+    registerHandle(ctx, 'n1', 'h1', { x: 0, y: 0 })
+    registerHandle(ctx, 'n2', 'h2', { x: 0, y: 0 })
+    const { dispose } = createEdgeLayer(ctx, svg)
+    await tick()
+    const labelG = svg.querySelector('g.lf-edge-label') as SVGGElement
+    expect(labelG.style.display).not.toBe('none')
+    dispose()
+  })
+
+  it('label text content matches edge.label', async () => {
+    const nodes: FlowNode[] = [
+      { id: 'n1', type: 'default', position: { x: 0,   y: 0 }, data: null },
+      { id: 'n2', type: 'default', position: { x: 200, y: 0 }, data: null },
+    ]
+    const edges = signal<FlowEdge[]>([
+      { id: 'e1', source: 'n1', sourceHandle: 'h1', target: 'n2', targetHandle: 'h2', label: 'my label' },
+    ])
+    const ctx = makeCtx(edges, { nodes: () => nodes })
+    registerHandle(ctx, 'n1', 'h1', { x: 0, y: 0 })
+    registerHandle(ctx, 'n2', 'h2', { x: 0, y: 0 })
+    const { dispose } = createEdgeLayer(ctx, svg)
+    await tick()
+    const textEl = svg.querySelector('text.lf-edge-label-text') as SVGTextElement
+    expect(textEl.textContent).toBe('my label')
+    dispose()
+  })
+
+  it('label text x/y attributes are set to midpoint coordinates', async () => {
+    const nodes: FlowNode[] = [
+      { id: 'n1', type: 'default', position: { x: 0,   y: 0 }, data: null },
+      { id: 'n2', type: 'default', position: { x: 200, y: 0 }, data: null },
+    ]
+    // source at (0,0), target at (200,0) → bezier midpoint is at (100, 0)
+    const edges = signal<FlowEdge[]>([
+      { id: 'e1', source: 'n1', sourceHandle: 'h1', target: 'n2', targetHandle: 'h2', label: 'x' },
+    ])
+    const ctx = makeCtx(edges, { nodes: () => nodes })
+    registerHandle(ctx, 'n1', 'h1', { x: 0, y: 0 })
+    registerHandle(ctx, 'n2', 'h2', { x: 0, y: 0 })
+    const { dispose } = createEdgeLayer(ctx, svg)
+    await tick()
+    const textEl = svg.querySelector('text.lf-edge-label-text') as SVGTextElement
+    const mx = parseFloat(textEl.getAttribute('x')!)
+    const my = parseFloat(textEl.getAttribute('y')!)
+    // midpoint of bezier from (0,0) to (200,0): x should be ~100, y=0
+    expect(mx).toBeCloseTo(100, 0)
+    expect(my).toBeCloseTo(0, 0)
+    dispose()
+  })
+
+  it('label background rect has class lf-edge-label-bg and positive dimensions', async () => {
+    const nodes: FlowNode[] = [
+      { id: 'n1', type: 'default', position: { x: 0,   y: 0 }, data: null },
+      { id: 'n2', type: 'default', position: { x: 200, y: 0 }, data: null },
+    ]
+    const edges = signal<FlowEdge[]>([
+      { id: 'e1', source: 'n1', sourceHandle: 'h1', target: 'n2', targetHandle: 'h2', label: 'abc' },
+    ])
+    const ctx = makeCtx(edges, { nodes: () => nodes })
+    registerHandle(ctx, 'n1', 'h1', { x: 0, y: 0 })
+    registerHandle(ctx, 'n2', 'h2', { x: 0, y: 0 })
+    const { dispose } = createEdgeLayer(ctx, svg)
+    await tick()
+    const rectEl = svg.querySelector('rect.lf-edge-label-bg') as SVGRectElement
+    expect(rectEl).not.toBeNull()
+    expect(parseFloat(rectEl.getAttribute('width')!)).toBeGreaterThan(0)
+    expect(parseFloat(rectEl.getAttribute('height')!)).toBeGreaterThan(0)
+    dispose()
+  })
+
+  it('updating edge.label reactively updates the text content', async () => {
+    const nodes: FlowNode[] = [
+      { id: 'n1', type: 'default', position: { x: 0,   y: 0 }, data: null },
+      { id: 'n2', type: 'default', position: { x: 200, y: 0 }, data: null },
+    ]
+    const edges = signal<FlowEdge[]>([
+      { id: 'e1', source: 'n1', sourceHandle: 'h1', target: 'n2', targetHandle: 'h2', label: 'first' },
+    ])
+    const ctx = makeCtx(edges, { nodes: () => nodes })
+    registerHandle(ctx, 'n1', 'h1', { x: 0, y: 0 })
+    registerHandle(ctx, 'n2', 'h2', { x: 0, y: 0 })
+    const { dispose } = createEdgeLayer(ctx, svg)
+    await tick()
+    const textEl = svg.querySelector('text.lf-edge-label-text') as SVGTextElement
+    expect(textEl.textContent).toBe('first')
+
+    edges.set([{ id: 'e1', source: 'n1', sourceHandle: 'h1', target: 'n2', targetHandle: 'h2', label: 'second' }])
+    await tick()
+    expect(textEl.textContent).toBe('second')
+    dispose()
+  })
+
+  it('label group is removed from DOM when edge is removed', async () => {
+    const edges = signal<FlowEdge[]>([
+      { id: 'e1', source: 'n1', sourceHandle: 'h1', target: 'n2', targetHandle: 'h2', label: 'bye' },
+    ])
+    const ctx = makeCtx(edges)
+    const { dispose } = createEdgeLayer(ctx, svg)
+    await tick()
+    expect(svg.querySelectorAll('g.lf-edge-label').length).toBe(1)
+
+    edges.set([])
+    await tick()
+    expect(svg.querySelectorAll('g.lf-edge-label').length).toBe(0)
+    dispose()
+  })
+
+  it('label position updates during node drag (label follows node)', async () => {
+    const nodes: FlowNode[] = [
+      { id: 'n1', type: 'default', position: { x: 0,   y: 0 }, data: null },
+      { id: 'n2', type: 'default', position: { x: 200, y: 0 }, data: null },
+    ]
+    const edges = signal<FlowEdge[]>([
+      { id: 'e1', source: 'n1', sourceHandle: 'out', target: 'n2', targetHandle: 'in', label: 'L' },
+    ])
+    const stateMgr = createInteractionState()
+    const ctx = makeCtx(edges, {
+      nodes: () => nodes,
+      interactionState: stateMgr.state,
+      stateMgr,
+      interactionStateManager: stateMgr,
+    })
+    registerHandle(ctx, 'n1', 'out', { x: 0, y: 0 })
+    registerHandle(ctx, 'n2', 'in',  { x: 0, y: 0 })
+
+    const { dispose } = createEdgeLayer(ctx, svg)
+    await tick()
+
+    const textEl = svg.querySelector('text.lf-edge-label-text') as SVGTextElement
+    const xBefore = parseFloat(textEl.getAttribute('x')!)
+
+    // Drag n1 by 60px horizontally
+    stateMgr.toDragging('n1', 1, { x: 0, y: 0 }, { x: 0, y: 0 })
+    const state = stateMgr.state()
+    if (state.type === 'dragging') {
+      state.localOffset.set({ x: 60, y: 0 })
+    }
+
+    // Source is now at 60, target still at 200 → midpoint shifts toward ~130
+    const xAfter = parseFloat(textEl.getAttribute('x')!)
+    expect(xAfter).toBeGreaterThan(xBefore)
+    dispose()
+  })
+
+  // ── animated?: boolean ───────────────────────────────────────────────────
+
+  it('path has NO lf-edge--animated class by default', async () => {
+    const edges = signal<FlowEdge[]>([
+      { id: 'e1', source: 'n1', sourceHandle: 'h1', target: 'n2', targetHandle: 'h2' },
+    ])
+    const ctx = makeCtx(edges)
+    const { dispose } = createEdgeLayer(ctx, svg)
+    await tick()
+    const path = svg.querySelector('path.lf-edge') as SVGPathElement
+    expect(path.classList.contains('lf-edge--animated')).toBe(false)
+    dispose()
+  })
+
+  it('path has NO lf-edge--animated class when animated is explicitly false', async () => {
+    const edges = signal<FlowEdge[]>([
+      { id: 'e1', source: 'n1', sourceHandle: 'h1', target: 'n2', targetHandle: 'h2', animated: false },
+    ])
+    const ctx = makeCtx(edges)
+    const { dispose } = createEdgeLayer(ctx, svg)
+    await tick()
+    const path = svg.querySelector('path.lf-edge') as SVGPathElement
+    expect(path.classList.contains('lf-edge--animated')).toBe(false)
+    dispose()
+  })
+
+  it('path gets lf-edge--animated class when animated: true', async () => {
+    const edges = signal<FlowEdge[]>([
+      { id: 'e1', source: 'n1', sourceHandle: 'h1', target: 'n2', targetHandle: 'h2', animated: true },
+    ])
+    const ctx = makeCtx(edges)
+    const { dispose } = createEdgeLayer(ctx, svg)
+    await tick()
+    const path = svg.querySelector('path.lf-edge') as SVGPathElement
+    expect(path.classList.contains('lf-edge--animated')).toBe(true)
+    dispose()
+  })
+
+  it('animated class is reactive — toggling animated true→false removes the class', async () => {
+    const edges = signal<FlowEdge[]>([
+      { id: 'e1', source: 'n1', sourceHandle: 'h1', target: 'n2', targetHandle: 'h2', animated: true },
+    ])
+    const ctx = makeCtx(edges)
+    const { dispose } = createEdgeLayer(ctx, svg)
+    await tick()
+
+    const path = svg.querySelector('path.lf-edge') as SVGPathElement
+    expect(path.classList.contains('lf-edge--animated')).toBe(true)
+
+    // Turn animation off
+    edges.set([{ id: 'e1', source: 'n1', sourceHandle: 'h1', target: 'n2', targetHandle: 'h2', animated: false }])
+    await tick()
+    expect(path.classList.contains('lf-edge--animated')).toBe(false)
+
+    dispose()
+  })
+
+  it('animated class is reactive — toggling animated false→true adds the class', async () => {
+    const edges = signal<FlowEdge[]>([
+      { id: 'e1', source: 'n1', sourceHandle: 'h1', target: 'n2', targetHandle: 'h2', animated: false },
+    ])
+    const ctx = makeCtx(edges)
+    const { dispose } = createEdgeLayer(ctx, svg)
+    await tick()
+
+    const path = svg.querySelector('path.lf-edge') as SVGPathElement
+    expect(path.classList.contains('lf-edge--animated')).toBe(false)
+
+    edges.set([{ id: 'e1', source: 'n1', sourceHandle: 'h1', target: 'n2', targetHandle: 'h2', animated: true }])
+    await tick()
+    expect(path.classList.contains('lf-edge--animated')).toBe(true)
+
+    dispose()
+  })
+
+  it('multiple edges can have independent animated states', async () => {
+    const edges = signal<FlowEdge[]>([
+      { id: 'e1', source: 'n1', sourceHandle: 'h1', target: 'n2', targetHandle: 'h2', animated: true },
+      { id: 'e2', source: 'n2', sourceHandle: 'h1', target: 'n3', targetHandle: 'h2', animated: false },
+      { id: 'e3', source: 'n3', sourceHandle: 'h1', target: 'n4', targetHandle: 'h2' },
+    ])
+    const ctx = makeCtx(edges)
+    const { dispose } = createEdgeLayer(ctx, svg)
+    await tick()
+
+    const paths = svg.querySelectorAll('path.lf-edge')
+    expect(paths.length).toBe(3)
+
+    const byId = (id: string) =>
+      svg.querySelector(`path[data-edge-id="${id}"]`) as SVGPathElement
+
+    expect(byId('e1').classList.contains('lf-edge--animated')).toBe(true)
+    expect(byId('e2').classList.contains('lf-edge--animated')).toBe(false)
+    expect(byId('e3').classList.contains('lf-edge--animated')).toBe(false)
+
+    dispose()
+  })
+
+  it('animated and selected can both be true simultaneously', async () => {
+    const edges = signal<FlowEdge[]>([
+      { id: 'e1', source: 'n1', sourceHandle: 'h1', target: 'n2', targetHandle: 'h2', animated: true, selected: true },
+    ])
+    const ctx = makeCtx(edges)
+    const { dispose } = createEdgeLayer(ctx, svg)
+    await tick()
+
+    const path = svg.querySelector('path.lf-edge') as SVGPathElement
+    expect(path.classList.contains('lf-edge--animated')).toBe(true)
+    expect(path.classList.contains('lf-edge-selected')).toBe(true)
+
+    dispose()
+  })
+})
+
+// ---- Arrow marker tests ----
+
+describe('createEdgeLayer — arrow markers', () => {
+  let svg: SVGSVGElement
+
+  beforeEach(() => { svg = makeEdgeSvg() })
+  afterEach(() => { svg.remove() })
+
+  it('injects a <defs> block into the SVG layer', async () => {
+    const edges = signal<FlowEdge[]>([])
+    const ctx = makeCtx(edges)
+    const { dispose } = createEdgeLayer(ctx, svg)
+    await tick()
+    expect(svg.querySelector('defs')).not.toBeNull()
+    dispose()
+  })
+
+  it('defs contains an open arrow marker (lf-arrow-*)', async () => {
+    const edges = signal<FlowEdge[]>([])
+    const ctx = makeCtx(edges)
+    const { dispose } = createEdgeLayer(ctx, svg)
+    await tick()
+    const markers = svg.querySelectorAll('marker')
+    const ids = Array.from(markers).map(m => m.id)
+    expect(ids.some(id => id.startsWith('lf-arrow-') && !id.startsWith('lf-arrowclosed-'))).toBe(true)
+    dispose()
+  })
+
+  it('defs contains a closed arrow marker (lf-arrowclosed-*)', async () => {
+    const edges = signal<FlowEdge[]>([])
+    const ctx = makeCtx(edges)
+    const { dispose } = createEdgeLayer(ctx, svg)
+    await tick()
+    const markers = svg.querySelectorAll('marker')
+    const ids = Array.from(markers).map(m => m.id)
+    expect(ids.some(id => id.startsWith('lf-arrowclosed-'))).toBe(true)
+    dispose()
+  })
+
+  it('no marker-end attribute when markerEnd is absent', async () => {
+    const edges = signal<FlowEdge[]>([
+      { id: 'e1', source: 'n1', sourceHandle: 'h1', target: 'n2', targetHandle: 'h2' },
+    ])
+    const ctx = makeCtx(edges)
+    const { dispose } = createEdgeLayer(ctx, svg)
+    await tick()
+    const path = svg.querySelector('path.lf-edge') as SVGPathElement
+    expect(path.getAttribute('marker-end')).toBeNull()
+    dispose()
+  })
+
+  it('no marker-end attribute when markerEnd is "none"', async () => {
+    const edges = signal<FlowEdge[]>([
+      { id: 'e1', source: 'n1', sourceHandle: 'h1', target: 'n2', targetHandle: 'h2', markerEnd: 'none' },
+    ])
+    const ctx = makeCtx(edges)
+    const { dispose } = createEdgeLayer(ctx, svg)
+    await tick()
+    const path = svg.querySelector('path.lf-edge') as SVGPathElement
+    expect(path.getAttribute('marker-end')).toBeNull()
+    dispose()
+  })
+
+  it('sets marker-end url for markerEnd: "arrow"', async () => {
+    const edges = signal<FlowEdge[]>([
+      { id: 'e1', source: 'n1', sourceHandle: 'h1', target: 'n2', targetHandle: 'h2', markerEnd: 'arrow' },
+    ])
+    const ctx = makeCtx(edges)
+    const { dispose } = createEdgeLayer(ctx, svg)
+    await tick()
+    const path = svg.querySelector('path.lf-edge') as SVGPathElement
+    const markerEnd = path.getAttribute('marker-end') ?? ''
+    expect(markerEnd).toMatch(/^url\(#lf-arrow-/)
+    expect(markerEnd).not.toMatch(/arrowclosed/)
+    dispose()
+  })
+
+  it('sets marker-end url for markerEnd: "arrowclosed"', async () => {
+    const edges = signal<FlowEdge[]>([
+      { id: 'e1', source: 'n1', sourceHandle: 'h1', target: 'n2', targetHandle: 'h2', markerEnd: 'arrowclosed' },
+    ])
+    const ctx = makeCtx(edges)
+    const { dispose } = createEdgeLayer(ctx, svg)
+    await tick()
+    const path = svg.querySelector('path.lf-edge') as SVGPathElement
+    const markerEnd = path.getAttribute('marker-end') ?? ''
+    expect(markerEnd).toMatch(/^url\(#lf-arrowclosed-/)
+    dispose()
+  })
+
+  it('marker IDs are scoped — unique per EdgeLayer instance', async () => {
+    const svg2 = makeEdgeSvg()
+    const edges = signal<FlowEdge[]>([])
+    const h1 = createEdgeLayer(makeCtx(edges), svg)
+    const h2 = createEdgeLayer(makeCtx(edges), svg2)
+    await tick()
+
+    const id1 = (svg.querySelector('marker') as SVGMarkerElement).id
+    const id2 = (svg2.querySelector('marker') as SVGMarkerElement).id
+    expect(id1).not.toBe(id2)
+
+    h1.dispose(); h2.dispose(); svg2.remove()
+  })
+
+  it('marker-end updates reactively from none to arrow', async () => {
+    const edges = signal<FlowEdge[]>([
+      { id: 'e1', source: 'n1', sourceHandle: 'h1', target: 'n2', targetHandle: 'h2' },
+    ])
+    const ctx = makeCtx(edges)
+    const { dispose } = createEdgeLayer(ctx, svg)
+    await tick()
+    const path = svg.querySelector('path.lf-edge') as SVGPathElement
+    expect(path.getAttribute('marker-end')).toBeNull()
+
+    edges.set([{ id: 'e1', source: 'n1', sourceHandle: 'h1', target: 'n2', targetHandle: 'h2', markerEnd: 'arrow' }])
+    await tick()
+    expect(path.getAttribute('marker-end')).toMatch(/^url\(#lf-arrow-/)
+
+    dispose()
+  })
+
+  it('marker-end updates reactively from arrow to none', async () => {
+    const edges = signal<FlowEdge[]>([
+      { id: 'e1', source: 'n1', sourceHandle: 'h1', target: 'n2', targetHandle: 'h2', markerEnd: 'arrow' },
+    ])
+    const ctx = makeCtx(edges)
+    const { dispose } = createEdgeLayer(ctx, svg)
+    await tick()
+    const path = svg.querySelector('path.lf-edge') as SVGPathElement
+    expect(path.getAttribute('marker-end')).toMatch(/^url\(#lf-arrow-/)
+
+    edges.set([{ id: 'e1', source: 'n1', sourceHandle: 'h1', target: 'n2', targetHandle: 'h2', markerEnd: 'none' }])
+    await tick()
+    expect(path.getAttribute('marker-end')).toBeNull()
+
+    dispose()
+  })
+
+  it('marker-end switches reactively from arrow to arrowclosed', async () => {
+    const edges = signal<FlowEdge[]>([
+      { id: 'e1', source: 'n1', sourceHandle: 'h1', target: 'n2', targetHandle: 'h2', markerEnd: 'arrow' },
+    ])
+    const ctx = makeCtx(edges)
+    const { dispose } = createEdgeLayer(ctx, svg)
+    await tick()
+    const path = svg.querySelector('path.lf-edge') as SVGPathElement
+    expect(path.getAttribute('marker-end')).toMatch(/^url\(#lf-arrow-(?!.*arrowclosed)/)
+
+    edges.set([{ id: 'e1', source: 'n1', sourceHandle: 'h1', target: 'n2', targetHandle: 'h2', markerEnd: 'arrowclosed' }])
+    await tick()
+    expect(path.getAttribute('marker-end')).toMatch(/^url\(#lf-arrowclosed-/)
+
+    dispose()
+  })
+
+  it('multiple edges can have independent marker types', async () => {
+    const edges = signal<FlowEdge[]>([
+      { id: 'e1', source: 'n1', sourceHandle: 'h1', target: 'n2', targetHandle: 'h2', markerEnd: 'arrow' },
+      { id: 'e2', source: 'n2', sourceHandle: 'h1', target: 'n3', targetHandle: 'h2', markerEnd: 'arrowclosed' },
+      { id: 'e3', source: 'n3', sourceHandle: 'h1', target: 'n4', targetHandle: 'h2' },
+    ])
+    const ctx = makeCtx(edges)
+    const { dispose } = createEdgeLayer(ctx, svg)
+    await tick()
+
+    const byId = (id: string) => svg.querySelector(`path[data-edge-id="${id}"]`) as SVGPathElement
+    expect(byId('e1').getAttribute('marker-end')).toMatch(/^url\(#lf-arrow-(?!.*arrowclosed)/)
+    expect(byId('e2').getAttribute('marker-end')).toMatch(/^url\(#lf-arrowclosed-/)
+    expect(byId('e3').getAttribute('marker-end')).toBeNull()
+
+    dispose()
+  })
+
+  it('open arrow marker uses a polyline with fill:none', async () => {
+    const edges = signal<FlowEdge[]>([])
+    const ctx = makeCtx(edges)
+    const { dispose } = createEdgeLayer(ctx, svg)
+    await tick()
+
+    const markers = Array.from(svg.querySelectorAll('marker'))
+    const openMarker = markers.find(m => m.id.startsWith('lf-arrow-') && !m.id.startsWith('lf-arrowclosed-'))!
+    const shape = openMarker.querySelector('polyline')
+    expect(shape).not.toBeNull()
+    expect(shape!.getAttribute('fill')).toBe('none')
+
+    dispose()
+  })
+
+  it('closed arrow marker uses a polygon with fill:currentColor', async () => {
+    const edges = signal<FlowEdge[]>([])
+    const ctx = makeCtx(edges)
+    const { dispose } = createEdgeLayer(ctx, svg)
+    await tick()
+
+    const markers = Array.from(svg.querySelectorAll('marker'))
+    const closedMarker = markers.find(m => m.id.startsWith('lf-arrowclosed-'))!
+    const shape = closedMarker.querySelector('polygon')
+    expect(shape).not.toBeNull()
+    expect(shape!.getAttribute('fill')).toBe('currentColor')
+
+    dispose()
+  })
 })

@@ -67,9 +67,22 @@ const edges = signal([
 
 **Returns (`FlowHandle`):**
 
-| Property | Type | Description |
-|----------|------|-------------|
+| Property / Method | Type | Description |
+|-------------------|------|-------------|
 | `options` | `Readonly<FlowOptions>` | The frozen options object |
+| `getViewport()` | `() => Viewport` | Current pan + zoom. Returns `{x:0,y:0,zoom:1}` before canvas mounts. |
+| `setViewport(v, opts?)` | `(Viewport, ViewportAnimationOptions?) => void` | Jump to exact position and zoom. Pass `{duration}` to animate. |
+| `zoomTo(zoom, opts?)` | `(number, opts?) => void` | Set zoom, keeping viewport center fixed. |
+| `zoomIn(opts?)` | `(opts?) => void` | Zoom in by ×1.2. |
+| `zoomOut(opts?)` | `(opts?) => void` | Zoom out by ÷1.2. |
+| `fitBounds(rect, opts?)` | `(Rect, opts?) => void` | Fit an arbitrary rect into the viewport. |
+| `getNode(id)` | `(string) => FlowNode \| undefined` | Look up a node by id. |
+| `getEdge(id)` | `(string) => FlowEdge \| undefined` | Look up an edge by id. |
+| `getIntersectingNodes(node)` | `(FlowNode) => FlowNode[]` | All nodes overlapping the given node's bbox. |
+| `isNodeIntersecting(node, area)` | `(FlowNode, Rect) => boolean` | True if the node's bbox overlaps the given area. |
+
+> All methods except `getViewport()` / `getNode()` / `getEdge()` are no-ops before `FlowCanvas` mounts.
+> See [Imperative API →](./08-imperative-api.md) for detailed examples.
 
 ### `NodeComponentFn<T>`
 
@@ -85,10 +98,13 @@ Receives a `FlowNode` and returns a DOM `Node`.
 |-------|------|-------------|
 | `id` | `string` | Unique node ID |
 | `type` | `string` | Matches a key in `nodeTypes` |
-| `position` | `Point` | `{ x, y }` canvas position |
+| `position` | `Point` | `{ x, y }` canvas position. Relative to parent when `parentId` is set. |
 | `data` | `T` | Custom node data |
 | `selected` | `boolean?` | Selection state |
 | `dragging` | `boolean?` | Drag state |
+| `parentId` | `string?` | ID of the parent node. Makes this node a child. See [Node Groups →](./09-node-groups.md) |
+| `width` | `number?` | Explicit width in canvas units. Skips DOM measurement when set. |
+| `height` | `number?` | Explicit height in canvas units. Skips DOM measurement when set. |
 
 ### `FlowEdge<T>`
 
@@ -102,6 +118,8 @@ Receives a `FlowNode` and returns a DOM `Node`.
 | `type` | `string?` | Edge type (matches `edgeTypes` key) |
 | `data` | `T?` | Custom edge data |
 | `selected` | `boolean?` | Selection state |
+| `label` | `string?` | Text label rendered at the midpoint of the edge |
+| `animated` | `boolean?` | When `true`, renders a flowing dash animation in the source → target direction. GPU-composited — zero main-thread cost per frame. |
 
 ### `applyNodeChanges(nodes, changes)` → `FlowNode[]`
 
@@ -131,15 +149,24 @@ const flow = createFlow({
 
 ### Validate connections
 
+Self-connections (`source === target`) are blocked automatically without any configuration.
+
+For additional rules, use the exported helpers:
+
 ```ts
+import { createFlow, isNoSelfConnection, isNoDuplicateEdge, combineValidators } from '@liteforge/flow'
+
 const flow = createFlow({
   nodeTypes: { ... },
-  isValidConnection: (conn) => {
-    // Prevent self-loops
-    return conn.source !== conn.target
-  },
+  isValidConnection: combineValidators(
+    isNoSelfConnection,                   // already built-in, shown for clarity
+    isNoDuplicateEdge(() => edges()),      // block duplicate edges
+    (conn) => myTypeCompatibilityCheck(conn),
+  ),
 })
 ```
+
+See [Connection Validation →](./10-connection-validation.md) for full docs.
 
 ## Notes
 

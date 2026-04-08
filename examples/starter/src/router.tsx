@@ -241,6 +241,12 @@ export const routes: RouteDefinition[] = [
         export: 'FlowPage',
         meta: { title: 'Flow Editor' },
       },
+      {
+        path: '/api-pipeline',
+        component: () => import('./pages/dashboard/ApiPipeline.js'),
+        export: 'ApiPipelinePage',
+        meta: { title: 'API Pipeline' },
+      },
     ],
   },
 

@@ -1,20 +1,23 @@
-import type { FlowNode, Transform } from '../types.js'
+import type { FlowNode, FitViewOptions, Transform } from '../types.js'
 
-export interface FitViewOptions {
-  padding?: number
-  minScale?: number
-  maxScale?: number
-}
+// FitViewOptions is defined in types.ts and re-exported from index.ts
+export type { FitViewOptions }
 
 /**
  * Compute the transform that fits all nodes into the viewport.
  * Returns identity transform if there are no nodes.
+ *
+ * @param getAbsolutePosition Optional resolver for absolute canvas positions.
+ *   When provided, it is called for each node instead of using node.position directly.
+ *   Required for correct behaviour when nodes have a parentId (their position is
+ *   parent-relative, not canvas-absolute).
  */
 export function computeFitView(
   nodes: FlowNode[],
   viewportWidth: number,
   viewportHeight: number,
   options?: FitViewOptions,
+  getAbsolutePosition?: (nodeId: string) => { x: number; y: number },
 ): Transform {
   if (nodes.length === 0) return { x: 0, y: 0, scale: 1 }
 
@@ -22,10 +25,11 @@ export function computeFitView(
 
   let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity
   for (const node of nodes) {
-    if (node.position.x < minX) minX = node.position.x
-    if (node.position.y < minY) minY = node.position.y
-    if (node.position.x > maxX) maxX = node.position.x
-    if (node.position.y > maxY) maxY = node.position.y
+    const pos = getAbsolutePosition ? getAbsolutePosition(node.id) : node.position
+    if (pos.x < minX) minX = pos.x
+    if (pos.y < minY) minY = pos.y
+    if (pos.x > maxX) maxX = pos.x
+    if (pos.y > maxY) maxY = pos.y
   }
 
   const bbox = {

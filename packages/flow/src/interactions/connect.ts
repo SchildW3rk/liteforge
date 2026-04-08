@@ -1,6 +1,7 @@
 import type { FlowContextValue } from '../context.js'
 import type { Transform, Connection, HandleType } from '../types.js'
 import { screenToCanvas } from '../geometry/coords.js'
+import { isNoSelfConnection } from '../helpers/connection-validators.js'
 
 /**
  * Sets up document-level pointer listeners for the connecting interaction.
@@ -39,7 +40,10 @@ export function setupConnect(
           target:       targetNodeId,
           targetHandle: targetHandleId,
         }
-        if (!ctx.isValidConnection || ctx.isValidConnection(connection)) {
+        // Built-in guard: never allow source === target (self-connection)
+        const builtInValid = isNoSelfConnection(connection)
+        const userValid    = !ctx.isValidConnection || ctx.isValidConnection(connection)
+        if (builtInValid && userValid) {
           ctx.onConnect?.(connection)
         }
       }
