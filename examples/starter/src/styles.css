@@ -1251,6 +1251,181 @@ input, select {
 }
 
 /* =============================================================================
+   Flow Showcase Page
+   ============================================================================= */
+
+/* Remove padding from main-content when showing showcase page */
+.main-content:has(.sc-page) {
+  padding: 0;
+}
+
+.sc-page {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* ── Header extras ── */
+.sc-header {
+  flex-shrink: 0;
+}
+
+.sc-divider {
+  width: 1px;
+  height: 20px;
+  background: var(--color-border);
+  flex-shrink: 0;
+}
+
+.sc-clipboard-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.sc-clip-msg {
+  font-size: 0.75rem;
+  color: var(--color-success, #10b981);
+  min-width: 90px;
+  transition: opacity 0.2s;
+}
+
+.sc-btn-copy,
+.sc-btn-paste {
+  font-size: 0.78rem;
+  padding: 5px 10px;
+}
+
+.sc-btn-stress {
+  background: var(--color-bg-tertiary);
+  color: var(--color-text);
+  font-size: 0.8rem;
+  padding: 5px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--color-border);
+}
+
+.sc-btn-stress-active {
+  background: var(--color-error, #ef4444);
+  color: #fff;
+  font-size: 0.8rem;
+  padding: 5px 12px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+}
+
+/* ── Feature badges strip ── */
+.sc-features-strip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px var(--spacing-lg);
+  background: var(--color-bg-secondary);
+  border-bottom: 1px solid var(--color-border);
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
+
+.sc-badge {
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 99px;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+.sc-badge--green  { background: rgba(16, 185, 129, 0.12); color: #059669; border: 1px solid rgba(16,185,129,0.25); }
+.sc-badge--blue   { background: rgba(59, 130, 246, 0.12); color: #2563eb; border: 1px solid rgba(59,130,246,0.25); }
+.sc-badge--purple { background: rgba(139, 92, 246, 0.12); color: #7c3aed; border: 1px solid rgba(139,92,246,0.25); }
+.sc-badge--orange { background: rgba(249, 115, 22, 0.12); color: #ea580c; border: 1px solid rgba(249,115,22,0.25); }
+.sc-badge--teal   { background: rgba(20, 184, 166, 0.12); color: #0d9488; border: 1px solid rgba(20,184,166,0.25); }
+.sc-badge--gray   { background: var(--color-bg-tertiary); color: var(--color-text-secondary); border: 1px solid var(--color-border); }
+
+/* ── Showcase node renderers ── */
+.sc-node {
+  min-width: 130px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 2px solid var(--color-border);
+  background: var(--color-bg-secondary);
+  font-size: 0.8rem;
+  position: relative;
+  user-select: none;
+  transition: box-shadow 0.15s;
+}
+
+.sc-node--standard {
+  border-color: #6366f1;
+  background: rgba(99, 102, 241, 0.05);
+}
+
+.sc-node--resizable {
+  border-color: #f59e0b;
+  background: rgba(245, 158, 11, 0.06);
+  /* Must fill available space when resized */
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.sc-node--source {
+  border-color: #10b981;
+  background: rgba(16, 185, 129, 0.07);
+}
+
+.sc-node--sink {
+  border-color: #8b5cf6;
+  background: rgba(139, 92, 246, 0.07);
+}
+
+.sc-node-icon {
+  font-size: 1rem;
+  display: block;
+  margin-bottom: 2px;
+}
+
+.sc-node-label {
+  font-weight: 600;
+  color: var(--color-text);
+  line-height: 1.2;
+}
+
+.sc-node-sub {
+  font-size: 0.68rem;
+  color: var(--color-text-secondary);
+  margin-top: 2px;
+}
+
+/* Hover highlight — toggled via .sc-node-hovered class on the wrapper */
+.sc-node-hovered .sc-node {
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.35);
+}
+
+/* ── Footer kbd styles ── */
+.sc-footer {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.sc-footer kbd {
+  display: inline-block;
+  padding: 0 5px;
+  border-radius: 3px;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-tertiary);
+  font-size: 0.7rem;
+  font-family: monospace;
+  line-height: 1.5;
+}
+
+.sc-footer-sep {
+  color: var(--color-text-muted);
+}
+
+/* =============================================================================
    API Pipeline Node Styles
    ============================================================================= */
 
