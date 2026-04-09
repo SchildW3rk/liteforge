@@ -93,6 +93,7 @@ function createEdgeBundle(
   labelText.classList.add('lf-edge-label-text')
   labelText.setAttribute('text-anchor', 'middle')
   labelText.setAttribute('dominant-baseline', 'middle')
+  labelText.setAttribute('dy', '0.35em')
   labelG.appendChild(labelBg)
   labelG.appendChild(labelText)
   edgesLayerEl.appendChild(labelG)

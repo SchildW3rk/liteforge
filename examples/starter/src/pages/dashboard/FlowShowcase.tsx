@@ -54,6 +54,25 @@ interface ShowcaseNodeData {
 }
 
 // =============================================================================
+// Toolbar helpers
+// =============================================================================
+
+function tbBtn(toolbar: { el: HTMLDivElement }, label: string, onClick: () => void, danger = false): void {
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.textContent = label;
+  btn.className = 'sc-tb-btn' + (danger ? ' sc-tb-btn--danger' : '');
+  btn.addEventListener('click', onClick);
+  toolbar.el.appendChild(btn);
+}
+
+function tbDivider(toolbar: { el: HTMLDivElement }): void {
+  const sep = document.createElement('span');
+  sep.className = 'sc-tb-sep';
+  toolbar.el.appendChild(sep);
+}
+
+// =============================================================================
 // Node Renderers
 // =============================================================================
 
@@ -81,24 +100,17 @@ function StandardNode(node: FlowNode<ShowcaseNodeData>): HTMLElement {
 
   // ── NodeToolbar — appears above the node when it is selected ──────────────
   const toolbar = createNodeToolbar(node.id, ctx, { position: 'top', align: 'center', offset: 6 });
-  toolbar.addButton({
-    label: 'Duplicate',
-    onClick: () => {
-      const copy: FlowNode<ShowcaseNodeData> = {
-        ...node,
-        id: `dup-${node.id}-${Date.now()}`,
-        position: { x: node.position.x + 24, y: node.position.y + 24 },
-        selected: false,
-      };
-      ctx.onNodesChange?.([{ type: 'add', node: copy }]);
-    },
+  tbBtn(toolbar, 'Duplicate', () => {
+    const copy: FlowNode<ShowcaseNodeData> = {
+      ...node,
+      id: `dup-${node.id}-${Date.now()}`,
+      position: { x: node.position.x + 24, y: node.position.y + 24 },
+      selected: false,
+    };
+    ctx.onNodesChange?.([{ type: 'add', node: copy }]);
   });
-  toolbar.addDivider();
-  toolbar.addButton({
-    label: 'Delete',
-    danger: true,
-    onClick: () => ctx.onNodesChange?.([{ type: 'remove', id: node.id }]),
-  });
+  tbDivider(toolbar);
+  tbBtn(toolbar, 'Delete', () => ctx.onNodesChange?.([{ type: 'remove', id: node.id }]), true);
 
   // ── Handles ───────────────────────────────────────────────────────────────
   const getWrapper = (): HTMLElement => wrap.parentElement as HTMLElement ?? wrap;
@@ -133,16 +145,12 @@ function ResizableNode(node: FlowNode<ShowcaseNodeData>): HTMLElement {
   wrap.appendChild(hint);
 
   // ── NodeResizer ───────────────────────────────────────────────────────────
-  const resizer = createNodeResizer(node.id, ctx, { minWidth: 120, minHeight: 60 });
-  wrap.appendChild(resizer.el);
+  const resizerEl = createNodeResizer(node.id, ctx, { minWidth: 120, minHeight: 60 });
+  wrap.appendChild(resizerEl);
 
   // ── NodeToolbar ───────────────────────────────────────────────────────────
   const toolbar = createNodeToolbar(node.id, ctx, { position: 'top' });
-  toolbar.addButton({
-    label: 'Delete',
-    danger: true,
-    onClick: () => ctx.onNodesChange?.([{ type: 'remove', id: node.id }]),
-  });
+  tbBtn(toolbar, 'Delete', () => ctx.onNodesChange?.([{ type: 'remove', id: node.id }]), true);
 
   const getWrapper = (): HTMLElement => wrap.parentElement as HTMLElement ?? wrap;
   const { el: inEl }  = createHandle(node.id, 'in',  'target', 'left',  ctx, getWrapper());
@@ -173,11 +181,7 @@ function SourceNode(node: FlowNode<ShowcaseNodeData>): HTMLElement {
   wrap.appendChild(label);
 
   const toolbar = createNodeToolbar(node.id, ctx, { position: 'top' });
-  toolbar.addButton({
-    label: 'Delete',
-    danger: true,
-    onClick: () => ctx.onNodesChange?.([{ type: 'remove', id: node.id }]),
-  });
+  tbBtn(toolbar, 'Delete', () => ctx.onNodesChange?.([{ type: 'remove', id: node.id }]), true);
 
   const getWrapper = (): HTMLElement => wrap.parentElement as HTMLElement ?? wrap;
   const { el: outEl } = createHandle(node.id, 'out', 'source', 'right', ctx, getWrapper());
@@ -206,11 +210,7 @@ function SinkNode(node: FlowNode<ShowcaseNodeData>): HTMLElement {
   wrap.appendChild(label);
 
   const toolbar = createNodeToolbar(node.id, ctx, { position: 'top' });
-  toolbar.addButton({
-    label: 'Delete',
-    danger: true,
-    onClick: () => ctx.onNodesChange?.([{ type: 'remove', id: node.id }]),
-  });
+  tbBtn(toolbar, 'Delete', () => ctx.onNodesChange?.([{ type: 'remove', id: node.id }]), true);
 
   const getWrapper = (): HTMLElement => wrap.parentElement as HTMLElement ?? wrap;
   const { el: inEl } = createHandle(node.id, 'in', 'target', 'left', ctx, getWrapper());
