@@ -41,6 +41,10 @@ export { screenToCanvas, canvasToScreen } from './geometry/coords.js'
 export { getBezierPath, getStepPath, getStraightPath } from './geometry/paths.js'
 export { rectsOverlap, rectFromPoints } from './geometry/aabb.js'
 
+// defineNode — DX helper for declarative node type definitions
+export { defineNode } from './helpers/define-node.js'
+export type { DefineNodeOptions, FieldDescriptor, FieldType, HandleDescriptor } from './helpers/define-node.js'
+
 // Pure change helpers
 export { applyNodeChanges, applyEdgeChanges } from './helpers/apply-changes.js'
 export { isNoSelfConnection, isNoDuplicateEdge, combineValidators } from './helpers/connection-validators.js'

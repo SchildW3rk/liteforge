@@ -35,6 +35,7 @@ import {
   FlowCanvas,
   createHandle,
   getFlowContext,
+  defineNode,
   createFlowHistory,
   createAutoLayout,
 } from '@liteforge/flow';
@@ -82,13 +83,8 @@ const execNodeErrors  = signal<Map<string, string>>(new Map())
 const onNodeClick = { fn: (_id: string) => {} }
 
 // =============================================================================
-// Execution State CSS helpers
+// Execution State — helpers
 // =============================================================================
-
-function nodeStatusClass(nodeId: string): string {
-  const s = execNodeStates().get(nodeId) ?? 'idle'
-  return s === 'idle' ? '' : `pipe-node--${s}`
-}
 
 function nodeOutputText(nodeId: string): string {
   const status = execNodeStates().get(nodeId) ?? 'idle'
@@ -102,165 +98,169 @@ function nodeOutputText(nodeId: string): string {
   return String(out)
 }
 
-function nodeOutputVisible(nodeId: string): boolean {
-  const status = execNodeStates().get(nodeId) ?? 'idle'
-  return status !== 'idle' && execNodeOutputs().get(nodeId) !== undefined
-}
-
 // =============================================================================
-// Shared Node Shell — JSX, fully reactive
+// withExecState — HOF wrapping any NodeComponentFn with reactive exec styles
+//
+// Applies pipe-node--{status} class and data-output tooltip to the rendered
+// element. Pipeline-specific concern; @liteforge/flow core knows nothing of it.
 // =============================================================================
 
-function NodeShell(
-  type: string,
-  accent: string,
-  icon: string,
-  node: FlowNode,
-  children: Node,
-): Node {
-  const pipeEl = (
-    <div
-      class={() => `pipe-node pipe-node--${type} ${nodeStatusClass(node.id)}`}
-      style={`--pipe-accent: ${accent}`}
-    >
-      <div class="pipe-node-header" onclick={() => onNodeClick.fn(node.id)}>
-        <span class="pipe-node-icon">{icon}</span>
-        <span class="pipe-node-title">{(node.data as { label: string }).label}</span>
-        <span class="pipe-node-badge">{type.toUpperCase()}</span>
-        <span class="pipe-node-edit-hint" title="Click to edit properties">✏️</span>
-      </div>
-      <div class="pipe-node-body">{children}</div>
-    </div>
-  ) as HTMLElement
+function withExecState<T>(fn: NodeComponentFn<T>): NodeComponentFn<T> {
+  return function execWrapped(node: FlowNode<T>): Node {
+    const el = fn(node) as HTMLElement
 
-  // Set data-output on lf-node-wrapper (the parent) so ::after tooltip can use it.
-  // The wrapper is created by NodeWrapper.ts and is the parent of this element.
-  // We use queueMicrotask to wait for DOM insertion, then keep it reactive via effect.
-  queueMicrotask(() => {
-    const wrapper = pipeEl.parentElement
-    if (!wrapper) return
+    // Apply exec-state class reactively
     effect(() => {
-      const text = nodeOutputText(node.id)
-      if (text) {
-        wrapper.setAttribute('data-output', text)
-      } else {
-        wrapper.removeAttribute('data-output')
-      }
+      const status = execNodeStates().get(node.id) ?? 'idle'
+      // Remove any previous exec class
+      el.classList.forEach(cls => {
+        if (cls.startsWith('pipe-node--')) el.classList.remove(cls)
+      })
+      if (status !== 'idle') el.classList.add(`pipe-node--${status}`)
     })
-  })
 
-  return pipeEl
-}
+    // Set data-output on the lf-node-wrapper (parent) for hover tooltip
+    queueMicrotask(() => {
+      const wrapper = el.parentElement
+      if (!wrapper) return
+      effect(() => {
+        const text = nodeOutputText(node.id)
+        if (text) wrapper.setAttribute('data-output', text)
+        else       wrapper.removeAttribute('data-output')
+      })
+    })
 
-function NodeField(label: string, value: string): Node {
-  return (
-    <div class="pipe-node-field">
-      <span class="pipe-node-field-label">{label}</span>
-      <span class="pipe-node-field-value">{value}</span>
-    </div>
-  )
-}
-
-// =============================================================================
-// Handle helpers — called inside JSX, need flow context
-// =============================================================================
-
-function SrcHandle(nodeId: string, handleId: string, wrapEl: () => HTMLElement): Node {
-  const ctx = getFlowContext()
-  const { el } = createHandle(nodeId, handleId, 'source', 'right', ctx, wrapEl())
-  return el
-}
-
-function TgtHandle(nodeId: string, handleId: string, wrapEl: () => HTMLElement): Node {
-  const ctx = getFlowContext()
-  const { el } = createHandle(nodeId, handleId, 'target', 'left', ctx, wrapEl())
-  return el
+    return el
+  }
 }
 
 // =============================================================================
-// Node Type Renderers — pure JSX, fully reactive via Vite plugin
+// Node Types — defined with defineNode()
 // =============================================================================
 
-function TriggerNode(node: FlowNode): Node {
-  const data = node.data as TriggerData
-  const wrap = NodeShell('trigger', '#10b981', '⚡', node,
-    <>{NodeField('Type', data.triggerType)}{NodeField('User', data.username || '—')}</>,
-  ) as HTMLElement
-  wrap.appendChild(SrcHandle(node.id, 'out', () => wrap.parentElement as HTMLElement ?? wrap) as HTMLElement)
-  return wrap
-}
+// Condition node uses a raw NodeComponentFn — it needs two source handles
+// at distinct vertical positions (T/F) which defineNode's outputs[] doesn't
+// support yet. defineNode is used for all other node types.
+function ConditionNodeFn(node: FlowNode<ConditionData>): Node {
+  const data = node.data
+  const ctx  = getFlowContext()
 
-function AuthNode(node: FlowNode): Node {
-  const data = node.data as AuthData
-  const wrap = NodeShell('auth', '#f59e0b', '🔑', node,
-    <>{NodeField('Method', data.authType)}{NodeField('Token', data.token ? data.token.slice(0, 8) + '…' : '(none)')}</>,
-  ) as HTMLElement
-  wrap.appendChild(TgtHandle(node.id, 'in',  () => wrap.parentElement as HTMLElement ?? wrap) as HTMLElement)
-  wrap.appendChild(SrcHandle(node.id, 'out', () => wrap.parentElement as HTMLElement ?? wrap) as HTMLElement)
-  return wrap
-}
+  const root = document.createElement('div')
+  root.className = 'lf-dn'
+  root.style.setProperty('--lf-dn-color', '#f97316')
 
-function HttpNode(node: FlowNode): Node {
-  const data = node.data as HttpData
-  const wrap = NodeShell('http', '#3b82f6', '🌐', node,
-    <>{NodeField('Method', data.method)}{NodeField('URL', data.url.length > 28 ? data.url.slice(0, 28) + '…' : data.url)}</>,
-  ) as HTMLElement
-  wrap.appendChild(TgtHandle(node.id, 'in',  () => wrap.parentElement as HTMLElement ?? wrap) as HTMLElement)
-  wrap.appendChild(SrcHandle(node.id, 'out', () => wrap.parentElement as HTMLElement ?? wrap) as HTMLElement)
-  return wrap
-}
+  // Header
+  const header = document.createElement('div')
+  header.className = 'lf-dn-header'
+  const icon = document.createElement('span'); icon.className = 'lf-dn-icon'; icon.textContent = '🔀'
+  const lbl  = document.createElement('span'); lbl.className  = 'lf-dn-label'; lbl.textContent = (data as unknown as { label?: string }).label ?? 'condition'
+  const bdg  = document.createElement('span'); bdg.className  = 'lf-dn-badge'; bdg.textContent = 'CONDITION'
+  header.append(icon, lbl, bdg)
+  root.appendChild(header)
 
-function TransformNode(node: FlowNode): Node {
-  const data = node.data as TransformData
-  const wrap = NodeShell('transform', '#8b5cf6', '⚙️', node,
-    <>{NodeField('Expr', data.expression.length > 28 ? data.expression.slice(0, 28) + '…' : data.expression)}</>,
-  ) as HTMLElement
-  wrap.appendChild(TgtHandle(node.id, 'in',  () => wrap.parentElement as HTMLElement ?? wrap) as HTMLElement)
-  wrap.appendChild(SrcHandle(node.id, 'out', () => wrap.parentElement as HTMLElement ?? wrap) as HTMLElement)
-  return wrap
-}
+  // Body
+  const body = document.createElement('div'); body.className = 'lf-dn-body'
+  const row1 = document.createElement('div'); row1.className = 'lf-dn-field'
+  const l1   = document.createElement('span'); l1.className  = 'lf-dn-field-label'; l1.textContent = 'Field'
+  const v1   = document.createElement('span'); v1.className  = 'lf-dn-field-value'; v1.textContent = data.field
+  row1.append(l1, v1)
+  const row2 = document.createElement('div'); row2.className = 'lf-dn-field'
+  const l2   = document.createElement('span'); l2.className  = 'lf-dn-field-label'; l2.textContent = 'Check'
+  const v2   = document.createElement('span'); v2.className  = 'lf-dn-field-value'; v2.textContent = `${data.operator} ${data.value}`
+  row2.append(l2, v2)
+  body.append(row1, row2)
+  root.appendChild(body)
 
-function ConditionNode(node: FlowNode): Node {
-  const data = node.data as ConditionData
-  const wrap = NodeShell('condition', '#f97316', '🔀', node,
-    <>{NodeField('Field', data.field)}{NodeField('Check', `${data.operator} ${data.value}`)}</>,
-  ) as HTMLElement
+  // Handles — lf-node-wrapper is root.parentElement after NodeWrapper.ts mounts us
+  const getWrapper = (): HTMLElement =>
+    (root.parentElement as HTMLElement | null) ?? root
 
-  const ctx = getFlowContext()
-  const getWrapper = () => wrap.parentElement as HTMLElement ?? wrap
-
-  const { el: trueEl }  = createHandle(node.id, 'true',  'source', 'right', ctx, getWrapper())
+  const { el: trueEl  } = createHandle(node.id, 'true',  'source', 'right', ctx, getWrapper())
   const { el: falseEl } = createHandle(node.id, 'false', 'source', 'right', ctx, getWrapper())
+  const { el: inEl    } = createHandle(node.id, 'in',    'target', 'left',  ctx, getWrapper())
 
   trueEl.classList.add('pipe-handle-true')
   falseEl.classList.add('pipe-handle-false')
 
-  trueEl.appendChild(<span class="pipe-handle-label pipe-handle-label--true">T</span> as HTMLElement)
-  falseEl.appendChild(<span class="pipe-handle-label pipe-handle-label--false">F</span> as HTMLElement)
+  const tLbl = document.createElement('span'); tLbl.className = 'pipe-handle-label pipe-handle-label--true';  tLbl.textContent = 'T'
+  const fLbl = document.createElement('span'); fLbl.className = 'pipe-handle-label pipe-handle-label--false'; fLbl.textContent = 'F'
+  trueEl.appendChild(tLbl)
+  falseEl.appendChild(fLbl)
 
-  wrap.appendChild(trueEl)
-  wrap.appendChild(falseEl)
-  wrap.appendChild(TgtHandle(node.id, 'in', getWrapper) as HTMLElement)
-  return wrap
+  root.append(trueEl, falseEl, inEl)
+  return root
 }
 
+// Response color depends on status code — set via CSS custom prop override
+const responseFn = defineNode<ResponseData>({
+  type:    'response',
+  icon:    '📤',
+  color:   '#10b981',  // default; overridden per-node below
+  inputs:  [{ id: 'in' }],
+  fields: {
+    status: { type: 'number', label: 'Status' },
+    body:   { type: 'text',   label: 'Body'   },
+  },
+})
+
+// For response nodes we override the color after render based on status code
 function ResponseNode(node: FlowNode): Node {
+  const el = responseFn(node) as HTMLElement
   const data = node.data as ResponseData
   const color = data.status >= 400 ? '#ef4444' : data.status >= 300 ? '#f59e0b' : '#10b981'
-  const wrap = NodeShell('response', color, '📤', node,
-    <>{NodeField('Status', String(data.status))}{NodeField('Body', data.body.length > 24 ? data.body.slice(0, 24) + '…' : data.body)}</>,
-  ) as HTMLElement
-  wrap.appendChild(TgtHandle(node.id, 'in', () => wrap.parentElement as HTMLElement ?? wrap) as HTMLElement)
-  return wrap
+  el.style.setProperty('--lf-dn-color', color)
+  return el
 }
 
 const nodeTypes: Record<string, NodeComponentFn> = {
-  trigger:   TriggerNode,
-  auth:      AuthNode,
-  http:      HttpNode,
-  transform: TransformNode,
-  condition: ConditionNode,
-  response:  ResponseNode,
+  trigger:   withExecState(defineNode<TriggerData>({
+    type:    'trigger',
+    icon:    '⚡',
+    color:   '#10b981',
+    outputs: [{ id: 'out' }],
+    fields: {
+      triggerType: { type: 'select', label: 'Type',    options: ['webhook', 'schedule', 'manual'] },
+      username:    { type: 'text',   label: 'User' },
+    },
+  })),
+
+  auth:      withExecState(defineNode<AuthData>({
+    type:    'auth',
+    icon:    '🔑',
+    color:   '#f59e0b',
+    inputs:  [{ id: 'in' }],
+    outputs: [{ id: 'out' }],
+    fields: {
+      authType: { type: 'select', label: 'Method', options: ['bearer', 'api-key', 'basic'] },
+      token:    { type: 'text',   label: 'Token' },
+    },
+  })),
+
+  http:      withExecState(defineNode<HttpData>({
+    type:    'http',
+    icon:    '🌐',
+    color:   '#3b82f6',
+    inputs:  [{ id: 'in' }],
+    outputs: [{ id: 'out' }],
+    fields: {
+      method: { type: 'select', label: 'Method', options: ['GET', 'POST', 'PUT', 'DELETE'] },
+      url:    { type: 'text',   label: 'URL' },
+    },
+  })),
+
+  transform: withExecState(defineNode<TransformData>({
+    type:    'transform',
+    icon:    '⚙️',
+    color:   '#8b5cf6',
+    inputs:  [{ id: 'in' }],
+    outputs: [{ id: 'out' }],
+    fields: {
+      expression: { type: 'textarea', label: 'Expr' },
+    },
+  })),
+
+  condition: withExecState(ConditionNodeFn as NodeComponentFn),
+  response:  withExecState(ResponseNode),
 }
 
 // =============================================================================
