@@ -249,6 +249,16 @@ export interface FlowCanvasProps {
    * Intended for viewport persistence composables.
    */
   onViewportChange?: (viewport: Viewport) => void
+  /**
+   * Show the MiniMap overlay in the bottom-right corner. Defaults to `true`.
+   * Set to `false` to hide it (e.g. on small or embedded canvases).
+   */
+  showMiniMap?: boolean
+  /**
+   * Show the zoom Controls overlay in the bottom-left corner. Defaults to `true`.
+   * Set to `false` to hide them.
+   */
+  showControls?: boolean
 }
 
 // Interaction State Machine

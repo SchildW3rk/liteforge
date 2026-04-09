@@ -315,6 +315,24 @@
   pointer-events: none;
 }
 
+/* Edge Labels */
+.lf-edge-label {
+  pointer-events: none;
+}
+
+.lf-edge-label-bg {
+  fill: var(--lf-flow-edge-label-bg);
+  stroke: var(--lf-flow-edge-label-border);
+  stroke-width: 1;
+}
+
+.lf-edge-label-text {
+  fill: var(--lf-flow-edge-label-color);
+  font-size: var(--lf-flow-edge-label-size, 11px);
+  font-family: inherit;
+  user-select: none;
+}
+
 /* Edge Endpoint Reconnect Handles */
 .lf-edge-endpoint {
   fill: var(--lf-flow-handle-bg);

@@ -214,11 +214,15 @@ export function FlowCanvas(props: FlowCanvasProps): Node {
     requestAnimationFrame(fitView)
   }
 
-  // Controls overlay (appended outside transform layer)
-  createControls(ctx, transform, root, fitView)
+  // Controls overlay (appended outside transform layer) — hidden via showControls: false
+  if (props.showControls !== false) {
+    createControls(ctx, transform, root, fitView)
+  }
 
-  // MiniMap overlay (appended outside transform layer)
-  createMiniMap(ctx, transform, root)
+  // MiniMap overlay (appended outside transform layer) — hidden via showMiniMap: false
+  if (props.showMiniMap !== false) {
+    createMiniMap(ctx, transform, root)
+  }
 
   // ---- Context Menu ----
   const contextMenuHandle = createContextMenu(ctx, root)
