@@ -118,7 +118,7 @@ function NodeShell(
   node: FlowNode,
   children: Node,
 ): Node {
-  return (
+  const pipeEl = (
     <div
       class={() => `pipe-node pipe-node--${type} ${nodeStatusClass(node.id)}`}
       style={`--pipe-accent: ${accent}`}
@@ -130,13 +130,26 @@ function NodeShell(
         <span class="pipe-node-edit-hint" title="Click to edit properties">✏️</span>
       </div>
       <div class="pipe-node-body">{children}</div>
-      <div
-        class={() => `pipe-node-output${nodeOutputVisible(node.id) ? '' : ' pipe-node-output--hidden'}`}
-      >
-        {() => nodeOutputText(node.id)}
-      </div>
     </div>
-  )
+  ) as HTMLElement
+
+  // Set data-output on lf-node-wrapper (the parent) so ::after tooltip can use it.
+  // The wrapper is created by NodeWrapper.ts and is the parent of this element.
+  // We use queueMicrotask to wait for DOM insertion, then keep it reactive via effect.
+  queueMicrotask(() => {
+    const wrapper = pipeEl.parentElement
+    if (!wrapper) return
+    effect(() => {
+      const text = nodeOutputText(node.id)
+      if (text) {
+        wrapper.setAttribute('data-output', text)
+      } else {
+        wrapper.removeAttribute('data-output')
+      }
+    })
+  })
+
+  return pipeEl
 }
 
 function NodeField(label: string, value: string): Node {
