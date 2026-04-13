@@ -275,14 +275,16 @@ describe('createAuthGuard', () => {
 
   it('redirects to login when not authenticated', async () => {
     const guard = createAuthGuard({ isAuthenticated: () => false });
-    const result = await guard.handler(mockContext);
-    expect(result).toBe('/login?redirect=%2Fadmin');
+    const result = await guard.handler(mockContext) as { path: string; query: Record<string, string>; replace: boolean };
+    expect(result.path).toBe('/login');
+    expect(result.query.redirect).toBe('/admin');
+    expect(result.replace).toBe(true);
   });
 
   it('uses custom login path', async () => {
     const guard = createAuthGuard({ isAuthenticated: () => false, loginPath: '/auth/signin' });
-    const result = await guard.handler(mockContext);
-    expect(result).toContain('/auth/signin');
+    const result = await guard.handler(mockContext) as { path: string };
+    expect(result.path).toBe('/auth/signin');
   });
 
   it('includes search in redirect URL', async () => {
@@ -291,8 +293,14 @@ describe('createAuthGuard', () => {
       ...mockContext,
       to: { ...mockContext.to, path: '/admin', search: 'tab=users' },
     };
-    const result = await guard.handler(contextWithSearch);
-    expect(result).toContain(encodeURIComponent('/admintab=users'));
+    const result = await guard.handler(contextWithSearch) as { query: Record<string, string> };
+    expect(result.query.redirect).toBe('/admintab=users');
+  });
+
+  it('replace: false pushes a new history entry', async () => {
+    const guard = createAuthGuard({ isAuthenticated: () => false, replace: false });
+    const result = await guard.handler(mockContext) as { replace: boolean };
+    expect(result.replace).toBe(false);
   });
 });
 

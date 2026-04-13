@@ -266,6 +266,12 @@ export interface CreateAuthGuardOptions {
   isAuthenticated: () => boolean;
   /** Path to redirect unauthenticated users to. @default '/login' */
   loginPath?: string;
+  /**
+   * Whether to replace the current history entry when redirecting to the login page.
+   * Set to `false` to push a new history entry instead (allows Back navigation to protected route URL).
+   * @default true
+   */
+  replace?: boolean;
 }
 
 /**
@@ -277,13 +283,12 @@ export interface CreateAuthGuardOptions {
  * ```
  */
 export function createAuthGuard(options: CreateAuthGuardOptions): RouteGuard {
-  const { isAuthenticated, loginPath = '/login' } = options;
+  const { isAuthenticated, loginPath = '/login', replace = true } = options;
   return defineGuard('auth', ({ to }) => {
     if (isAuthenticated()) {
       return true;
     }
-    const redirectTo = encodeURIComponent(to.path + to.search);
-    return `${loginPath}?redirect=${redirectTo}`;
+    return { path: loginPath, query: { redirect: to.path + to.search }, replace };
   });
 }
 

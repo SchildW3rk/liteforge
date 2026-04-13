@@ -396,7 +396,11 @@ export function createRouter<T extends readonly RouteDefinition[]>(
         }
 
         // Update history (use replace for redirects or if explicitly requested)
-        if (replace || redirectCount > 0) {
+        // A NavigationTarget object may carry its own replace flag — honour it.
+        const targetReplace = typeof currentTarget === 'object' && currentTarget.replace !== undefined
+          ? currentTarget.replace
+          : (replace || redirectCount > 0);
+        if (targetReplace) {
           history.replace(currentTarget);
         } else {
           history.push(currentTarget);
@@ -406,7 +410,7 @@ export function createRouter<T extends readonly RouteDefinition[]>(
         const previousLocation = currentLocation;
         currentLocation = finalTargetLocation;
 
-        const isReplaceNav = replace || redirectCount > 0;
+        const isReplaceNav = targetReplace;
         const commitDom = () => updateState(finalTargetLocation, matched, result.preloadedData);
 
         if (transitions) {
@@ -725,6 +729,21 @@ export function createRouter<T extends readonly RouteDefinition[]>(
         route,
         params,
       };
+    },
+
+    getRedirectParam(): string | null {
+      const raw = querySignal().redirect;
+      const value = Array.isArray(raw) ? raw[0] : raw;
+      if (!value) return null;
+      let decoded: string;
+      try {
+        decoded = decodeURIComponent(value);
+      } catch {
+        return null;
+      }
+      // Security: only allow relative paths — reject protocols and protocol-relative URLs
+      if (!decoded.startsWith('/') || decoded.startsWith('//')) return null;
+      return decoded;
     },
 
     // Cleanup

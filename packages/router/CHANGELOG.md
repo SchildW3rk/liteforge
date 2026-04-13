@@ -1,5 +1,16 @@
 # @liteforge/router
 
+## 0.11.0
+
+### Minor Changes
+
+- feat: `replace` flag in `NavigationTarget`, `createAuthGuard` `replace` option, and `router.getRedirectParam()` helper
+
+  - `NavigationTarget` object form now accepts `replace?: boolean` — guard redirects can opt into `push` (new history entry) instead of the default `replace`
+  - `createAuthGuard` gains a `replace` option (default `true`); set `replace: false` so the login page is pushed onto the history stack
+  - `createAuthGuard` now passes the redirect path via `query.redirect` (decoded by the router) instead of manually encoding it into the URL string
+  - `router.getRedirectParam()` reads, decodes, and validates the `?redirect=` query param; rejects absolute URLs and protocol-relative paths to prevent open redirect attacks
+
 ## 0.10.0
 
 ### Minor Changes

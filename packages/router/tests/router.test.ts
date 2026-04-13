@@ -908,3 +908,55 @@ describe('initialNavigation + isReady', () => {
     router.destroy();
   });
 });
+
+describe('getRedirectParam', () => {
+  it('returns decoded path when redirect param is a valid relative path', async () => {
+    const router = createRouter({
+      routes: [{ path: '/login', component: () => document.createElement('div') }],
+      history: createMemoryHistory({ initialEntries: ['/login?redirect=%2Fdashboard'] }),
+    });
+    await router.isReady;
+    expect(router.getRedirectParam()).toBe('/dashboard');
+    router.destroy();
+  });
+
+  it('returns null when redirect param is absent', async () => {
+    const router = createRouter({
+      routes: [{ path: '/login', component: () => document.createElement('div') }],
+      history: createMemoryHistory({ initialEntries: ['/login'] }),
+    });
+    await router.isReady;
+    expect(router.getRedirectParam()).toBeNull();
+    router.destroy();
+  });
+
+  it('rejects absolute URLs with protocol', async () => {
+    const router = createRouter({
+      routes: [{ path: '/login', component: () => document.createElement('div') }],
+      history: createMemoryHistory({ initialEntries: ['/login?redirect=https%3A%2F%2Fevil.com'] }),
+    });
+    await router.isReady;
+    expect(router.getRedirectParam()).toBeNull();
+    router.destroy();
+  });
+
+  it('rejects protocol-relative URLs', async () => {
+    const router = createRouter({
+      routes: [{ path: '/login', component: () => document.createElement('div') }],
+      history: createMemoryHistory({ initialEntries: ['/login?redirect=%2F%2Fevil.com'] }),
+    });
+    await router.isReady;
+    expect(router.getRedirectParam()).toBeNull();
+    router.destroy();
+  });
+
+  it('returns path with query string preserved', async () => {
+    const router = createRouter({
+      routes: [{ path: '/login', component: () => document.createElement('div') }],
+      history: createMemoryHistory({ initialEntries: ['/login?redirect=%2Fadmin%3Ftab%3Dusers'] }),
+    });
+    await router.isReady;
+    expect(router.getRedirectParam()).toBe('/admin?tab=users');
+    router.destroy();
+  });
+});

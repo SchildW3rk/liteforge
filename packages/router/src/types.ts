@@ -43,6 +43,8 @@ export type NavigationTarget =
       query?: QueryParams;
       hash?: string;
       state?: unknown;
+      /** Whether to replace the current history entry instead of pushing. Defaults to `true` for guard redirects. */
+      replace?: boolean;
     };
 
 // =============================================================================
@@ -612,6 +614,22 @@ export interface Router<T extends readonly RouteDefinition[] = readonly RouteDef
    * ```
    */
   readonly isReady: Promise<boolean>;
+
+  /**
+   * Read, decode, and validate the `?redirect=` query param from the current URL.
+   *
+   * Returns the decoded path if it is a safe relative path (starts with `/`, no `//`,
+   * no protocol). Returns `null` when the param is absent or fails the safety check.
+   *
+   * Use this in a Login component after `createAuthGuard` redirected the user:
+   *
+   * @example
+   * ```ts
+   * const redirect = router.getRedirectParam() ?? '/'
+   * await router.navigate(redirect)
+   * ```
+   */
+  getRedirectParam(): string | null;
 }
 
 // =============================================================================
