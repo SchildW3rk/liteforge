@@ -1,5 +1,35 @@
 # @liteforge/query
 
+## 3.1.0
+
+### Minor Changes
+
+- Add global error handler for queries and mutations
+
+  Pass `onError` to `queryPlugin()` to receive every query and mutation error in one place — no need to add `onError` to each individual `createQuery` / `createMutation` call.
+
+  ```ts
+  createApp({ root: App, target: "#app" })
+    .use(
+      queryPlugin({
+        onError: (error, ctx) => {
+          toast.error(`[${ctx.type}] ${error.message}`);
+        },
+      })
+    )
+    .mount();
+  ```
+
+  - `QueryErrorContext.type` is `'query'` or `'mutation'`
+  - `QueryErrorContext.key` contains the serialized cache key for query errors
+  - Handler is automatically cleared on plugin cleanup
+  - `GlobalQueryErrorHandler` and `QueryErrorContext` types are exported from the package
+
+### Patch Changes
+
+- Updated dependencies
+  - @liteforge/runtime@0.6.7
+
 ## 3.0.0
 
 ### Patch Changes

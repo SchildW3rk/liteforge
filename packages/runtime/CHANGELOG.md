@@ -1,5 +1,13 @@
 # @liteforge/runtime
 
+## 0.6.7
+
+### Patch Changes
+
+- Warn when Show/Match children is not a render function
+
+  `<Show>` and `<Match>` children must be a render function `{() => <Component />}`, not a static JSX node. Passing a static node silently broke reactivity. A `console.error` is now logged with a clear message and fix hint when a non-function is passed.
+
 ## 0.6.6
 
 ### Patch Changes

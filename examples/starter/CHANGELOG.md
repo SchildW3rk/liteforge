@@ -1,5 +1,11 @@
 # @liteforge/starter
 
+## 0.0.28
+
+### Patch Changes
+
+- liteforge@0.7.8
+
 ## 0.0.27
 
 ### Patch Changes

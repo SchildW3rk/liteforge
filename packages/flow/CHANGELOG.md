@@ -1,5 +1,20 @@
 # @liteforge/flow
 
+## 0.5.0
+
+### Minor Changes
+
+- Add edge waypoints, edge color, and DraggingWaypointState
+
+  - **Edge waypoints**: Bendable connections via `waypoints?: Point[]` on `FlowEdge`. Includes `getWaypointPath` / `getWaypointMidpoint` helpers and draggable circle handles that update the path live at 60fps via `DraggingWaypointState.localOffset` signal — `onEdgesChange` only fires on `pointerup`.
+  - **Edge color**: `color?: string` on `FlowEdge` applied to the SVG path stroke and hit area.
+  - **`node-properties-panel.ts`**: New helper for rendering node property panels.
+
+### Patch Changes
+
+- Updated dependencies
+  - @liteforge/runtime@0.6.7
+
 ## 0.4.0
 
 ### Minor Changes

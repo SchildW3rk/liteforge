@@ -1,5 +1,14 @@
 # @liteforge/client
 
+## 4.0.0
+
+### Patch Changes
+
+- Updated dependencies
+- Updated dependencies
+  - @liteforge/query@3.1.0
+  - @liteforge/runtime@0.6.7
+
 ## 3.0.0
 
 ### Patch Changes

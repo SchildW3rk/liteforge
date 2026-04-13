@@ -1,5 +1,12 @@
 # liteforge
 
+## 0.7.8
+
+### Patch Changes
+
+- Updated dependencies
+  - @liteforge/runtime@0.6.7
+
 ## 0.7.7
 
 ### Patch Changes
