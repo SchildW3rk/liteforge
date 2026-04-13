@@ -62,6 +62,20 @@ export interface FlowEdge<T = unknown> {
    * color in both dark and light mode, including the selected-state color.
    */
   markerEnd?: 'arrow' | 'arrowclosed' | 'none'
+  /**
+   * Intermediate routing points in canvas coordinates.
+   * When set, the edge path passes through each waypoint in order.
+   * Each segment between consecutive points is rendered as a cubic bezier.
+   * Users can add waypoints by clicking the edge, drag them to re-route,
+   * and double-click to remove them.
+   */
+  waypoints?: Point[]
+  /**
+   * Override stroke color for this edge.
+   * Accepts any CSS color value (hex, rgb, hsl, named).
+   * Falls back to `--lf-flow-edge-color` when omitted.
+   */
+  color?: string
 }
 
 export interface Connection {
@@ -80,8 +94,9 @@ export type NodeChange =
   | { type: 'add';      node: FlowNode }
 
 export type EdgeChange =
-  | { type: 'select'; id: string; selected: boolean }
-  | { type: 'remove'; id: string }
+  | { type: 'select';    id: string; selected: boolean }
+  | { type: 'remove';    id: string }
+  | { type: 'waypoints'; id: string; waypoints: Point[] }
 
 export type HandlePosition = 'top' | 'right' | 'bottom' | 'left'
 export type HandleType     = 'source' | 'target'
@@ -163,6 +178,14 @@ export interface FlowHandle {
   isNodeIntersecting(node: FlowNode, area: Rect): boolean
 
   /**
+   * Toggle an active CSS class on the SVG path element for an edge.
+   * Called by `createFlowRunnerSignals` to animate edges during execution
+   * without querying the DOM from user code.
+   * No-op before the canvas is mounted.
+   */
+  setEdgeActive(edgeId: string, active: boolean): void
+
+  /**
    * @internal — called by FlowCanvas to wire up live state.
    * Not part of the public API.
    */
@@ -177,6 +200,7 @@ export interface FlowInternals {
   getNodes:      () => FlowNode[]
   getEdges:      () => FlowEdge[]
   getNodeSize:   (id: string) => { width: number; height: number } | undefined
+  setEdgeActive: (edgeId: string, active: boolean) => void
   minZoom:       number
   maxZoom:       number
 }
@@ -308,9 +332,25 @@ export interface ReconnectingState {
   currentPoint:    Signal<Point>
 }
 
+/**
+ * The user is dragging a waypoint handle on an edge.
+ * `localOffset` drives the live position of the waypoint during the drag.
+ * The original waypoint position is committed via `onEdgesChange` on pointerup.
+ */
+export interface DraggingWaypointState {
+  type:           'draggingWaypoint'
+  edgeId:         string
+  waypointIndex:  number
+  /** Original waypoint position before the drag started. */
+  originalPos:    Point
+  /** Live offset from `originalPos` — drives EdgeLayer re-render at 60fps. */
+  localOffset:    Signal<Point>
+}
+
 export type InteractionState =
   | IdleState
   | DraggingState
   | ConnectingState
   | SelectingState
   | ReconnectingState
+  | DraggingWaypointState

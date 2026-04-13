@@ -14,6 +14,7 @@ export interface InteractionStateManager {
   toConnecting(sourceNodeId: string, sourceHandleId: string, sourceHandleType: HandleType, sourcePoint: Point): void
   toSelecting(startCanvasPoint: Point, pointerId: number): void
   toReconnecting(edgeId: string, movingEnd: 'source' | 'target', fixedPoint: Point, startPoint: Point): void
+  toDraggingWaypoint(edgeId: string, waypointIndex: number, originalPos: Point): void
 }
 
 const IDLE: IdleState = { type: 'idle' }
@@ -67,6 +68,16 @@ export function createInteractionState(): InteractionStateManager {
         movingEnd,
         fixedPoint,
         currentPoint: signal<Point>({ ...startPoint }),
+      })
+    },
+
+    toDraggingWaypoint(edgeId, waypointIndex, originalPos) {
+      state.set({
+        type:          'draggingWaypoint',
+        edgeId,
+        waypointIndex,
+        originalPos,
+        localOffset:   signal<Point>({ x: 0, y: 0 }),
       })
     },
   }

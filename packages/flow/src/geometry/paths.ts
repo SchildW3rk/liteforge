@@ -29,6 +29,38 @@ export function getStraightPath(source: Point, target: Point): string {
   return `M ${source.x} ${source.y} L ${target.x} ${target.y}`
 }
 
+/**
+ * Build a path that routes through intermediate waypoints.
+ * Each segment between consecutive points is a cubic bezier.
+ * Returns the same format as getBezierPath for a direct connection when
+ * waypoints is empty or undefined.
+ */
+export function getWaypointPath(source: Point, waypoints: Point[], target: Point): string {
+  if (!waypoints.length) return getBezierPath(source, target)
+  const all = [source, ...waypoints, target]
+  let d = `M ${all[0].x} ${all[0].y}`
+  for (let i = 0; i < all.length - 1; i++) {
+    const a = all[i]!
+    const b = all[i + 1]!
+    const offset = Math.max(20, Math.abs(b.x - a.x) * 0.25)
+    d += ` C ${a.x + offset} ${a.y} ${b.x - offset} ${b.y} ${b.x} ${b.y}`
+  }
+  return d
+}
+
+/**
+ * Return the midpoint of a waypoint path for label placement.
+ * Uses the midpoint of the middle segment (or the single segment midpoint).
+ */
+export function getWaypointMidpoint(source: Point, waypoints: Point[], target: Point): Point {
+  if (!waypoints.length) return getBezierMidpoint(source, target)
+  const all = [source, ...waypoints, target]
+  const mid = Math.floor((all.length - 1) / 2)
+  const a = all[mid]!
+  const b = all[mid + 1]!
+  return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 }
+}
+
 // ---- Midpoint helpers (for label placement) ----
 
 /**

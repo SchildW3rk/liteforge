@@ -29,7 +29,7 @@
  *  drive reactive class changes in the already-mounted JSX.
  */
 
-import { createComponent, signal, effect } from 'liteforge';
+import { createComponent, signal } from 'liteforge';
 import {
   createFlow,
   FlowCanvas,
@@ -41,6 +41,8 @@ import {
   createEdgeContextMenu,
   createPaneContextMenu,
   createFlowRunner,
+  createFlowRunnerSignals,
+  createNodePropertiesPanel,
 } from '@liteforge/flow';
 import type {
   FlowNode,
@@ -67,16 +69,15 @@ type PipelineNodeData =
   | TransformData | ConditionData | ResponseData
 
 // =============================================================================
-// Execution State — module-level signals
+// Execution State — module-level signals via createFlowRunnerSignals
 //
 // Living at module scope lets node renderer functions (which are plain
 // functions, not components) read them reactively in JSX expressions.
-// The component's setup() wires the runner to update these signals.
+// onFlush + reset are used in setup(); flow.setEdgeActive is wired there too.
 // =============================================================================
 
-const execNodeStates  = signal<Map<string, NodeExecStatus>>(new Map())
-const execNodeOutputs = signal<Map<string, unknown>>(new Map())
-const execNodeErrors  = signal<Map<string, string>>(new Map())
+const rs = createFlowRunnerSignals()
+const { states: execNodeStates, outputs: execNodeOutputs, errors: execNodeErrors } = rs
 
 // =============================================================================
 // Node Types — defined with defineNode()
@@ -240,125 +241,6 @@ const pipelineExecutors = {
 }
 
 // =============================================================================
-// Properties Panel — pure JSX
-// =============================================================================
-
-function PropsGroup(labelText: string, inputEl: Node): Node {
-  return (
-    <div class="pipe-props-group">
-      <label class="pipe-props-label">{labelText}</label>
-      {inputEl}
-    </div>
-  )
-}
-
-function PropsTextInput(
-  key: string,
-  labelText: string,
-  draft: Record<string, string | number>,
-  placeholder = '',
-): Node {
-  return PropsGroup(labelText,
-    <input
-      type="text"
-      class="pipe-props-input"
-      value={String(draft[key] ?? '')}
-      placeholder={placeholder}
-      oninput={(e: Event) => { draft[key] = (e.target as HTMLInputElement).value }}
-    />,
-  )
-}
-
-function PropsSelect(
-  key: string,
-  labelText: string,
-  options: string[],
-  draft: Record<string, string | number>,
-): Node {
-  return PropsGroup(labelText,
-    <select
-      class="pipe-props-select"
-      onchange={(e: Event) => { draft[key] = (e.target as HTMLSelectElement).value }}
-    >
-      {options.map(opt =>
-        <option value={opt} selected={draft[key] === opt}>{opt}</option>,
-      )}
-    </select>,
-  )
-}
-
-function PropsTextarea(
-  key: string,
-  labelText: string,
-  draft: Record<string, string | number>,
-  placeholder = '',
-): Node {
-  return PropsGroup(labelText,
-    <textarea
-      class="pipe-props-textarea"
-      rows={4}
-      placeholder={placeholder}
-      oninput={(e: Event) => { draft[key] = (e.target as HTMLTextAreaElement).value }}
-    >{String(draft[key] ?? '')}</textarea>,
-  )
-}
-
-function buildPropertiesPanel(
-  node: FlowNode<PipelineNodeData>,
-  onApply: (change: NodeChange) => void,
-  onClose: () => void,
-): Node {
-  const draft: Record<string, string | number> = { ...(node.data as Record<string, string | number>) }
-
-  const typeFields: Node = (() => {
-    switch (node.type) {
-      case 'trigger':
-        return <>{PropsSelect('triggerType', 'Trigger Type', ['webhook', 'schedule', 'manual'], draft)}{PropsTextInput('username', 'GitHub Username', draft, 'octocat')}</>
-      case 'auth':
-        return <>{PropsSelect('authType', 'Auth Type', ['bearer', 'api-key', 'basic'], draft)}{PropsTextInput('token', 'Token / Key', draft, 'ghp_…')}</>
-      case 'http':
-        return <>{PropsSelect('method', 'Method', ['GET', 'POST', 'PUT', 'DELETE'], draft)}{PropsTextInput('url', 'URL', draft, 'api.example.com/path')}</>
-      case 'transform':
-        return <>{PropsTextarea('expression', 'Expression', draft, '{ name, value }')}</>
-      case 'condition':
-        return <>{PropsTextInput('field', 'Field', draft, 'followers')}{PropsSelect('operator', 'Operator', ['>', '<', '==', '!=', 'contains'], draft)}{PropsTextInput('value', 'Value', draft, '1000')}</>
-      case 'response':
-        return <>{PropsSelect('status', 'Status', ['200', '400', '500'], draft)}{PropsTextInput('body', 'Body', draft, '"OK"')}</>
-      default:
-        return <></>
-    }
-  })()
-
-  return (
-    <div class="pipe-props-panel">
-      <div class="pipe-props-header">
-        <span class="pipe-props-title">Edit {node.type.charAt(0).toUpperCase() + node.type.slice(1)}</span>
-        <button type="button" class="pipe-props-close" onclick={onClose}>✕</button>
-      </div>
-      <div class="pipe-props-form">
-        {PropsTextInput('label', 'Label', draft)}
-        {typeFields}
-      </div>
-      <div class="pipe-props-footer">
-        <button type="button" class="flow-btn flow-btn-secondary" onclick={onClose}>Cancel</button>
-        <button
-          type="button"
-          class="flow-btn"
-          onclick={() => {
-            const data: Record<string, string | number> = { ...draft }
-            if (node.type === 'response' && typeof data['status'] === 'string') {
-              data['status'] = parseInt(data['status'] as string, 10)
-            }
-            onApply({ type: 'data', id: node.id, data } as NodeChange)
-            onClose()
-          }}
-        >Apply</button>
-      </div>
-    </div>
-  )
-}
-
-// =============================================================================
 // Initial Workflow
 // =============================================================================
 
@@ -417,16 +299,11 @@ export const ApiPipelinePage = createComponent({
 
     // ── Execution ─────────────────────────────────────────────────────────────
     const execRunning = signal(false)
-    const execLog     = signal<string[]>([])
 
     const runner = createFlowRunner({
       executors: pipelineExecutors,
-      onFlush: (s) => {
-        execNodeStates.set(new Map(s.nodeStates))
-        execNodeOutputs.set(new Map(s.nodeOutputs))
-        execNodeErrors.set(new Map(s.nodeErrors))
-        execLog.set([...s.log])
-      },
+      ...rs,
+      onEdgeStatusChange: (id, active) => flow.setEdgeActive(id, active),
     })
 
     async function runPipeline() {
@@ -436,23 +313,20 @@ export const ApiPipelinePage = createComponent({
       if (!triggerNode) return
 
       execRunning.set(true)
-      execLog.set(['⚡ Pipeline starting…'])
+      rs.log.set(['⚡ Pipeline starting…'])
       try {
         const result = await runner.run(triggerNode, currentNodes, edges.peek())
         const finalLog = [...result.log, result.nodeErrors.size > 0
           ? `⚠️ Completed with ${result.nodeErrors.size} error(s)`
           : '✅ Pipeline completed successfully']
-        execLog.set(finalLog)
+        rs.log.set(finalLog)
       } finally {
         execRunning.set(false)
       }
     }
 
     function resetExec() {
-      execNodeStates.set(new Map())
-      execNodeOutputs.set(new Map())
-      execNodeErrors.set(new Map())
-      execLog.set([])
+      rs.reset()
     }
 
     function resetAll() {
@@ -483,7 +357,7 @@ export const ApiPipelinePage = createComponent({
       nodes, edges, flow, history,
       selectedNodeId, commitDataChange, onNodeClick,
       applyAutoLayout,
-      execRunning, execLog, resetExec,
+      execRunning, resetExec,
       runPipeline, resetAll,
       nodeContextMenu, edgeContextMenu, paneContextMenu,
     }
@@ -494,7 +368,7 @@ export const ApiPipelinePage = createComponent({
       nodes, edges, flow, history,
       selectedNodeId, commitDataChange, onNodeClick,
       applyAutoLayout,
-      execRunning, execLog, resetExec,
+      execRunning, resetExec,
       runPipeline, resetAll,
       nodeContextMenu, edgeContextMenu, paneContextMenu,
     } = setup
@@ -510,20 +384,6 @@ export const ApiPipelinePage = createComponent({
       const id = selectedNodeId()
       return id ? (nodes().find(n => n.id === id) ?? null) : null
     }
-
-    // ── Edge animation ────────────────────────────────────────────────────────
-    // Applied imperatively because SVG path elements are managed by @liteforge/flow
-    // internals (EdgeLayer.ts) — they're outside JSX scope.
-    effect(() => {
-      const states = execNodeStates()
-      document.querySelectorAll('[data-edge-id]').forEach(el => {
-        const edgeId = el.getAttribute('data-edge-id') ?? ''
-        const edge   = edges().find(e => e.id === edgeId)
-        if (!edge) return
-        const srcStatus = states.get(edge.source)
-        el.classList.toggle('pipe-edge--active', srcStatus === 'success' || srcStatus === 'running')
-      })
-    })
 
     return (
       <div class="flow-page pipe-page">
@@ -575,24 +435,24 @@ export const ApiPipelinePage = createComponent({
             {() => {
               const node = selectedNode()
               if (!node) return null
-              return buildPropertiesPanel(
-                node as FlowNode<PipelineNodeData>,
-                commitDataChange,
-                () => selectedNodeId.set(null),
-              )
+              return createNodePropertiesPanel(nodeTypes, {
+                node:    node as FlowNode,
+                onApply: commitDataChange,
+                onClose: () => selectedNodeId.set(null),
+              })
             }}
           </div>
 
         </div>
 
         {/* ── Execution Log ── */}
-        <div class={() => `pipe-log${execLog().length > 0 ? '' : ' pipe-log--hidden'}`}>
+        <div class={() => `pipe-log${rs.log().length > 0 ? '' : ' pipe-log--hidden'}`}>
           <div class="pipe-log-header">
             <span>Execution Log</span>
             <button type="button" class="pipe-props-close" onclick={resetExec}>✕</button>
           </div>
           <div class="pipe-log-body">
-            {() => execLog().map(line => <div class="pipe-log-line">{line}</div>)}
+            {() => rs.log().map(line => <div class="pipe-log-line">{line}</div>)}
           </div>
         </div>
 

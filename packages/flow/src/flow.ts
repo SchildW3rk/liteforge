@@ -157,6 +157,10 @@ export function createFlow(options: FlowOptions): FlowHandle {
       return rectsOverlap(getNodeRect(node), area)
     },
 
+    setEdgeActive(edgeId: string, active: boolean): void {
+      internals?.setEdgeActive(edgeId, active)
+    },
+
     // ---- Internal wiring ----
 
     _register(i: FlowInternals): void {

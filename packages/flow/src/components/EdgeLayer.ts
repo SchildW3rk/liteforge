@@ -2,12 +2,15 @@ import { effect } from '@liteforge/core'
 import {
   getBezierPath, getStepPath, getStraightPath,
   getBezierMidpoint, getStepMidpoint, getStraightMidpoint,
+  getWaypointPath, getWaypointMidpoint,
 } from '../geometry/paths.js'
 import type { FlowContextValue } from '../context.js'
-import type { FlowEdge, Point } from '../types.js'
+import type { DraggingWaypointState, FlowEdge, Point } from '../types.js'
 
 export interface EdgeLayerHandle {
   dispose: () => void
+  /** Toggle a CSS class on the edge's SVG path element. No-op if edge not found. */
+  setEdgeActive: (edgeId: string, active: boolean) => void
 }
 
 /**
@@ -70,11 +73,17 @@ function injectMarkerDefs(svg: SVGElement): { arrowId: string; arrowClosedId: st
  */
 interface EdgeBundle {
   pathEl:    SVGPathElement
+  /** Wide invisible path for hit detection on thin edge lines. */
+  hitEl:     SVGPathElement
   labelG:    SVGGElement
   labelBg:   SVGRectElement
   labelText: SVGTextElement
   srcDot:    SVGCircleElement
   tgtDot:    SVGCircleElement
+  /** Live set of waypoint handle circles (one per waypoint). */
+  waypointHandles: SVGCircleElement[]
+  /** Cleanup for waypoint handle listeners — rebuilt on every update. */
+  cleanupWaypoints: () => void
   /** Cleanup for event listeners (reconnect pointerdown, click, context, hover) */
   cleanupListeners: () => void
 }
@@ -84,6 +93,16 @@ function createEdgeBundle(
   edgesLayerEl: SVGElement,
   ctx: FlowContextValue,
 ): EdgeBundle {
+  // Wide invisible hit area — makes clicking thin paths much easier
+  const hitEl = document.createElementNS('http://www.w3.org/2000/svg', 'path')
+  hitEl.classList.add('lf-edge-hit')
+  hitEl.setAttribute('stroke', 'transparent')
+  hitEl.setAttribute('stroke-width', '12')
+  hitEl.setAttribute('fill', 'none')
+  hitEl.style.cursor = 'pointer'
+  hitEl.style.pointerEvents = 'stroke'
+  edgesLayerEl.appendChild(hitEl)
+
   const pathEl = document.createElementNS('http://www.w3.org/2000/svg', 'path')
   pathEl.dataset['edgeId'] = edge.id
   pathEl.classList.add('lf-edge')
@@ -139,10 +158,40 @@ function createEdgeBundle(
   srcDot.addEventListener('pointerdown', onSrcDotDown)
   tgtDot.addEventListener('pointerdown', onTgtDotDown)
 
+  // ---- Click on pathEl: select the edge ----
   const onPathClick = (e: MouseEvent) => {
     if (!ctx.onEdgesChange) return
     const currentEdge = ctx.edges().find(ed => ed.id === edge.id)
     if (!currentEdge) return
+    if (e.shiftKey) {
+      ctx.onEdgesChange([{ type: 'select', id: edge.id, selected: !(currentEdge.selected ?? false) }])
+    } else {
+      ctx.onEdgesChange(ctx.edges().map(ed => ({ type: 'select' as const, id: ed.id, selected: ed.id === edge.id })))
+    }
+  }
+
+  // ---- Click on hitEl: select OR add waypoint ----
+  // hitEl's wide stroke catches clicks near the path. If the edge is already selected,
+  // clicking adds a waypoint at the canvas-space click position.
+  const onHitClick = (e: MouseEvent) => {
+    e.stopPropagation()
+    if (!ctx.onEdgesChange) return
+    const currentEdge = ctx.edges().find(ed => ed.id === edge.id)
+    if (!currentEdge) return
+
+    // If edge is already selected → add waypoint at click position
+    if (currentEdge.selected) {
+      const svgEl = edgesLayerEl as SVGSVGElement
+      const svgRect = svgEl.getBoundingClientRect?.() ?? { left: 0, top: 0 }
+      const t = ctx.transform.peek()
+      const canvasX = (e.clientX - svgRect.left) / t.scale - t.x / t.scale
+      const canvasY = (e.clientY - svgRect.top)  / t.scale - t.y / t.scale
+      const existing = currentEdge.waypoints ?? []
+      ctx.onEdgesChange([{ type: 'waypoints', id: edge.id, waypoints: [...existing, { x: canvasX, y: canvasY }] }])
+      return
+    }
+
+    // Otherwise select (hitEl catches wide area, pathEl catches exact stroke)
     if (e.shiftKey) {
       ctx.onEdgesChange([{ type: 'select', id: edge.id, selected: !(currentEdge.selected ?? false) }])
     } else {
@@ -167,28 +216,35 @@ function createEdgeBundle(
   }
 
   pathEl.addEventListener('click', onPathClick)
-  pathEl.addEventListener('contextmenu', onPathContextMenu)
   pathEl.addEventListener('pointerenter', onEdgeEnter)
   pathEl.addEventListener('pointerleave', onEdgeLeave)
+  hitEl.addEventListener('click', onHitClick)
+  hitEl.addEventListener('contextmenu', onPathContextMenu)
 
   const cleanupListeners = () => {
     srcDot.removeEventListener('pointerdown', onSrcDotDown)
     tgtDot.removeEventListener('pointerdown', onTgtDotDown)
     pathEl.removeEventListener('click', onPathClick)
-    pathEl.removeEventListener('contextmenu', onPathContextMenu)
     pathEl.removeEventListener('pointerenter', onEdgeEnter)
     pathEl.removeEventListener('pointerleave', onEdgeLeave)
+    hitEl.removeEventListener('click', onHitClick)
+    hitEl.removeEventListener('contextmenu', onPathContextMenu)
   }
 
-  return { pathEl, labelG, labelBg, labelText, srcDot, tgtDot, cleanupListeners }
+  return { pathEl, hitEl, labelG, labelBg, labelText, srcDot, tgtDot,
+    waypointHandles: [], cleanupWaypoints: () => {}, cleanupListeners }
 }
 
 function removeEdgeBundle(bundle: EdgeBundle): void {
   bundle.cleanupListeners()
+  bundle.cleanupWaypoints()
+  bundle.hitEl.remove()
   bundle.pathEl.remove()
   bundle.labelG.remove()
   bundle.srcDot.remove()
   bundle.tgtDot.remove()
+  for (const h of bundle.waypointHandles) h.remove()
+  bundle.waypointHandles.length = 0
 }
 
 /**
@@ -199,12 +255,14 @@ function updateEdgeBundle(
   bundle: EdgeBundle,
   edge: FlowEdge,
   ctx: FlowContextValue,
+  edgesLayerEl: SVGElement,
   draggedNodes: ReadonlySet<string> | null,
   dragOffset: Point | null,
+  waypointDrag: DraggingWaypointState | null,
   arrowId: string,
   arrowClosedId: string,
 ): void {
-  const { pathEl, labelG, labelBg, labelText, srcDot, tgtDot } = bundle
+  const { pathEl, hitEl, labelG, labelBg, labelText, srcDot, tgtDot } = bundle
   const nodes = ctx.nodes()
 
   let src = ctx.handleRegistry.getAbsolutePosition(edge.source, edge.sourceHandle, nodes)
@@ -218,6 +276,13 @@ function updateEdgeBundle(
   // Selection + animation
   pathEl.classList.toggle('lf-edge-selected', edge.selected ?? false)
   pathEl.classList.toggle('lf-edge--animated', edge.animated ?? false)
+
+  // Per-edge color via CSS custom property (falls back to --lf-flow-edge-color in CSS)
+  if (edge.color) {
+    pathEl.style.setProperty('--lf-edge-custom-color', edge.color)
+  } else {
+    pathEl.style.removeProperty('--lf-edge-custom-color')
+  }
 
   // Arrow marker
   const marker = edge.markerEnd
@@ -233,18 +298,141 @@ function updateEdgeBundle(
   if (src) { srcDot.setAttribute('cx', String(src.x)); srcDot.setAttribute('cy', String(src.y)) }
   if (tgt) { tgtDot.setAttribute('cx', String(tgt.x)); tgtDot.setAttribute('cy', String(tgt.y)) }
 
+  // Build waypoint handles regardless of whether endpoints are resolved,
+  // so handles are visible even before handle measurement completes.
+  const waypoints = edge.waypoints ?? []
+
+  // Rebuild waypoint handle circles when count changes
+  const currentCount = bundle.waypointHandles.length
+  const neededCount  = waypoints.length
+
+  if (currentCount !== neededCount) {
+    bundle.cleanupWaypoints()
+    for (const h of bundle.waypointHandles) h.remove()
+    bundle.waypointHandles.length = 0
+
+    const cleanups: (() => void)[] = []
+    for (let i = 0; i < neededCount; i++) {
+      const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle')
+      circle.setAttribute('r', '5')
+      circle.classList.add('lf-edge-waypoint')
+      edgesLayerEl.appendChild(circle)
+      bundle.waypointHandles.push(circle)
+
+      // ---- Waypoint drag: same signal pattern as node drag ----
+      // pointerdown → toDraggingWaypoint (creates localOffset signal)
+      // pointermove  → localOffset.set() → batched effect re-renders path at 60fps
+      // pointerup    → toIdle() + onEdgesChange (commit final position)
+      let startCanvasX = 0
+      let startCanvasY = 0
+      const idx = i
+
+      const onPointerDown = (e: PointerEvent) => {
+        e.stopPropagation()
+        circle.setPointerCapture(e.pointerId)
+        const svgRect = (edgesLayerEl as SVGSVGElement).getBoundingClientRect?.() ?? { left: 0, top: 0 }
+        const t = ctx.transform.peek()
+        startCanvasX = (e.clientX - svgRect.left) / t.scale - t.x / t.scale
+        startCanvasY = (e.clientY - svgRect.top)  / t.scale - t.y / t.scale
+        const currentEdge = ctx.edges().find(ed => ed.id === edge.id)
+        const wp = currentEdge?.waypoints?.[idx] ?? { x: 0, y: 0 }
+        ctx.stateMgr.toDraggingWaypoint(edge.id, idx, wp)
+      }
+
+      const onPointerMove = (e: PointerEvent) => {
+        const istate = ctx.interactionState()
+        if (istate.type !== 'draggingWaypoint' || istate.edgeId !== edge.id || istate.waypointIndex !== idx) return
+        const svgRect = (edgesLayerEl as SVGSVGElement).getBoundingClientRect?.() ?? { left: 0, top: 0 }
+        const t = ctx.transform.peek()
+        const cx = (e.clientX - svgRect.left) / t.scale - t.x / t.scale
+        const cy = (e.clientY - svgRect.top)  / t.scale - t.y / t.scale
+        istate.localOffset.set({ x: cx - startCanvasX, y: cy - startCanvasY })
+      }
+
+      const onPointerUp = (e: PointerEvent) => {
+        const istate = ctx.interactionState()
+        if (istate.type !== 'draggingWaypoint' || istate.edgeId !== edge.id || istate.waypointIndex !== idx) return
+        ctx.stateMgr.toIdle()
+        if (!ctx.onEdgesChange) return
+        const svgRect = (edgesLayerEl as SVGSVGElement).getBoundingClientRect?.() ?? { left: 0, top: 0 }
+        const t = ctx.transform.peek()
+        const cx = (e.clientX - svgRect.left) / t.scale - t.x / t.scale
+        const cy = (e.clientY - svgRect.top)  / t.scale - t.y / t.scale
+        const currentEdge = ctx.edges().find(ed => ed.id === edge.id)
+        if (!currentEdge?.waypoints) return
+        const updated = currentEdge.waypoints.map((wp, wi) =>
+          wi === idx ? { x: istate.originalPos.x + (cx - startCanvasX), y: istate.originalPos.y + (cy - startCanvasY) } : wp,
+        )
+        ctx.onEdgesChange([{ type: 'waypoints', id: edge.id, waypoints: updated }])
+      }
+
+      const onDblClick = (e: MouseEvent) => {
+        e.stopPropagation()
+        if (!ctx.onEdgesChange) return
+        const currentEdge = ctx.edges().find(ed => ed.id === edge.id)
+        if (!currentEdge?.waypoints) return
+        const updated = currentEdge.waypoints.filter((_, wi) => wi !== idx)
+        ctx.onEdgesChange([{ type: 'waypoints', id: edge.id, waypoints: updated }])
+      }
+
+      circle.addEventListener('pointerdown', onPointerDown)
+      circle.addEventListener('pointermove', onPointerMove)
+      circle.addEventListener('pointerup', onPointerUp)
+      circle.addEventListener('dblclick', onDblClick)
+      cleanups.push(() => {
+        circle.removeEventListener('pointerdown', onPointerDown)
+        circle.removeEventListener('pointermove', onPointerMove)
+        circle.removeEventListener('pointerup', onPointerUp)
+        circle.removeEventListener('dblclick', onDblClick)
+      })
+    }
+    bundle.cleanupWaypoints = () => { for (const c of cleanups) c() }
+  }
+
+  // Position waypoint handles — apply live drag offset for the one being dragged
+  for (let i = 0; i < waypoints.length; i++) {
+    const wp = waypoints[i]
+    const h  = bundle.waypointHandles[i]
+    if (!wp || !h) continue
+    if (waypointDrag && waypointDrag.edgeId === edge.id && waypointDrag.waypointIndex === i) {
+      h.setAttribute('cx', String(wp.x + waypointDrag.localOffset().x))
+      h.setAttribute('cy', String(wp.y + waypointDrag.localOffset().y))
+    } else {
+      h.setAttribute('cx', String(wp.x))
+      h.setAttribute('cy', String(wp.y))
+    }
+  }
+
   if (!src || !tgt) {
     pathEl.removeAttribute('d')
+    hitEl.removeAttribute('d')
     labelG.style.display = 'none'
     return
   }
+  let d: string
+  let mid: Point
 
-  const pathType = ctx.connectionLineType ?? 'bezier'
-  const d =
-    pathType === 'step'     ? getStepPath(src, tgt)
-    : pathType === 'straight' ? getStraightPath(src, tgt)
-    : getBezierPath(src, tgt)
+  if (waypoints.length > 0) {
+    // Apply live drag offset to the waypoint being dragged
+    const liveWaypoints = (waypointDrag && waypointDrag.edgeId === edge.id)
+      ? waypoints.map((wp, i) => i === waypointDrag.waypointIndex
+          ? { x: wp.x + waypointDrag.localOffset().x, y: wp.y + waypointDrag.localOffset().y }
+          : wp)
+      : waypoints
+    d = getWaypointPath(src, liveWaypoints, tgt)
+    mid = getWaypointMidpoint(src, liveWaypoints, tgt)
+  } else {
+    const pathType = ctx.connectionLineType ?? 'bezier'
+    d = pathType === 'step'     ? getStepPath(src, tgt)
+      : pathType === 'straight' ? getStraightPath(src, tgt)
+      : getBezierPath(src, tgt)
+    mid = pathType === 'step'     ? getStepMidpoint(src, tgt)
+        : pathType === 'straight' ? getStraightMidpoint(src, tgt)
+        : getBezierMidpoint(src, tgt)
+  }
+
   pathEl.setAttribute('d', d)
+  hitEl.setAttribute('d', d)
 
   // Label
   const label = edge.label
@@ -252,11 +440,6 @@ function updateEdgeBundle(
 
   labelG.style.display = ''
   labelText.textContent = label
-
-  let mid: Point
-  if (pathType === 'step')           mid = getStepMidpoint(src, tgt)
-  else if (pathType === 'straight')  mid = getStraightMidpoint(src, tgt)
-  else                               mid = getBezierMidpoint(src, tgt)
 
   labelText.setAttribute('x', String(mid.x))
   labelText.setAttribute('y', String(mid.y))
@@ -338,10 +521,14 @@ export function createEdgeLayer(
     // Subscribe to all reactive sources ONCE
     ctx.handleRegistry.version()
     ctx.transform()          // pan/zoom changes require path recalculation
-    const istate     = ctx.interactionState()
-    const dragOffset = istate.type === 'dragging' ? istate.localOffset() : null
+    const istate       = ctx.interactionState()
+    const dragOffset   = istate.type === 'dragging' ? istate.localOffset() : null
     const draggedNodes: ReadonlySet<string> | null =
       istate.type === 'dragging' ? istate.draggedNodes : null
+    // For waypoint drag: subscribe to localOffset so every pointermove fires the effect
+    const waypointDrag = istate.type === 'draggingWaypoint'
+      ? (istate.localOffset(), istate)
+      : null
 
     // Read current edge data (selection, label, marker, etc.)
     const edgeMap = new Map(ctx.edges().map(e => [e.id, e]))
@@ -350,7 +537,7 @@ export function createEdgeLayer(
     for (const [id, bundle] of bundles) {
       const edge = edgeMap.get(id)
       if (!edge) continue
-      updateEdgeBundle(bundle, edge, ctx, draggedNodes, dragOffset, arrowId, arrowClosedId)
+      updateEdgeBundle(bundle, edge, ctx, edgesLayerEl, draggedNodes, dragOffset, waypointDrag, arrowId, arrowClosedId)
     }
   })
 
@@ -362,6 +549,9 @@ export function createEdgeLayer(
         removeEdgeBundle(bundle)
       }
       bundles.clear()
+    },
+    setEdgeActive: (edgeId: string, active: boolean) => {
+      bundles.get(edgeId)?.pathEl.classList.toggle('lf-edge--active', active)
     },
   }
 }

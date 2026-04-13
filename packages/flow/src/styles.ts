@@ -22,7 +22,7 @@ function getFlowCSS(): string {
   --lf-flow-text:                 #e2e8f0;
   --lf-flow-handle-bg:            #6366f1;
   --lf-flow-handle-border:        #fff;
-  --lf-flow-edge-color:           #6366f1;
+  --lf-flow-edge-color:           #64748b;
   --lf-flow-edge-selected:        #f59e0b;
   --lf-flow-edge-connecting:      #888;
   --lf-flow-marquee-border:       #6366f1;
@@ -52,7 +52,7 @@ function getFlowCSS(): string {
     --lf-flow-text:                 #0f172a;
     --lf-flow-handle-bg:            #6366f1;
     --lf-flow-handle-border:        #fff;
-    --lf-flow-edge-color:           #6366f1;
+    --lf-flow-edge-color:           #64748b;
     --lf-flow-edge-selected:        #f59e0b;
     --lf-flow-edge-connecting:      #94a3b8;
     --lf-flow-marquee-border:       #6366f1;
@@ -81,7 +81,7 @@ function getFlowCSS(): string {
   --lf-flow-text:                 #0f172a;
   --lf-flow-handle-bg:            #6366f1;
   --lf-flow-handle-border:        #fff;
-  --lf-flow-edge-color:           #6366f1;
+  --lf-flow-edge-color:           #64748b;
   --lf-flow-edge-selected:        #f59e0b;
   --lf-flow-edge-connecting:      #94a3b8;
   --lf-flow-marquee-border:       #6366f1;
@@ -165,13 +165,13 @@ function getFlowCSS(): string {
   pointer-events: none;
 }
 .lf-edge {
-  stroke: var(--lf-flow-edge-color);
-  color: var(--lf-flow-edge-color);
+  stroke: var(--lf-edge-custom-color, var(--lf-flow-edge-color));
+  color: var(--lf-edge-custom-color, var(--lf-flow-edge-color));
   stroke-width: 2;
   fill: none;
   cursor: pointer;
   pointer-events: stroke;
-  opacity: 0.7;
+  opacity: 0.8;
 }
 .lf-edge-selected {
   stroke: var(--lf-flow-edge-selected);
@@ -204,6 +204,20 @@ function getFlowCSS(): string {
   opacity: 1;
 }
 .lf-edge-selected ~ .lf-edge-endpoint {
+  opacity: 1;
+}
+.lf-edge-waypoint {
+  fill: var(--lf-flow-bg, #0d0d0d);
+  stroke: var(--lf-edge-custom-color, var(--lf-flow-edge-color));
+  stroke-width: 2;
+  cursor: grab;
+  pointer-events: all;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.lf-edge:hover ~ .lf-edge-waypoint,
+.lf-edge-selected ~ .lf-edge-waypoint,
+.lf-edge-waypoint:hover {
   opacity: 1;
 }
 .lf-marquee {

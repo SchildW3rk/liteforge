@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import type { FlowNode, FlowEdge } from '../src/types.js'
-import { createFlowRunner } from '../src/helpers/flow-runner.js'
+import { createFlowRunner, createFlowRunnerSignals } from '../src/helpers/flow-runner.js'
 import type { FlowRunnerState } from '../src/helpers/flow-runner.js'
 
 // ---- Fixtures ----------------------------------------------------------------
@@ -346,5 +346,123 @@ describe('createFlowRunner — onFlush', () => {
     const result = await runner.run(n, [n], [])
     const last = snapshots[snapshots.length - 1]
     expect(last.nodeStates.get('n1')).toBe(result.nodeStates.get('n1'))
+  })
+})
+
+// =============================================================================
+// onEdgeStatusChange
+// =============================================================================
+
+describe('createFlowRunner — onEdgeStatusChange', () => {
+  it('calls onEdgeStatusChange(edgeId, true) when source is running', async () => {
+    const calls: [string, boolean][] = []
+    const runner = createFlowRunner({
+      executors: { x: () => ({ output: null }) },
+      onFlush: () => {},
+      onEdgeStatusChange: (id, active) => calls.push([id, active]),
+      delay: { beforeNode: 0, afterNode: 0 },
+    })
+    const [na, nb] = [node('a', 'x'), node('b', 'x')]
+    const e = edge('e1', 'a', 'b')
+    await runner.run(na, [na, nb], [e])
+    // At some point during run, e1 should have been active (source 'a' was running/success)
+    expect(calls.some(([id, active]) => id === 'e1' && active === true)).toBe(true)
+  })
+
+  it('calls onEdgeStatusChange(edgeId, false) when source is pending', async () => {
+    const calls: [string, boolean][] = []
+    const runner = createFlowRunner({
+      executors: { x: () => ({ output: null }) },
+      onFlush: () => {},
+      onEdgeStatusChange: (id, active) => calls.push([id, active]),
+      delay: { beforeNode: 0, afterNode: 0 },
+    })
+    const [na, nb] = [node('a', 'x'), node('b', 'x')]
+    const e = edge('e1', 'a', 'b')
+    await runner.run(na, [na, nb], [e])
+    // Initial flush (all pending) → e1 should be inactive
+    expect(calls.some(([id, active]) => id === 'e1' && active === false)).toBe(true)
+  })
+
+  it('is not called when onEdgeStatusChange is omitted', async () => {
+    // Should not throw when option is absent
+    const runner = createFlowRunner({
+      executors: { x: () => ({ output: null }) },
+      onFlush: () => {},
+      delay: { beforeNode: 0, afterNode: 0 },
+    })
+    const n = node('n1', 'x')
+    await expect(runner.run(n, [n], [])).resolves.toBeDefined()
+  })
+})
+
+// =============================================================================
+// createFlowRunnerSignals
+// =============================================================================
+
+describe('createFlowRunnerSignals', () => {
+  it('returns signals with empty initial state', () => {
+    const rs = createFlowRunnerSignals()
+    expect(rs.states()).toEqual(new Map())
+    expect(rs.outputs()).toEqual(new Map())
+    expect(rs.errors()).toEqual(new Map())
+    expect(rs.log()).toEqual([])
+  })
+
+  it('onFlush updates all signals', async () => {
+    const rs = createFlowRunnerSignals()
+    const runner = createFlowRunner({
+      executors: { x: ({ log }) => { log('hello'); return { output: 42 } } },
+      onFlush: rs.onFlush,
+      delay: { beforeNode: 0, afterNode: 0 },
+    })
+    const n = node('n1', 'x')
+    await runner.run(n, [n], [])
+    expect(rs.states().get('n1')).toBe('success')
+    expect(rs.outputs().get('n1')).toBe(42)
+    expect(rs.log()).toContain('hello')
+  })
+
+  it('reset() clears all signals', async () => {
+    const rs = createFlowRunnerSignals()
+    const runner = createFlowRunner({
+      executors: { x: () => ({ output: 1 }) },
+      onFlush: rs.onFlush,
+      delay: { beforeNode: 0, afterNode: 0 },
+    })
+    const n = node('n1', 'x')
+    await runner.run(n, [n], [])
+    expect(rs.states().size).toBeGreaterThan(0)
+    rs.reset()
+    expect(rs.states()).toEqual(new Map())
+    expect(rs.outputs()).toEqual(new Map())
+    expect(rs.errors()).toEqual(new Map())
+    expect(rs.log()).toEqual([])
+  })
+
+  it('spread into createFlowRunner options works', async () => {
+    const rs = createFlowRunnerSignals()
+    const runner = createFlowRunner({
+      executors: { x: () => ({ output: 'spread' }) },
+      ...rs,
+      delay: { beforeNode: 0, afterNode: 0 },
+    })
+    const n = node('n1', 'x')
+    await runner.run(n, [n], [])
+    expect(rs.outputs().get('n1')).toBe('spread')
+  })
+
+  it('onEdgeStatusChange is undefined when no flow provided', () => {
+    const rs = createFlowRunnerSignals()
+    expect(rs.onEdgeStatusChange).toBeUndefined()
+  })
+
+  it('onEdgeStatusChange calls flow.setEdgeActive when flow provided', async () => {
+    const setEdgeActive = vi.fn()
+    const mockFlow = { setEdgeActive } as unknown as import('../src/types.js').FlowHandle
+    const rs = createFlowRunnerSignals(mockFlow)
+    expect(rs.onEdgeStatusChange).toBeDefined()
+    rs.onEdgeStatusChange!('e1', true)
+    expect(setEdgeActive).toHaveBeenCalledWith('e1', true)
   })
 })

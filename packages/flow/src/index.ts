@@ -38,12 +38,19 @@ export type { NodeToolbarHandle, NodeToolbarOptions, ToolbarPosition, ToolbarAli
 
 // Geometry utilities
 export { screenToCanvas, canvasToScreen } from './geometry/coords.js'
-export { getBezierPath, getStepPath, getStraightPath } from './geometry/paths.js'
+export { getBezierPath, getStepPath, getStraightPath, getWaypointPath, getWaypointMidpoint } from './geometry/paths.js'
 export { rectsOverlap, rectFromPoints } from './geometry/aabb.js'
 
 // defineNode — DX helper for declarative node type definitions
-export { defineNode } from './helpers/define-node.js'
-export type { DefineNodeOptions, FieldDescriptor, FieldType, HandleDescriptor } from './helpers/define-node.js'
+export { defineNode, getDefineNodeOpts } from './helpers/define-node.js'
+export type {
+  DefineNodeOptions, FieldDescriptor, FieldType, HandleDescriptor,
+  NodeComponentFnWithMeta,
+} from './helpers/define-node.js'
+
+// createNodePropertiesPanel — generic properties editor for defineNode nodes
+export { createNodePropertiesPanel } from './helpers/node-properties-panel.js'
+export type { NodePropertiesPanelOptions } from './helpers/node-properties-panel.js'
 
 // Context menu helpers — factory functions returning item arrays
 export {
@@ -67,7 +74,7 @@ export type {
 } from './helpers/context-menu-helpers.js'
 
 // Flow runner — generic graph-traversal execution engine
-export { createFlowRunner } from './helpers/flow-runner.js'
+export { createFlowRunner, createFlowRunnerSignals } from './helpers/flow-runner.js'
 export type {
   FlowRunnerState,
   ExecuteContext,
@@ -75,6 +82,8 @@ export type {
   ExecuteFn,
   FlowRunnerOptions,
   FlowRunnerHandle,
+  FlushCallback,
+  FlowRunnerSignals,
 } from './helpers/flow-runner.js'
 
 // Pure change helpers

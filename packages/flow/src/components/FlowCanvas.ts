@@ -248,7 +248,7 @@ export function FlowCanvas(props: FlowCanvasProps): Node {
   // ---- Connect interaction, EdgeLayer & GhostEdge ----
   setupConnect(ctx, () => transform.peek())
   setupReconnect(ctx, () => transform.peek())
-  createEdgeLayer(ctx, edgesLayer)
+  const edgeLayerHandle = createEdgeLayer(ctx, edgesLayer)
   createGhostEdge(ctx, edgesLayer)
 
   // ---- Marquee selection ----
@@ -404,6 +404,7 @@ export function FlowCanvas(props: FlowCanvasProps): Node {
     getNodes:      () => props.nodes(),
     getEdges:      () => props.edges(),
     getNodeSize:   (id) => nodeSizeMap.get(id),
+    setEdgeActive: (edgeId, active) => edgeLayerHandle.setEdgeActive(edgeId, active),
     minZoom,
     maxZoom,
   })

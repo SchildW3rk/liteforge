@@ -118,7 +118,8 @@ describe('createEdgeLayer', () => {
     const ctx = makeCtx(edges)
     const { dispose } = createEdgeLayer(ctx, svg)
     await tick()
-    const path = svg.querySelector('path') as SVGPathElement
+    const path = svg.querySelector('path.lf-edge') as SVGPathElement
+    expect(path).not.toBeNull()
     expect(path.classList.contains('lf-edge')).toBe(true)
     dispose()
   })
@@ -900,6 +901,326 @@ describe('createEdgeLayer — arrow markers', () => {
     expect(shape).not.toBeNull()
     expect(shape!.getAttribute('fill')).toBe('currentColor')
 
+    dispose()
+  })
+})
+
+// ---- Edge color ----
+
+describe('createEdgeLayer — edge color', () => {
+  let svg: SVGSVGElement
+  beforeEach(() => { svg = makeEdgeSvg() })
+  afterEach(() => { svg.remove() })
+
+  it('no --lf-edge-custom-color when color is absent', async () => {
+    const edges = signal<FlowEdge[]>([
+      { id: 'e1', source: 'n1', sourceHandle: 'h1', target: 'n2', targetHandle: 'h2' },
+    ])
+    const ctx = makeCtx(edges)
+    const { dispose } = createEdgeLayer(ctx, svg)
+    await tick()
+    const path = svg.querySelector('path.lf-edge') as SVGPathElement
+    expect(path.style.getPropertyValue('--lf-edge-custom-color')).toBe('')
+    dispose()
+  })
+
+  it('sets --lf-edge-custom-color when color is provided', async () => {
+    const edges = signal<FlowEdge[]>([
+      { id: 'e1', source: 'n1', sourceHandle: 'h1', target: 'n2', targetHandle: 'h2', color: '#ff0000' },
+    ])
+    const ctx = makeCtx(edges)
+    const { dispose } = createEdgeLayer(ctx, svg)
+    await tick()
+    const path = svg.querySelector('path.lf-edge') as SVGPathElement
+    expect(path.style.getPropertyValue('--lf-edge-custom-color')).toBe('#ff0000')
+    dispose()
+  })
+
+  it('color is reactive — adding color sets the CSS property', async () => {
+    const edges = signal<FlowEdge[]>([
+      { id: 'e1', source: 'n1', sourceHandle: 'h1', target: 'n2', targetHandle: 'h2' },
+    ])
+    const ctx = makeCtx(edges)
+    const { dispose } = createEdgeLayer(ctx, svg)
+    await tick()
+    const path = svg.querySelector('path.lf-edge') as SVGPathElement
+    expect(path.style.getPropertyValue('--lf-edge-custom-color')).toBe('')
+
+    edges.set([{ id: 'e1', source: 'n1', sourceHandle: 'h1', target: 'n2', targetHandle: 'h2', color: '#00ff00' }])
+    await tick()
+    expect(path.style.getPropertyValue('--lf-edge-custom-color')).toBe('#00ff00')
+    dispose()
+  })
+
+  it('color is reactive — removing color clears the CSS property', async () => {
+    const edges = signal<FlowEdge[]>([
+      { id: 'e1', source: 'n1', sourceHandle: 'h1', target: 'n2', targetHandle: 'h2', color: '#0000ff' },
+    ])
+    const ctx = makeCtx(edges)
+    const { dispose } = createEdgeLayer(ctx, svg)
+    await tick()
+    const path = svg.querySelector('path.lf-edge') as SVGPathElement
+    expect(path.style.getPropertyValue('--lf-edge-custom-color')).toBe('#0000ff')
+
+    edges.set([{ id: 'e1', source: 'n1', sourceHandle: 'h1', target: 'n2', targetHandle: 'h2' }])
+    await tick()
+    expect(path.style.getPropertyValue('--lf-edge-custom-color')).toBe('')
+    dispose()
+  })
+
+  it('multiple edges can have independent colors', async () => {
+    const edges = signal<FlowEdge[]>([
+      { id: 'e1', source: 'n1', sourceHandle: 'h1', target: 'n2', targetHandle: 'h2', color: '#ff0000' },
+      { id: 'e2', source: 'n2', sourceHandle: 'h1', target: 'n3', targetHandle: 'h2', color: '#00ff00' },
+      { id: 'e3', source: 'n3', sourceHandle: 'h1', target: 'n4', targetHandle: 'h2' },
+    ])
+    const ctx = makeCtx(edges)
+    const { dispose } = createEdgeLayer(ctx, svg)
+    await tick()
+    const byId = (id: string) => svg.querySelector(`path[data-edge-id="${id}"]`) as SVGPathElement
+    expect(byId('e1').style.getPropertyValue('--lf-edge-custom-color')).toBe('#ff0000')
+    expect(byId('e2').style.getPropertyValue('--lf-edge-custom-color')).toBe('#00ff00')
+    expect(byId('e3').style.getPropertyValue('--lf-edge-custom-color')).toBe('')
+    dispose()
+  })
+})
+
+// ---- Edge waypoints ----
+
+describe('createEdgeLayer — waypoints', () => {
+  let svg: SVGSVGElement
+  beforeEach(() => { svg = makeEdgeSvg() })
+  afterEach(() => { svg.remove() })
+
+  function makeNodes(): FlowNode[] {
+    return [
+      { id: 'n1', type: 'default', position: { x: 0,   y: 0 }, data: null },
+      { id: 'n2', type: 'default', position: { x: 300, y: 0 }, data: null },
+    ]
+  }
+
+  it('no waypoint handles rendered when edge has no waypoints', async () => {
+    const edges = signal<FlowEdge[]>([
+      { id: 'e1', source: 'n1', sourceHandle: 'h1', target: 'n2', targetHandle: 'h2' },
+    ])
+    const ctx = makeCtx(edges)
+    const { dispose } = createEdgeLayer(ctx, svg)
+    await tick()
+    expect(svg.querySelectorAll('circle.lf-edge-waypoint').length).toBe(0)
+    dispose()
+  })
+
+  it('renders one waypoint handle per waypoint', async () => {
+    const edges = signal<FlowEdge[]>([
+      { id: 'e1', source: 'n1', sourceHandle: 'h1', target: 'n2', targetHandle: 'h2',
+        waypoints: [{ x: 150, y: 80 }] },
+    ])
+    const ctx = makeCtx(edges)
+    const { dispose } = createEdgeLayer(ctx, svg)
+    await tick()
+    expect(svg.querySelectorAll('circle.lf-edge-waypoint').length).toBe(1)
+    dispose()
+  })
+
+  it('renders two waypoint handles for two waypoints', async () => {
+    const edges = signal<FlowEdge[]>([
+      { id: 'e1', source: 'n1', sourceHandle: 'h1', target: 'n2', targetHandle: 'h2',
+        waypoints: [{ x: 100, y: 50 }, { x: 200, y: 100 }] },
+    ])
+    const ctx = makeCtx(edges)
+    const { dispose } = createEdgeLayer(ctx, svg)
+    await tick()
+    expect(svg.querySelectorAll('circle.lf-edge-waypoint').length).toBe(2)
+    dispose()
+  })
+
+  it('waypoint handles are positioned at waypoint coordinates', async () => {
+    const wp = { x: 150, y: 75 }
+    const edges = signal<FlowEdge[]>([
+      { id: 'e1', source: 'n1', sourceHandle: 'h1', target: 'n2', targetHandle: 'h2',
+        waypoints: [wp] },
+    ])
+    const ctx = makeCtx(edges)
+    const { dispose } = createEdgeLayer(ctx, svg)
+    await tick()
+    const circle = svg.querySelector('circle.lf-edge-waypoint') as SVGCircleElement
+    expect(parseFloat(circle.getAttribute('cx')!)).toBe(wp.x)
+    expect(parseFloat(circle.getAttribute('cy')!)).toBe(wp.y)
+    dispose()
+  })
+
+  it('path uses waypoint route (M + multiple C segments) when waypoints present', async () => {
+    const edges = signal<FlowEdge[]>([
+      { id: 'e1', source: 'n1', sourceHandle: 'h1', target: 'n2', targetHandle: 'h2',
+        waypoints: [{ x: 150, y: 80 }] },
+    ])
+    const ctx = makeCtx(edges, { nodes: () => makeNodes() })
+    registerHandle(ctx, 'n1', 'h1', { x: 0, y: 0 })
+    registerHandle(ctx, 'n2', 'h2', { x: 0, y: 0 })
+    const { dispose } = createEdgeLayer(ctx, svg)
+    await tick()
+    const path = svg.querySelector('path.lf-edge') as SVGPathElement
+    const d = path.getAttribute('d')!
+    // 2 segments → 2 C commands
+    const cCount = (d.match(/ C /g) ?? []).length
+    expect(cCount).toBe(2)
+    dispose()
+  })
+
+  it('waypoints update reactively — adding a waypoint adds a circle handle', async () => {
+    const edges = signal<FlowEdge[]>([
+      { id: 'e1', source: 'n1', sourceHandle: 'h1', target: 'n2', targetHandle: 'h2' },
+    ])
+    const ctx = makeCtx(edges)
+    const { dispose } = createEdgeLayer(ctx, svg)
+    await tick()
+    expect(svg.querySelectorAll('circle.lf-edge-waypoint').length).toBe(0)
+
+    edges.set([
+      { id: 'e1', source: 'n1', sourceHandle: 'h1', target: 'n2', targetHandle: 'h2',
+        waypoints: [{ x: 150, y: 60 }] },
+    ])
+    await tick()
+    expect(svg.querySelectorAll('circle.lf-edge-waypoint').length).toBe(1)
+    dispose()
+  })
+
+  it('waypoints update reactively — removing all waypoints removes handles', async () => {
+    const edges = signal<FlowEdge[]>([
+      { id: 'e1', source: 'n1', sourceHandle: 'h1', target: 'n2', targetHandle: 'h2',
+        waypoints: [{ x: 150, y: 60 }] },
+    ])
+    const ctx = makeCtx(edges)
+    const { dispose } = createEdgeLayer(ctx, svg)
+    await tick()
+    expect(svg.querySelectorAll('circle.lf-edge-waypoint').length).toBe(1)
+
+    edges.set([
+      { id: 'e1', source: 'n1', sourceHandle: 'h1', target: 'n2', targetHandle: 'h2' },
+    ])
+    await tick()
+    expect(svg.querySelectorAll('circle.lf-edge-waypoint').length).toBe(0)
+    dispose()
+  })
+
+  it('removing an edge also removes its waypoint circles', async () => {
+    const edges = signal<FlowEdge[]>([
+      { id: 'e1', source: 'n1', sourceHandle: 'h1', target: 'n2', targetHandle: 'h2',
+        waypoints: [{ x: 150, y: 60 }, { x: 200, y: 100 }] },
+    ])
+    const ctx = makeCtx(edges)
+    const { dispose } = createEdgeLayer(ctx, svg)
+    await tick()
+    expect(svg.querySelectorAll('circle.lf-edge-waypoint').length).toBe(2)
+
+    edges.set([])
+    await tick()
+    expect(svg.querySelectorAll('circle.lf-edge-waypoint').length).toBe(0)
+    dispose()
+  })
+
+  it('dblclick on waypoint circle calls onEdgesChange with filtered waypoints', async () => {
+    const edges = signal<FlowEdge[]>([
+      { id: 'e1', source: 'n1', sourceHandle: 'h1', target: 'n2', targetHandle: 'h2',
+        waypoints: [{ x: 100, y: 50 }, { x: 200, y: 50 }] },
+    ])
+    const onEdgesChange = vi.fn()
+    const ctx = makeCtx(edges, { onEdgesChange })
+    const { dispose } = createEdgeLayer(ctx, svg)
+    await tick()
+
+    const circles = svg.querySelectorAll('circle.lf-edge-waypoint')
+    expect(circles.length).toBe(2)
+    // Dbl-click the first waypoint
+    circles[0]!.dispatchEvent(new MouseEvent('dblclick', { bubbles: true, cancelable: true }))
+    await tick()
+
+    expect(onEdgesChange).toHaveBeenCalledOnce()
+    const changes = onEdgesChange.mock.calls[0][0] as EdgeChange[]
+    const wpChange = changes.find(c => c.type === 'waypoints' && c.id === 'e1') as Extract<EdgeChange, { type: 'waypoints' }>
+    expect(wpChange).toBeDefined()
+    // Only the second waypoint should remain
+    expect(wpChange.waypoints).toHaveLength(1)
+    expect(wpChange.waypoints[0]).toEqual({ x: 200, y: 50 })
+    dispose()
+  })
+
+  it('waypoint drag updates path live via DraggingWaypointState (not just the circle)', async () => {
+    // The path d-attribute must follow the waypoint in real-time during drag,
+    // not wait for pointerup. This is the core of the bug fix.
+    const nodes: FlowNode[] = [
+      { id: 'n1', type: 'default', position: { x: 0,   y: 0 }, data: null },
+      { id: 'n2', type: 'default', position: { x: 300, y: 0 }, data: null },
+    ]
+    const edges = signal<FlowEdge[]>([
+      { id: 'e1', source: 'n1', sourceHandle: 'h1', target: 'n2', targetHandle: 'h2',
+        waypoints: [{ x: 150, y: 0 }] },
+    ])
+    const stateMgr = createInteractionState()
+    const ctx = makeCtx(edges, {
+      nodes: () => nodes,
+      interactionState: stateMgr.state,
+      stateMgr,
+      interactionStateManager: stateMgr,
+    })
+    registerHandle(ctx, 'n1', 'h1', { x: 0, y: 0 })
+    registerHandle(ctx, 'n2', 'h2', { x: 0, y: 0 })
+    const { dispose } = createEdgeLayer(ctx, svg)
+    await tick()
+
+    const path = svg.querySelector('path.lf-edge') as SVGPathElement
+    const dBefore = path.getAttribute('d')!
+    expect(dBefore).not.toBeNull()
+
+    // Simulate dragging waypoint 0 by 50px horizontally via the state machine
+    stateMgr.toDraggingWaypoint('e1', 0, { x: 150, y: 0 })
+    const istate = stateMgr.state()
+    expect(istate.type).toBe('draggingWaypoint')
+    if (istate.type === 'draggingWaypoint') {
+      istate.localOffset.set({ x: 50, y: 30 })
+    }
+
+    // Path must update immediately — waypoint is now at (200, 30)
+    const dDuring = path.getAttribute('d')!
+    expect(dDuring).not.toBe(dBefore)
+    // The path should now route through the moved waypoint x=200, y=30
+    expect(dDuring).toContain('200 30')
+
+    // Circle position also follows the live offset
+    const circle = svg.querySelector('circle.lf-edge-waypoint') as SVGCircleElement
+    expect(parseFloat(circle.getAttribute('cx')!)).toBeCloseTo(200, 0)
+    expect(parseFloat(circle.getAttribute('cy')!)).toBeCloseTo(30, 0)
+
+    // After toIdle, path snaps back to original waypoint position
+    stateMgr.toIdle()
+    const dAfter = path.getAttribute('d')!
+    expect(dAfter).toBe(dBefore)
+
+    dispose()
+  })
+
+  it('waypoint drag: pointerup does NOT call onEdgesChange when state has already returned to idle', async () => {
+    // If the user somehow triggers pointerup after state reverted, no stale commit.
+    const edges = signal<FlowEdge[]>([
+      { id: 'e1', source: 'n1', sourceHandle: 'h1', target: 'n2', targetHandle: 'h2',
+        waypoints: [{ x: 150, y: 0 }] },
+    ])
+    const onEdgesChange = vi.fn()
+    const stateMgr = createInteractionState()
+    const ctx = makeCtx(edges, { onEdgesChange, stateMgr, interactionState: stateMgr.state, interactionStateManager: stateMgr })
+    const { dispose } = createEdgeLayer(ctx, svg)
+    await tick()
+
+    // Transition to dragging then immediately back to idle
+    stateMgr.toDraggingWaypoint('e1', 0, { x: 150, y: 0 })
+    stateMgr.toIdle()
+
+    // pointerup on circle should be a no-op (state is already idle)
+    const circle = svg.querySelector('circle.lf-edge-waypoint') as SVGCircleElement
+    circle.dispatchEvent(new PointerEvent('pointerup', { bubbles: true }))
+    await tick()
+
+    expect(onEdgesChange).not.toHaveBeenCalled()
     dispose()
   })
 })

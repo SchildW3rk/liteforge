@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { getBezierPath, getStepPath, getStraightPath } from '../src/geometry/paths.js'
+import { getBezierPath, getStepPath, getStraightPath, getWaypointPath, getWaypointMidpoint } from '../src/geometry/paths.js'
 
 // ---- getStraightPath ----
 
@@ -148,5 +148,96 @@ describe('getBezierPath', () => {
     expect(d).toContain('50 200')
     // cp1x = 50 + 20 = 70, cp2x = 50 - 20 = 30
     expect(d).toContain('C 70 0 30 200')
+  })
+})
+
+// ---- getWaypointPath ----
+
+describe('getWaypointPath', () => {
+  it('with no waypoints returns same result as getBezierPath', () => {
+    const src = { x: 0, y: 0 }
+    const tgt = { x: 200, y: 0 }
+    expect(getWaypointPath(src, [], tgt)).toBe(getBezierPath(src, tgt))
+  })
+
+  it('starts with M at source coordinates', () => {
+    const d = getWaypointPath({ x: 10, y: 20 }, [{ x: 100, y: 50 }], { x: 200, y: 20 })
+    expect(d).toMatch(/^M 10 20/)
+  })
+
+  it('ends with target coordinates', () => {
+    const d = getWaypointPath({ x: 0, y: 0 }, [{ x: 100, y: 50 }], { x: 300, y: 100 })
+    expect(d).toMatch(/300 100$/)
+  })
+
+  it('contains C commands for each segment', () => {
+    const d = getWaypointPath({ x: 0, y: 0 }, [{ x: 100, y: 50 }], { x: 200, y: 0 })
+    // 1 waypoint → 2 segments → 2 C commands
+    const cCount = (d.match(/ C /g) ?? []).length
+    expect(cCount).toBe(2)
+  })
+
+  it('two waypoints produce 3 bezier segments', () => {
+    const d = getWaypointPath({ x: 0, y: 0 }, [{ x: 50, y: 50 }, { x: 150, y: 50 }], { x: 200, y: 0 })
+    const cCount = (d.match(/ C /g) ?? []).length
+    expect(cCount).toBe(3)
+  })
+
+  it('waypoint coordinates appear in path', () => {
+    const wp = { x: 100, y: 80 }
+    const d = getWaypointPath({ x: 0, y: 0 }, [wp], { x: 200, y: 0 })
+    expect(d).toContain(`${wp.x} ${wp.y}`)
+  })
+
+  it('returns a string', () => {
+    const d = getWaypointPath({ x: 0, y: 0 }, [{ x: 50, y: 25 }], { x: 100, y: 0 })
+    expect(typeof d).toBe('string')
+  })
+})
+
+// ---- getWaypointMidpoint ----
+
+describe('getWaypointMidpoint', () => {
+  it('with no waypoints returns same result as getBezierMidpoint', () => {
+    const src = { x: 0, y: 0 }
+    const tgt = { x: 200, y: 0 }
+    // getBezierMidpoint is not exported — compute expected inline
+    // For getBezierPath(src, tgt): offset=max(20,200*0.25)=50
+    // cp1=(50,0), cp2=(150,0), bezier at t=0.5
+    const mid = getWaypointMidpoint(src, [], tgt)
+    // t=0.5 → x = 0.125*0 + 3*0.25*50 + 3*0.25*150 + 0.125*200 = 0+37.5+112.5+25 = 175?
+    // Actually: mt=0.5, mt^3*0 + 3*mt^2*t*50 + 3*mt*t^2*150 + t^3*200
+    //         = 0 + 3*0.25*0.5*50 + 3*0.5*0.25*150 + 0.125*200
+    //         = 18.75 + 56.25 + 25 = 100
+    expect(mid.x).toBeCloseTo(100, 1)
+    expect(mid.y).toBeCloseTo(0, 1)
+  })
+
+  it('with one waypoint returns midpoint between source and waypoint', () => {
+    const src = { x: 0, y: 0 }
+    const wp = { x: 100, y: 0 }
+    const tgt = { x: 200, y: 0 }
+    // all=[src, wp, tgt], length-1=2, mid=floor(1)=1 → a=wp, b=tgt
+    const mid = getWaypointMidpoint(src, [wp], tgt)
+    // midpoint of wp and tgt = (150, 0)
+    expect(mid.x).toBe(150)
+    expect(mid.y).toBe(0)
+  })
+
+  it('with two waypoints returns midpoint of the middle two points', () => {
+    const src = { x: 0, y: 0 }
+    const wp1 = { x: 50, y: 0 }
+    const wp2 = { x: 150, y: 0 }
+    const tgt = { x: 200, y: 0 }
+    // all=[src, wp1, wp2, tgt], length-1=3, mid=floor(1.5)=1 → a=wp1, b=wp2
+    const mid = getWaypointMidpoint(src, [wp1, wp2], tgt)
+    expect(mid.x).toBe(100) // (50+150)/2
+    expect(mid.y).toBe(0)
+  })
+
+  it('returns an object with x and y properties', () => {
+    const mid = getWaypointMidpoint({ x: 0, y: 0 }, [{ x: 50, y: 25 }], { x: 100, y: 50 })
+    expect(typeof mid.x).toBe('number')
+    expect(typeof mid.y).toBe('number')
   })
 })

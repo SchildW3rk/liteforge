@@ -90,6 +90,26 @@ export interface DefineNodeOptions<TData = unknown> {
   render?:   (node: FlowNode<TData>) => Node
 }
 
+/**
+ * A NodeComponentFn returned by defineNode() carries its options as metadata
+ * so that helpers like createNodePropertiesPanel() can introspect field config
+ * without re-declaring it.
+ *
+ * @internal — access via `getDefineNodeOpts(fn)`
+ */
+export const DEFINE_NODE_OPTS_KEY = '__lfDefineNodeOpts'
+
+export type NodeComponentFnWithMeta<TData = unknown> = NodeComponentFn<TData> & {
+  readonly [DEFINE_NODE_OPTS_KEY]: DefineNodeOptions<TData>
+}
+
+/** Extract defineNode options from a NodeComponentFn, or undefined if not a defineNode result. */
+export function getDefineNodeOpts<TData = unknown>(
+  fn: NodeComponentFn<TData>,
+): DefineNodeOptions<TData> | undefined {
+  return (fn as NodeComponentFnWithMeta<TData>)[DEFINE_NODE_OPTS_KEY]
+}
+
 // ---- CSS injection (once per page) ------------------------------------------
 
 let injected = false
@@ -218,10 +238,10 @@ export function _resetDefineNodeStyles(): void {
  */
 export function defineNode<TData = unknown>(
   opts: DefineNodeOptions<TData>,
-): NodeComponentFn<TData> {
+): NodeComponentFnWithMeta<TData> {
   injectStyles()
 
-  return function nodeComponentFn(node: FlowNode<TData>): Node {
+  const nodeComponentFn = function nodeComponentFn(node: FlowNode<TData>): Node {
     const ctx = getFlowContext()
 
     // ---- Root element ----
@@ -330,4 +350,9 @@ export function defineNode<TData = unknown>(
 
     return root
   }
+
+  // Attach opts as metadata so createNodePropertiesPanel can introspect fields
+  ;(nodeComponentFn as unknown as Record<string, unknown>)[DEFINE_NODE_OPTS_KEY] = opts
+
+  return nodeComponentFn as unknown as NodeComponentFnWithMeta<TData>
 }
