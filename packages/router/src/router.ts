@@ -70,6 +70,7 @@ export function createRouter<T extends readonly RouteDefinition[]>(
     titleTemplate,
     transitions,
     useViewTransitions = false,
+    initialNavigation = true,
   } = options;
 
   // Set up scroll handlers and disable browser-managed scroll restoration
@@ -545,11 +546,60 @@ export function createRouter<T extends readonly RouteDefinition[]>(
     }
   });
 
-  // Initialize with current location using sync match
-  // (lazyChildren not yet loaded at startup — sync is safe and keeps state immediately available)
+  // Initial navigation — populate state immediately via sync match so signals
+  // are never undefined, then run the full guard pipeline if initialNavigation is enabled.
   currentLocation = history.location;
   const initialMatched = matchRoutesSync(history.location.path, compiledRoutes);
   updateState(history.location, initialMatched ?? []);
+
+  // isReady resolves after the initial navigation (including guards) completes.
+  let _resolveReady!: (value: boolean) => void;
+  const isReadyPromise = new Promise<boolean>((resolve) => {
+    _resolveReady = resolve;
+  });
+
+  if (initialNavigation) {
+    // Run the full guard + middleware pipeline for the initial URL without
+    // touching the navigation lock or pushing a new history entry.
+    // If a guard redirects, we do a replace() so the URL updates correctly.
+    void runInitialNavigation()
+      .then((result) => _resolveReady(result))
+      .catch(() => _resolveReady(false));
+  } else {
+    _resolveReady(true);
+  }
+
+  /**
+   * Run guards/middleware/preload for the initial page URL.
+   * Does NOT acquire navigationLock (avoids blocking subsequent navigate() calls).
+   * Commits a replace() if the result differs from the current location (redirect).
+   */
+  async function runInitialNavigation(): Promise<boolean> {
+    const result = await attemptNavigation(history.location.path);
+
+    if (result.type === 'blocked') {
+      return false;
+    }
+
+    if (result.type === 'redirect') {
+      // Redirect: navigate with replace (no extra history entry)
+      return performNavigation(result.target, { replace: true });
+    }
+
+    if (result.type === 'error') {
+      if (onError) onError(result.error);
+      return false;
+    }
+
+    // Success: update matched/preloaded data only when lazy routes expanded the
+    // match (avoids a spurious reactive update when the sync match was already complete).
+    const matched = await matchRoutes(history.location.path, compiledRoutes, matchOptions) ?? [];
+    const syncLen = matchedSignal().length;
+    if (matched.length > syncLen || result.preloadedData !== null) {
+      updateState(history.location, matched, result.preloadedData);
+    }
+    return true;
+  }
 
   // Router instance
   const router: Router = {
@@ -577,6 +627,10 @@ export function createRouter<T extends readonly RouteDefinition[]>(
     },
     get preloadedData() {
       return preloadedDataSignal as Signal<unknown>;
+    },
+
+    get isReady() {
+      return isReadyPromise;
     },
 
     // Navigation methods

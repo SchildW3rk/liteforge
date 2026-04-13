@@ -16,35 +16,35 @@ describe('routerPlugin', () => {
     expect(plugin.name).toBe('router');
   });
 
-  it('provides router under "router" key', () => {
+  it('provides router under "router" key', async () => {
     const plugin = routerPlugin({
       routes: [{ path: '/', component: () => document.createElement('div') }],
     });
     const ctx = createPluginContext(container, appContext);
 
-    plugin.install(ctx);
+    await plugin.install(ctx);
 
     expect(appContext['router']).toBeDefined();
   });
 
-  it('provided router has navigate and destroy methods', () => {
+  it('provided router has navigate and destroy methods', async () => {
     const plugin = routerPlugin({
       routes: [{ path: '/', component: () => document.createElement('div') }],
     });
     const ctx = createPluginContext(container, appContext);
-    plugin.install(ctx);
+    await plugin.install(ctx);
 
     const router = appContext['router'] as { navigate: unknown; destroy: unknown };
     expect(typeof router.navigate).toBe('function');
     expect(typeof router.destroy).toBe('function');
   });
 
-  it('cleanup calls router.destroy()', () => {
+  it('cleanup calls router.destroy()', async () => {
     const plugin = routerPlugin({
       routes: [{ path: '/', component: () => document.createElement('div') }],
     });
     const ctx = createPluginContext(container, appContext);
-    const cleanup = plugin.install(ctx);
+    const cleanup = await plugin.install(ctx);
 
     const router = appContext['router'] as { destroy: () => void };
     const destroySpy = vi.spyOn(router, 'destroy');
@@ -56,12 +56,12 @@ describe('routerPlugin', () => {
     expect(destroySpy).toHaveBeenCalledTimes(1);
   });
 
-  it('router is accessible via resolve()', () => {
+  it('router is accessible via resolve()', async () => {
     const plugin = routerPlugin({
       routes: [{ path: '/', component: () => document.createElement('div') }],
     });
     const ctx = createPluginContext(container, appContext);
-    plugin.install(ctx);
+    await plugin.install(ctx);
 
     const resolved = ctx.resolve<{ navigate: unknown }>('router');
     expect(typeof resolved?.navigate).toBe('function');

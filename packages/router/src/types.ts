@@ -450,6 +450,14 @@ export interface RouterOptions {
   lazyDefaults?: LazyDefaults;
   /** Automatically set document.title on every navigation */
   titleTemplate?: (title: string | undefined) => string;
+  /**
+   * Run the full guard + middleware pipeline on the initial page load.
+   * When true (the default), the router performs a real navigation for the
+   * current URL at startup so guards can redirect before any component renders.
+   * Set to false to skip guards on the first load (not recommended for auth flows).
+   * @default true
+   */
+  initialNavigation?: boolean;
 }
 
 /**
@@ -586,6 +594,24 @@ export interface Router<T extends readonly RouteDefinition[] = readonly RouteDef
   
   /** Destroy the router instance */
   destroy(): void;
+
+  /**
+   * Promise that resolves after the initial navigation (including guards) completes.
+   * Resolves to `true` when navigation succeeded (direct render or after a guard redirect).
+   * Resolves to `false` only when navigation was fully blocked with no redirect target.
+   * Always resolves — never rejects.
+   *
+   * When using `routerPlugin`, `createApp().mount()` already awaits `isReady` internally,
+   * so the app never mounts before the initial guard run completes.
+   *
+   * @example
+   * ```ts
+   * // Manual await (without routerPlugin):
+   * await router.isReady
+   * createApp({ root: App, target: '#app' }).mount()
+   * ```
+   */
+  readonly isReady: Promise<boolean>;
 }
 
 // =============================================================================

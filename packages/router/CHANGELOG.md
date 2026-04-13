@@ -1,5 +1,27 @@
 # @liteforge/router
 
+## 0.10.0
+
+### Minor Changes
+
+- Run guards on initial page load — closes #9
+
+  The router now runs the full guard + middleware pipeline for the current URL before
+  the app mounts. Previously guards only ran on `navigate()` calls, meaning authenticated
+  routes rendered briefly (or fully) without an auth check on hard reload.
+
+  - `initialNavigation: true` (default) — guards run on page load
+  - `initialNavigation: false` — skip guards on first load (opt-out)
+  - `router.isReady: Promise<boolean>` — resolves after the initial navigation completes
+  - `routerPlugin` awaits `isReady` before `install()` returns, so `createApp().mount()` blocks until guards have run
+
+  ```ts
+  // No extra code needed — routerPlugin handles it:
+  await createApp({ root: App, target: "#app" })
+    .use(routerPlugin(router))
+    .mount();
+  ```
+
 ## 0.9.0
 
 ### Minor Changes

@@ -27,12 +27,13 @@ export function routerPlugin(optionsOrRouter: RouterOptions | Router): LiteForge
 
   return {
     name: 'router',
-    install(context: PluginContext): () => void {
+    async install(context: PluginContext): Promise<() => void> {
       context.provide('router', router);
 
-      // Trigger initial navigation so route guards + components resolve.
-      // createRouter already syncs state, but navigate() runs middleware/guards.
-      void router.navigate(router.location().href);
+      // Wait for the initial navigation (including guards) to complete before
+      // the app mounts. This prevents authenticated routes from rendering
+      // before the auth guard has a chance to redirect.
+      await router.isReady;
 
       return () => {
         router.destroy();

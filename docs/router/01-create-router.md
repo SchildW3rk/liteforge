@@ -54,6 +54,7 @@ await createApp({ root: App, target: '#app' })
 | `transitions` | `TransitionHooks` | — | Enter/leave hooks |
 | `useViewTransitions` | `boolean` | `false` | Use browser View Transitions API |
 | `onError` | `(err: Error) => void` | — | Navigation error handler |
+| `initialNavigation` | `boolean` | `true` | Run guards on page load before mounting |
 
 **Returns (`Router<T>`):**
 
@@ -79,6 +80,7 @@ await createApp({ root: App, target: '#app' })
 | `.getRoute(name)` | `CompiledRoute \| undefined` | Find route by name |
 | `.resolve(target)` | `{ href, route, params }` | Resolve URL without navigating |
 | `.destroy()` | `void` | Clean up the router |
+| `.isReady` | `Promise<boolean>` | Resolves when initial navigation (including guards) completes |
 
 ## Examples
 
@@ -115,6 +117,27 @@ router.beforeEach(async ({ to, from }) => {
   }
   return true  // allow
 })
+```
+
+## Initial Navigation & Guards on Page Load
+
+By default (`initialNavigation: true`), the router runs the full guard + middleware pipeline for the **current URL** before the app mounts. This prevents authenticated routes from rendering without an auth check on hard reload.
+
+When using `routerPlugin`, `createApp().mount()` awaits `isReady` internally — no extra code needed:
+
+```ts
+// Guards run before App renders — auth redirect happens before any component mounts
+await createApp({ root: App, target: '#app' })
+  .use(routerPlugin(router))
+  .mount()
+```
+
+If a guard redirects on the initial load, the URL is replaced and the redirect target is rendered instead. `isReady` resolves to `true` in this case (a route was rendered). It only resolves to `false` when navigation was fully blocked with no redirect.
+
+To skip guards on the initial load (rare — only for apps that handle auth differently):
+
+```ts
+createRouter({ routes, initialNavigation: false })
 ```
 
 ## Notes

@@ -430,6 +430,10 @@ describe('middleware', () => {
       history: createMemoryHistory(),
     });
 
+    // Wait for initial navigation (runs middleware for '/') then clear the log
+    await router.isReady;
+    log.length = 0;
+
     await router.navigate('/users');
 
     expect(log).toEqual(['before: /users', 'after: /users']);
@@ -479,6 +483,10 @@ describe('middleware', () => {
       middleware: [first, second],
       history: createMemoryHistory(),
     });
+
+    // Wait for initial navigation (runs middleware for '/') then clear the order array
+    await router.isReady;
+    order.length = 0;
 
     await router.navigate('/users');
 
@@ -786,5 +794,93 @@ describe('cleanup', () => {
     // We can't easily test this without internal access,
     // but at least verify destroy doesn't throw
     expect(true).toBe(true);
+  });
+});
+
+// =============================================================================
+// Initial Navigation / isReady
+// =============================================================================
+
+describe('initialNavigation + isReady', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('isReady resolves to true when no guards block', async () => {
+    const router = createRouter({
+      routes: [{ path: '/', component: () => document.createElement('div') }],
+      history: createMemoryHistory(),
+    });
+    const result = await router.isReady;
+    expect(result).toBe(true);
+    router.destroy();
+  });
+
+  it('guard runs on initial load and redirects', async () => {
+    const history = createMemoryHistory({ initialEntries: ['/admin'] });
+    const router = createRouter({
+      routes: [
+        { path: '/', component: () => document.createElement('div') },
+        { path: '/admin', component: () => document.createElement('div'), guard: 'auth' },
+        { path: '/login', component: () => document.createElement('div') },
+      ],
+      guards: [
+        defineGuard('auth', ({ to }) => {
+          return `/login?redirect=${encodeURIComponent(to.path)}`;
+        }),
+      ],
+      history,
+    });
+
+    await router.isReady;
+    // Guard redirected to /login — URL must have changed
+    expect(router.path()).toBe('/login');
+    router.destroy();
+  });
+
+  it('guard allows initial load when authenticated', async () => {
+    const history = createMemoryHistory({ initialEntries: ['/admin'] });
+    const router = createRouter({
+      routes: [
+        { path: '/admin', component: () => document.createElement('div'), guard: 'auth' },
+        { path: '/login', component: () => document.createElement('div') },
+      ],
+      guards: [
+        defineGuard('auth', () => true),
+      ],
+      history,
+    });
+
+    const result = await router.isReady;
+    expect(result).toBe(true);
+    expect(router.path()).toBe('/admin');
+    router.destroy();
+  });
+
+  it('initialNavigation: false skips guards on load', async () => {
+    const guardFn = vi.fn(() => true);
+    const history = createMemoryHistory({ initialEntries: ['/admin'] });
+    const router = createRouter({
+      routes: [
+        { path: '/admin', component: () => document.createElement('div'), guard: 'auth' },
+      ],
+      guards: [defineGuard('auth', guardFn)],
+      history,
+      initialNavigation: false,
+    });
+
+    await router.isReady;
+    expect(guardFn).not.toHaveBeenCalled();
+    expect(router.path()).toBe('/admin');
+    router.destroy();
+  });
+
+  it('navigate() works normally after isReady resolves', async () => {
+    const router = createTestRouter();
+    await router.isReady;
+    const result = await router.navigate('/users');
+    expect(result).toBe(true);
+    expect(router.path()).toBe('/users');
+    router.destroy();
   });
 });
