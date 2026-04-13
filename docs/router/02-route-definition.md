@@ -150,16 +150,41 @@ const authGuard = defineGuard('auth', async ({ to, from, use }) => {
 
 ### Nested routes with layout
 
+Child paths are always **relative to the parent** — the leading `/` is stripped automatically before joining. Both `'/stats'` and `'stats'` produce the same URL when nested.
+
+```ts
+createRouter({
+  routes: [
+    {
+      path: '/customers',        // layout route
+      component: CustomersLayout,
+      children: [
+        { path: '/',             component: CustomerList   },  // → /customers
+        { path: '/:id',          component: CustomerDetail },  // → /customers/:id
+        { path: '/:id/edit',     component: CustomerForm   },  // → /customers/:id/edit
+        { path: '/new',          component: CustomerForm   },  // → /customers/new
+      ],
+    },
+  ],
+})
+```
+
+**Root-level layout** — wrapping everything without a URL prefix:
+
 ```ts
 {
-  path: '/dashboard',
-  component: DashboardLayout,
+  path: '/',
+  component: AppLayout,   // rendered for all routes
   children: [
-    { path: '/', component: Overview },      // /dashboard
-    { path: '/stats', component: Stats },    // /dashboard/stats
+    { path: '/',                  component: Dashboard },
+    { path: '/customers',         component: CustomerList },
+    { path: '/customers/:id',     component: CustomerDetail },
+    { path: '/customers/:id/edit', component: CustomerForm },
   ],
 }
 ```
+
+> **Note:** When `path: '/'` contains params (e.g. `/customers/:id`), child routes that add a sub-segment (like `/customers/:id/edit`) are correctly matched as children — the router uses a param-aware prefix regex, not a literal string comparison.
 
 ### Preload data before navigation
 

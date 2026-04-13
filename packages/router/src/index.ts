@@ -216,7 +216,7 @@ export {
 // =============================================================================
 
 export { routerPlugin } from './plugin.js';
-export { useParam } from './helpers.js';
+export { useParam, useParams, usePath, useQuery, useRouter } from './helpers.js';
 
 // Declaration Merging — augments @liteforge/runtime's PluginRegistry so that
 // use('router') returns Router without a cast whenever @liteforge/router is imported.

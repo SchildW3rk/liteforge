@@ -17,10 +17,36 @@ export interface BuildAdminRoutesOptions {
   unstyled?: boolean;
   dashboard?: DashboardConfig;
   showActivityLog?: boolean;
+  /**
+   * URL prefix for all generated routes. Defaults to `basePath`.
+   * Use `''` for root-level routes.
+   *
+   * @example
+   * ```ts
+   * buildAdminRoutes({ resources, basePath: '/admin', prefix: '/back-office', client })
+   * // → /back-office/users, /back-office/users/:id, etc.
+   * ```
+   */
+  prefix?: string;
+  /**
+   * Custom layout component to wrap the admin routes.
+   * Defaults to the built-in `AdminLayout`.
+   * Receives the same props as `AdminLayout` — the component is called with
+   * `{ resources, basePath, title?, logo?, extraNavLinks? }`.
+   *
+   * @example
+   * ```ts
+   * buildAdminRoutes({ resources, basePath: '/admin', layout: AppLayout, client })
+   * ```
+   */
+  layout?: (props: object) => Node;
 }
 
 export function buildAdminRoutes(opts: BuildAdminRoutesOptions): RouteDefinition[] {
   const { resources, basePath, client, title, logo } = opts;
+  // prefix controls the URL prefix; defaults to basePath for backward compat
+  const routePrefix = opts.prefix !== undefined ? opts.prefix : basePath;
+  const LayoutComponent = opts.layout ?? AdminLayout;
 
   const childRoutes: RouteDefinition[] = [];
 
@@ -83,20 +109,17 @@ export function buildAdminRoutes(opts: BuildAdminRoutesOptions): RouteDefinition
     });
   }
 
-  const layoutProps: import('../components/AdminLayout.js').AdminLayoutProps = {
-    resources,
-    basePath,
-  };
-  if (title) layoutProps.title = title;
-  if (logo) layoutProps.logo = logo;
+  const layoutProps: Record<string, unknown> = { resources, basePath };
+  if (title) layoutProps['title'] = title;
+  if (logo) layoutProps['logo'] = logo;
   if (opts.showActivityLog) {
-    layoutProps.extraNavLinks = [{ label: '📋 Activity Log', path: `${basePath}/activity` }];
+    layoutProps['extraNavLinks'] = [{ label: '📋 Activity Log', path: `${routePrefix}/activity` }];
   }
 
   return [
     {
-      path: basePath,
-      component: () => AdminLayout(layoutProps),
+      path: routePrefix,
+      component: () => LayoutComponent(layoutProps),
       children: childRoutes,
     },
   ];

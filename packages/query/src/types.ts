@@ -11,7 +11,12 @@
 /**
  * Query key - can be a string or a reactive function returning an array.
  */
-export type QueryKey = string | (() => ReadonlyArray<string | number | boolean | null | undefined>);
+export type QueryKeyPrimitive = string | number | boolean | null | undefined;
+export type QueryKey =
+  | string
+  | QueryKeyPrimitive[]
+  | ReadonlyArray<QueryKeyPrimitive>
+  | (() => QueryKeyPrimitive[] | ReadonlyArray<QueryKeyPrimitive>);
 
 /**
  * Fetcher function type.

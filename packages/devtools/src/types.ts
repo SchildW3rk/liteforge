@@ -11,12 +11,23 @@ import type { DebugEvent, DebugBus } from '@liteforge/core';
 /**
  * Position of the DevTools panel.
  */
-export type PanelPosition = 'right' | 'bottom' | 'floating';
+export type PanelPosition = 'right' | 'bottom' | 'bottom-right' | 'floating';
 
 /**
  * Available tabs in the DevTools panel.
  */
 export type TabId = 'signals' | 'stores' | 'router' | 'components' | 'performance';
+
+/**
+ * Minimal store interface required for DevTools time-travel.
+ */
+export interface DevToolsStore {
+  readonly $name: string;
+  $snapshot: () => Record<string, unknown>;
+  $restore: (snapshot: Record<string, unknown>) => void;
+}
+
+export type DevToolsStoreMap = Record<string, DevToolsStore>;
 
 /**
  * DevTools plugin configuration.
@@ -34,6 +45,12 @@ export interface DevToolsConfig {
   height?: number;
   /** Maximum events to keep in memory (default: 1000) */
   maxEvents?: number;
+  /**
+   * Additional stores to register for time-travel debugging.
+   * Stores already registered via `createApp({ stores: [...] })` are discovered
+   * automatically — use this only for stores created outside the app lifecycle.
+   */
+  stores?: DevToolsStoreMap;
 }
 
 /**

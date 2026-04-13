@@ -1,6 +1,6 @@
 {
   "name": "@liteforge/query",
-  "version": "3.2.0",
+  "version": "3.2.1",
   "description": "Data fetching and caching library. Automatic refetching, cache invalidation, and optimistic updates.",
   "author": "SchildW3rk <contact@schildw3rk.dev>",
   "license": "MIT",
@@ -54,7 +54,7 @@
   },
   "peerDependencies": {
     "@liteforge/core": ">=0.1.0",
-    "@liteforge/runtime": ">=0.6.8"
+    "@liteforge/runtime": ">=0.6.9"
   },
   "peerDependenciesMeta": {
     "@liteforge/runtime": {

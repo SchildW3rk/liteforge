@@ -1,7 +1,7 @@
 {
   "name": "@liteforge/starter",
   "private": true,
-  "version": "0.0.29",
+  "version": "0.0.30",
   "type": "module",
   "scripts": {
     "dev": "vite --port 2025",

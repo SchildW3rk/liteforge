@@ -1,6 +1,6 @@
 {
   "name": "liteforge",
-  "version": "0.7.9",
+  "version": "0.7.10",
   "description": "LiteForge — signals-based frontend framework. Re-exports @liteforge/core and @liteforge/runtime.",
   "author": "SchildW3rk <contact@schildw3rk.dev>",
   "license": "MIT",

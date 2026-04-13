@@ -365,6 +365,48 @@ export function compileRoutes(
 // =============================================================================
 
 /**
+ * Build a prefix-matching regex for a route's fullPath.
+ * Unlike `route.regex` (which has a `$` anchor), this matches any path that
+ * *starts with* the route's segments — including when those segments contain
+ * dynamic params like `:id`.
+ *
+ * Returns null for the root `/` route (every path is a prefix of root).
+ */
+function buildPrefixRegex(route: CompiledRoute): RegExp | null {
+  if (route.fullPath === '/') return null; // root always matches as prefix
+
+  const segments = normalizePath(route.fullPath).split('/').filter(Boolean);
+  let pattern = '';
+
+  for (const segment of segments) {
+    pattern += '/';
+    if (segment.startsWith(':')) {
+      const paramName = segment.slice(1);
+      if (paramName.endsWith('?')) {
+        pattern = pattern.slice(0, -1);
+        pattern += `(?:/([^/]+))?`;
+      } else {
+        pattern += '([^/]+)';
+      }
+    } else {
+      pattern += escapeRegex(segment);
+    }
+  }
+
+  // No $ anchor — prefix match only
+  return new RegExp(`^${pattern}(?:/|$)`);
+}
+
+/**
+ * Check whether `path` starts with route's path prefix (param-aware).
+ */
+function pathMatchesPrefix(normalizedPath: string, route: CompiledRoute): boolean {
+  if (route.fullPath === '/') return true; // root is a prefix of everything
+  const prefixRegex = buildPrefixRegex(route);
+  return prefixRegex !== null && prefixRegex.test(normalizedPath);
+}
+
+/**
  * Extract parameters from a path prefix for a parent route
  * Used when a child route matches and we need to include the parent in the chain
  */
@@ -505,24 +547,20 @@ async function findMatchingRoute(
     }
 
     // If no direct match, try children anyway for nested paths
-    // This handles cases where parent path is a prefix
-    const routeBasePath = route.fullPath === '/' ? '' : route.fullPath;
+    // This handles cases where parent path is a prefix of the target path.
+    // Use param-aware prefix matching so routes like /customers/:id correctly
+    // match as a prefix of /customers/2/edit.
     const couldHaveChildren = route.children.length > 0 || route.lazyChildrenFn !== undefined;
-    if (couldHaveChildren) {
-      // Check if this route's path is a prefix of the target path
-      if (normalizedPath.startsWith(routeBasePath + '/') || normalizedPath === routeBasePath) {
-        const children = await resolveChildren(route, options);
-        const childMatch = await findMatchingRoute(normalizedPath, children, options, parentParams);
-        if (childMatch) {
-          // Include the parent in the chain if it has a component (layout route)
-          // For nested routes, the parent should be included even if it doesn't "match" the full path
-          if (route.component !== undefined) {
-            // Extract any params from the parent's path prefix
-            const prefixParams = extractPrefixParams(normalizedPath, route);
-            return [{ route, params: { ...parentParams, ...prefixParams } }, ...childMatch];
-          }
-          return childMatch;
+    if (couldHaveChildren && pathMatchesPrefix(normalizedPath, route)) {
+      const children = await resolveChildren(route, options);
+      const childMatch = await findMatchingRoute(normalizedPath, children, options, parentParams);
+      if (childMatch) {
+        // Include the parent in the chain if it has a component (layout route)
+        if (route.component !== undefined) {
+          const prefixParams = extractPrefixParams(normalizedPath, route);
+          return [{ route, params: { ...parentParams, ...prefixParams } }, ...childMatch];
         }
+        return childMatch;
       }
     }
   }
@@ -575,17 +613,14 @@ function findMatchingRouteSync(
       return [matchedWithParams];
     }
 
-    if (route.children.length > 0) {
-      const routeBasePath = route.fullPath === '/' ? '' : route.fullPath;
-      if (normalizedPath.startsWith(routeBasePath + '/') || normalizedPath === routeBasePath) {
-        const childMatch = findMatchingRouteSync(normalizedPath, route.children, parentParams);
-        if (childMatch) {
-          if (route.component !== undefined) {
-            const prefixParams = extractPrefixParams(normalizedPath, route);
-            return [{ route, params: { ...parentParams, ...prefixParams } }, ...childMatch];
-          }
-          return childMatch;
+    if (route.children.length > 0 && pathMatchesPrefix(normalizedPath, route)) {
+      const childMatch = findMatchingRouteSync(normalizedPath, route.children, parentParams);
+      if (childMatch) {
+        if (route.component !== undefined) {
+          const prefixParams = extractPrefixParams(normalizedPath, route);
+          return [{ route, params: { ...parentParams, ...prefixParams } }, ...childMatch];
         }
+        return childMatch;
       }
     }
   }

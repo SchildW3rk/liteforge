@@ -15,6 +15,8 @@ import { createEventBuffer } from './buffer.js';
 import { createPanel } from './panel/Panel.js';
 import type {
   DevToolsConfig,
+  DevToolsStore,
+  DevToolsStoreMap,
   ResolvedDevToolsConfig,
   DevToolsInstance,
   DevToolsApi,
@@ -44,14 +46,6 @@ const DEFAULT_CONFIG: ResolvedDevToolsConfig = {
  * Store map type for time-travel functionality.
  * Each store must support $snapshot() and $restore().
  */
-export interface DevToolsStore {
-  readonly $name: string;
-  $snapshot: () => Record<string, unknown>;
-  $restore: (snapshot: Record<string, unknown>) => void;
-}
-
-export type DevToolsStoreMap = Record<string, DevToolsStore>;
-
 // ============================================================================
 // Plugin Factory
 // ============================================================================
@@ -105,6 +99,10 @@ export function devtoolsPlugin(config: DevToolsConfig = {}): LiteForgePlugin {
       // 4. Gather stores from app context for time-travel (resolve 'stores' context key)
       //    Falls back to empty object if no stores are registered via plugin context.
       const stores = resolveStoresFromContext(context);
+      // Merge in any stores explicitly passed via config.stores
+      if (config.stores) {
+        Object.assign(stores, config.stores);
+      }
 
       // 5. Create DOM container neben #app (nicht auf body)
       const container = document.createElement('div');

@@ -205,7 +205,7 @@ export const queryCache = createQueryCache();
 /**
  * Serialize a query key to a string for cache lookup.
  */
-export function serializeKey(key: string | ReadonlyArray<string | number | boolean | null | undefined>): string {
+export function serializeKey(key: string | Array<string | number | boolean | null | undefined> | ReadonlyArray<string | number | boolean | null | undefined>): string {
   if (typeof key === 'string') {
     return key;
   }

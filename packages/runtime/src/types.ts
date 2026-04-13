@@ -111,13 +111,29 @@ export type Simplify<T> = { [K in keyof T]: T[K] } & {};
 // ============================================================================
 
 /**
- * Registry of known plugins — extend via Declaration Merging in plugin files.
+ * Registry of known context keys and their types.
+ * Extend via Declaration Merging to make `use()` return typed values.
+ *
+ * Built-in entries are registered by their respective packages
+ * (e.g. `@liteforge/router` registers `router: Router`).
+ * Register your own stores or services the same way:
  *
  * @example
  * ```ts
+ * // In your app's type declarations (e.g. src/types.d.ts):
+ * import type { AuthStore } from './stores/auth'
+ * import type { CartStore } from './stores/cart'
+ *
  * declare module '@liteforge/runtime' {
- *   interface PluginRegistry { router: Router; }
+ *   interface PluginRegistry {
+ *     auth: AuthStore
+ *     cart: CartStore
+ *   }
  * }
+ *
+ * // Now use() is typed:
+ * const auth = use('auth')   // AuthStore — no cast needed
+ * const cart = use('cart')   // CartStore — no cast needed
  * ```
  */
 export interface PluginRegistry {}
@@ -594,10 +610,14 @@ export interface ForProps<T> {
   key?: keyof T | ((item: T, index: number) => string | number);
 
   /**
-   * Render function for each item. Write plain property accesses —
-   * the compiler transforms them into reactive getter calls automatically.
-   * @param item - The current item value
-   * @param index - The current index
+   * Render function for each item.
+   *
+   * Write property accesses on `item` and use `index` as a plain number —
+   * the Vite plugin transforms them into reactive getter calls automatically.
+   * Do NOT call `index()` — `index` is already a `number` in your source code.
+   *
+   * @param item - The current item (use as `item.name`, not `item().name`)
+   * @param index - The current index as a plain `number` (use as `index`, not `index()`)
    */
   children: (item: T, index: number) => Node;
 

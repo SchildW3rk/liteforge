@@ -11,6 +11,7 @@ import {
   compileRoutes,
   matchRoute,
   matchRoutes,
+  matchRoutesSync,
   findRouteByName,
   generatePath,
   isPathActive,
@@ -795,5 +796,48 @@ describe('edge cases', () => {
 
     const match = await matchRoutes('/api/v1.0/data', routes);
     expect(match).not.toBeNull();
+  });
+
+  it('matches /:param/segment child route (regression #20)', async () => {
+    // Bug: prefix check used literal startsWith('/customers/:id/') which never matched
+    // a real path like '/customers/2/edit'. Fixed by param-aware prefix regex.
+    const routes = compileRoutes([
+      {
+        path: '/',
+        component: () => document.createElement('div'),
+        children: [
+          { path: '/customers/:id',      component: () => document.createElement('div') },
+          { path: '/customers/:id/edit', component: () => document.createElement('div') },
+        ],
+      },
+    ]);
+
+    const detailMatch = await matchRoutes('/customers/2', routes);
+    expect(detailMatch).not.toBeNull();
+    expect(detailMatch![detailMatch!.length - 1]!.route.fullPath).toBe('/customers/:id');
+    expect(detailMatch![detailMatch!.length - 1]!.params).toEqual({ id: '2' });
+
+    const editMatch = await matchRoutes('/customers/2/edit', routes);
+    expect(editMatch).not.toBeNull();
+    expect(editMatch![editMatch!.length - 1]!.route.fullPath).toBe('/customers/:id/edit');
+    expect(editMatch![editMatch!.length - 1]!.params).toEqual({ id: '2' });
+  });
+
+  it('sync matcher also resolves /:param/segment child routes (regression #20)', () => {
+    const routes = compileRoutes([
+      {
+        path: '/',
+        component: () => document.createElement('div'),
+        children: [
+          { path: '/customers/:id',      component: () => document.createElement('div') },
+          { path: '/customers/:id/edit', component: () => document.createElement('div') },
+        ],
+      },
+    ]);
+
+    const editMatch = matchRoutesSync('/customers/2/edit', routes);
+    expect(editMatch).not.toBeNull();
+    expect(editMatch![editMatch!.length - 1]!.route.fullPath).toBe('/customers/:id/edit');
+    expect(editMatch![editMatch!.length - 1]!.params).toEqual({ id: '2' });
   });
 });

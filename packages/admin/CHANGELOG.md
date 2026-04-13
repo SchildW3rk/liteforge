@@ -1,5 +1,43 @@
 # @liteforge/admin
 
+## 13.0.0
+
+### Minor Changes
+
+- fix/feat: multi-issue fixes and DX improvements
+
+  **@liteforge/router**
+
+  - fix(#20): lazy child routes with `:param/segment` pattern now correctly matched on initial navigation — replaced literal `startsWith` prefix check with param-aware regex
+  - feat(#17): added `useParams<T>()`, `usePath()`, `useQuery<T>()`, `useRouter()` composables
+  - docs(#19): added nested children route examples with absolute vs relative paths explanation
+
+  **@liteforge/query**
+
+  - fix(#15): `QueryKey` now accepts `(string | number | boolean | null | undefined)[]` — plain mutable arrays work without `as any`
+
+  **@liteforge/devtools**
+
+  - fix(#16): `PanelPosition` now includes `'bottom-right'`
+  - fix(#16): `stores` option added to `DevToolsConfig` for passing additional stores explicitly
+  - refactor: `DevToolsStore` and `DevToolsStoreMap` moved to `types.ts`
+
+  **@liteforge/runtime**
+
+  - fix(#14): `For` children callback `index` parameter JSDoc clarified — it is a plain `number`, not a signal; do not call `index()`
+  - feat(#12): `PluginRegistry` JSDoc extended with Declaration Merging example for typed `use()` calls
+
+  **@liteforge/admin**
+
+  - feat(#18): `buildAdminRoutes` accepts `prefix` (custom URL prefix) and `layout` (custom layout component) options
+
+### Patch Changes
+
+- Updated dependencies
+  - @liteforge/router@0.12.0
+  - @liteforge/runtime@0.6.9
+  - @liteforge/client@5.0.0
+
 ## 12.0.0
 
 ### Patch Changes
