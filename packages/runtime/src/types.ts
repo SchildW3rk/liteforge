@@ -534,19 +534,28 @@ export type Falsy = false | 0 | '' | null | undefined;
  * ```
  */
 export interface ShowProps<T> {
-  /** 
-   * Reactive condition. When the returned value is truthy, 
+  /**
+   * Reactive condition. When the returned value is truthy,
    * children is called with that value.
    */
   when: (() => T) | T;
-  
-  /** 
+
+  /**
    * Render function called with the truthy value.
    * The value is guaranteed to be non-null/non-undefined.
+   *
+   * **Must be a function** — passing static JSX nodes will throw at runtime:
+   * ```tsx
+   * // ✅ Correct
+   * <Show when={() => user()}>{(u) => <Profile user={u} />}</Show>
+   *
+   * // ❌ Wrong — crashes with "children is not a function"
+   * <Show when={() => user()}><Profile /></Show>
+   * ```
    */
   children: (value: NonNullable<T>) => Node;
-  
-  /** Rendered when the condition is falsy */
+
+  /** Rendered when the condition is falsy. Must also be a render function. */
   fallback?: () => Node;
 }
 

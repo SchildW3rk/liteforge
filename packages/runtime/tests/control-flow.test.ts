@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { signal } from '@liteforge/core';
 import { Show, For, Switch, Match, Dynamic } from '../src/control-flow.js';
 import { createComponent } from '../src/component.js';
@@ -103,6 +103,19 @@ describe('control flow components', () => {
       showContent.set(true);
       await tick();
       expect(container.textContent).toBe('Content');
+    });
+
+    it('logs a console.error when children is not a function', () => {
+      const spy = vi.spyOn(console, 'error').mockImplementation(() => {})
+      Show({
+        when: true,
+        // @ts-expect-error intentionally passing wrong type to test runtime warning
+        children: document.createTextNode('bad'),
+      })
+      expect(spy).toHaveBeenCalledOnce()
+      expect(spy.mock.calls[0]![0]).toContain('[LiteForge] Show')
+      expect(spy.mock.calls[0]![0]).toContain('children')
+      spy.mockRestore()
     });
   });
 

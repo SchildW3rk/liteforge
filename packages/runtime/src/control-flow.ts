@@ -85,6 +85,15 @@ let showInstanceId = 0;
 export function Show<T>(config: ShowConfig<T>): Node {
   const { when, fallback, children } = config;
 
+  if (typeof children !== 'function') {
+    console.error(
+      '[LiteForge] Show: `children` must be a render function `(value) => Node`, ' +
+      'but received a ' + typeof children + '. ' +
+      'Wrap your JSX children in an arrow function: ' +
+      '<Show when={...}>{() => <YourComponent />}</Show>'
+    );
+  }
+
   // Create a marker comment for positioning
   const instanceId = ++showInstanceId;
   const marker = document.createComment(`Show:${instanceId}`);
@@ -677,6 +686,14 @@ export function Switch(config: SwitchConfig): Node {
  * ```
  */
 export function Match(config: MatchConfig): MatchCase {
+  if (typeof config.children !== 'function') {
+    console.error(
+      '[LiteForge] Match: `children` must be a render function `() => Node`, ' +
+      'but received a ' + typeof config.children + '. ' +
+      'Wrap your JSX children in an arrow function: ' +
+      '<Match when={...}>{() => <YourComponent />}</Match>'
+    );
+  }
   return { when: config.when, render: config.children };
 }
 
