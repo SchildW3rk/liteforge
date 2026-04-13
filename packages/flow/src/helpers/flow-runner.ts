@@ -153,11 +153,12 @@ export function createFlowRunnerSignals(flow?: FlowHandle): FlowRunnerSignals {
     log.set([])
   }
 
-  const onEdgeStatusChange = flow
-    ? (edgeId: string, active: boolean) => flow.setEdgeActive(edgeId, active)
-    : undefined
+  const result: FlowRunnerSignals = { states, outputs, errors, log, onFlush, reset }
+  if (flow) {
+    result.onEdgeStatusChange = (edgeId: string, active: boolean) => flow.setEdgeActive(edgeId, active)
+  }
 
-  return { states, outputs, errors, log, onFlush, onEdgeStatusChange, reset }
+  return result
 }
 
 // ---- Internal mutable state (per run) ---------------------------------------

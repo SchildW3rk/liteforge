@@ -107,7 +107,13 @@ export function applyEdgeChanges<T>(
     if (change.type === 'select') {
       result.push({ ...edge, selected: change.selected })
     } else if (change.type === 'waypoints') {
-      result.push({ ...edge, waypoints: change.waypoints.length > 0 ? change.waypoints : undefined })
+      const updated = { ...edge }
+      if (change.waypoints.length > 0) {
+        updated.waypoints = change.waypoints
+      } else {
+        delete updated.waypoints
+      }
+      result.push(updated)
     } else {
       result.push(edge)
     }

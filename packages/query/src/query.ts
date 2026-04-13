@@ -202,7 +202,9 @@ export function createQuery<T>(options: CreateQueryOptions<T>): QueryResult<T> {
     if (!isDisposed && serializeCurrentKey() === serializedKey) {
       errorSignal.set(lastError);
       isLoadingSignal.set(false);
-      notifyGlobalQueryError(lastError, { type: 'query', key: serializedKey });
+      if (lastError) {
+        notifyGlobalQueryError(lastError, { type: 'query', key: serializedKey });
+      }
     }
   }
 

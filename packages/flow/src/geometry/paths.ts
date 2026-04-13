@@ -38,7 +38,7 @@ export function getStraightPath(source: Point, target: Point): string {
 export function getWaypointPath(source: Point, waypoints: Point[], target: Point): string {
   if (!waypoints.length) return getBezierPath(source, target)
   const all = [source, ...waypoints, target]
-  let d = `M ${all[0].x} ${all[0].y}`
+  let d = `M ${source.x} ${source.y}`
   for (let i = 0; i < all.length - 1; i++) {
     const a = all[i]!
     const b = all[i + 1]!
