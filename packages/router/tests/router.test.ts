@@ -875,6 +875,30 @@ describe('initialNavigation + isReady', () => {
     router.destroy();
   });
 
+  it('redirect loop is capped at MAX_REDIRECTS and calls onError', async () => {
+    const onError = vi.fn();
+    const history = createMemoryHistory({ initialEntries: ['/a'] });
+    // /a → /b → /a → /b ... infinite loop
+    const router = createRouter({
+      routes: [
+        { path: '/a', component: () => document.createElement('div'), guard: 'toB' },
+        { path: '/b', component: () => document.createElement('div'), guard: 'toA' },
+      ],
+      guards: [
+        defineGuard('toB', () => '/b'),
+        defineGuard('toA', () => '/a'),
+      ],
+      history,
+      onError,
+    });
+
+    const result = await router.isReady;
+    expect(result).toBe(false);
+    expect(onError).toHaveBeenCalledOnce();
+    expect(onError.mock.calls[0][0].message).toMatch(/redirect loop/i);
+    router.destroy();
+  });
+
   it('navigate() works normally after isReady resolves', async () => {
     const router = createTestRouter();
     await router.isReady;

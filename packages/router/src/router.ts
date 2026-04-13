@@ -575,31 +575,45 @@ export function createRouter<T extends readonly RouteDefinition[]>(
    * Commits a replace() if the result differs from the current location (redirect).
    */
   async function runInitialNavigation(): Promise<boolean> {
-    const result = await attemptNavigation(history.location.path);
+    const MAX_REDIRECTS = 10;
+    const originalPath = history.location.path;
+    let currentPath = originalPath;
 
-    if (result.type === 'blocked') {
-      return false;
+    for (let i = 0; i <= MAX_REDIRECTS; i++) {
+      const result = await attemptNavigation(currentPath);
+
+      if (result.type === 'blocked') {
+        return false;
+      }
+
+      if (result.type === 'redirect') {
+        if (i === MAX_REDIRECTS) {
+          if (onError) onError(new Error(`[LiteForge Router] Redirect loop detected during initial navigation (>${MAX_REDIRECTS} redirects)`));
+          return false;
+        }
+        currentPath = typeof result.target === 'string' ? result.target : result.target.path;
+        history.replace(currentPath);
+        continue;
+      }
+
+      if (result.type === 'error') {
+        if (onError) onError(result.error);
+        return false;
+      }
+
+      // Success
+      const wasRedirected = currentPath !== originalPath;
+      const matched = await matchRoutes(currentPath, compiledRoutes, matchOptions) ?? [];
+      const syncLen = matchedSignal().length;
+      if (wasRedirected || matched.length > syncLen || result.preloadedData !== null) {
+        updateState(history.location, matched, result.preloadedData);
+      }
+      return true;
     }
 
-    if (result.type === 'redirect') {
-      // Redirect: navigate with replace (no extra history entry)
-      return performNavigation(result.target, { replace: true });
-    }
-
-    if (result.type === 'error') {
-      if (onError) onError(result.error);
-      return false;
-    }
-
-    // Success: update matched/preloaded data only when lazy routes expanded the
-    // match (avoids a spurious reactive update when the sync match was already complete).
-    const matched = await matchRoutes(history.location.path, compiledRoutes, matchOptions) ?? [];
-    const syncLen = matchedSignal().length;
-    if (matched.length > syncLen || result.preloadedData !== null) {
-      updateState(history.location, matched, result.preloadedData);
-    }
-    return true;
+    return false;
   }
+
 
   // Router instance
   const router: Router = {
