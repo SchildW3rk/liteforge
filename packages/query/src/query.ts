@@ -18,7 +18,12 @@ import type {
 // Default Options
 // ============================================================================
 
-const DEFAULT_OPTIONS: ResolvedQueryOptions = {
+/**
+ * Global query defaults — overridable by queryPlugin({ default* }) options.
+ * Per-query options always win (they use `?? globalDefaults.*`).
+ * @internal
+ */
+export const globalQueryDefaults: ResolvedQueryOptions = {
   staleTime: 0,
   cacheTime: 5 * 60 * 1000, // 5 minutes
   refetchOnFocus: true,
@@ -27,6 +32,17 @@ const DEFAULT_OPTIONS: ResolvedQueryOptions = {
   retryDelay: 1000,
   enabled: () => true,
 };
+
+/** @internal Reset defaults to original values (used by plugin cleanup in tests). */
+export function resetQueryDefaults(): void {
+  globalQueryDefaults.staleTime = 0;
+  globalQueryDefaults.cacheTime = 5 * 60 * 1000;
+  globalQueryDefaults.refetchOnFocus = true;
+  globalQueryDefaults.refetchInterval = undefined;
+  globalQueryDefaults.retry = 3;
+  globalQueryDefaults.retryDelay = 1000;
+  globalQueryDefaults.enabled = () => true;
+}
 
 // ============================================================================
 // Focus Tracking
@@ -86,15 +102,15 @@ function attachFocusListener(): void {
 export function createQuery<T>(options: CreateQueryOptions<T>): QueryResult<T> {
   const { key, fn: fetcher } = options;
 
-  // Resolve options with defaults
+  // Resolve options with defaults — per-query options win over global defaults
   const opts: ResolvedQueryOptions = {
-    staleTime: options.staleTime ?? DEFAULT_OPTIONS.staleTime,
-    cacheTime: options.cacheTime ?? DEFAULT_OPTIONS.cacheTime,
-    refetchOnFocus: options.refetchOnFocus ?? DEFAULT_OPTIONS.refetchOnFocus,
-    refetchInterval: options.refetchInterval ?? DEFAULT_OPTIONS.refetchInterval,
-    retry: options.retry ?? DEFAULT_OPTIONS.retry,
-    retryDelay: options.retryDelay ?? DEFAULT_OPTIONS.retryDelay,
-    enabled: options.enabled ?? DEFAULT_OPTIONS.enabled,
+    staleTime: options.staleTime ?? globalQueryDefaults.staleTime,
+    cacheTime: options.cacheTime ?? globalQueryDefaults.cacheTime,
+    refetchOnFocus: options.refetchOnFocus ?? globalQueryDefaults.refetchOnFocus,
+    refetchInterval: options.refetchInterval ?? globalQueryDefaults.refetchInterval,
+    retry: options.retry ?? globalQueryDefaults.retry,
+    retryDelay: options.retryDelay ?? globalQueryDefaults.retryDelay,
+    enabled: options.enabled ?? globalQueryDefaults.enabled,
   };
 
   // Pre-load cache for static keys so signals start with the right values.

@@ -1,5 +1,28 @@
 # @liteforge/query
 
+## 3.2.0
+
+### Minor Changes
+
+- queryPlugin now supports global defaults for all CreateQueryOptions
+
+  Eliminates the need for per-project `createQuery` wrappers just to set sensible global values. All `CreateQueryOptions` keys with defaults are now overridable globally via `QueryPluginOptions`. Per-query options always win.
+
+  New options: `defaultRefetchOnFocus`, `defaultRefetchInterval`, `defaultRetry`, `defaultRetryDelay` (in addition to the existing `defaultStaleTime` and `defaultCacheTime`).
+
+  ```ts
+  queryPlugin({
+    defaultRefetchOnFocus: false,
+    defaultStaleTime: 30_000,
+    defaultRetry: 1,
+  });
+  ```
+
+### Patch Changes
+
+- Updated dependencies
+  - @liteforge/runtime@0.6.8
+
 ## 3.1.0
 
 ### Minor Changes

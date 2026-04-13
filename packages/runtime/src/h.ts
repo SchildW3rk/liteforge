@@ -33,11 +33,9 @@ const isDev = typeof import.meta !== 'undefined' && import.meta.env?.DEV === tru
 
 /** Detect a LiteForge Signal at runtime: a function with .set and .peek methods. */
 function isSignal(value: unknown): boolean {
-  return (
-    typeof value === 'function' &&
-    typeof (value as Record<string, unknown>).set === 'function' &&
-    typeof (value as Record<string, unknown>).peek === 'function'
-  );
+  if (typeof value !== 'function') return false;
+  const fn = value as unknown as Record<string, unknown>;
+  return typeof fn['set'] === 'function' && typeof fn['peek'] === 'function';
 }
 
 function warnUnresolvedSignal(location: string): void {

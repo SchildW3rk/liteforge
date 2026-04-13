@@ -1,6 +1,6 @@
 {
   "name": "@liteforge/client",
-  "version": "4.0.0",
+  "version": "5.0.0",
   "description": "TypeScript-first HTTP client. createClient, resource-based CRUD, interceptors, optional @liteforge/query integration.",
   "author": "SchildW3rk <contact@schildw3rk.dev>",
   "license": "MIT",
@@ -52,8 +52,8 @@
     "clean": "rm -rf dist *.tsbuildinfo"
   },
   "peerDependencies": {
-    "@liteforge/query": ">=3.1.0",
-    "@liteforge/runtime": ">=0.6.7"
+    "@liteforge/query": ">=3.2.0",
+    "@liteforge/runtime": ">=0.6.8"
   },
   "peerDependenciesMeta": {
     "@liteforge/query": {

@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { queryPlugin } from '../src/plugin.js';
 import { queryCache } from '../src/cache.js';
 import { createPluginContext } from '../../runtime/src/plugin-registry.js';
-import { createQuery } from '../src/query.js';
+import { createQuery, globalQueryDefaults, resetQueryDefaults } from '../src/query.js';
 import { createMutation } from '../src/mutation.js';
 import { clearGlobalQueryErrorHandler } from '../src/global-error-handler.js';
 
@@ -20,6 +20,7 @@ describe('queryPlugin', () => {
   afterEach(() => {
     queryCache.clear();
     clearGlobalQueryErrorHandler();
+    resetQueryDefaults();
   });
 
   it('plugin name is "query"', () => {
@@ -165,5 +166,96 @@ describe('queryPlugin', () => {
 
     expect(clearSpy).toHaveBeenCalledTimes(1);
     clearSpy.mockRestore();
+  });
+});
+
+describe('queryPlugin — global query defaults', () => {
+  const fakeTarget = {} as HTMLElement;
+  let appContext: Record<string, unknown>;
+
+  beforeEach(() => {
+    appContext = {};
+    resetQueryDefaults();
+  });
+
+  afterEach(() => {
+    queryCache.clear();
+    resetQueryDefaults();
+  });
+
+  it('sets defaultRefetchOnFocus on globalQueryDefaults', () => {
+    const plugin = queryPlugin({ defaultRefetchOnFocus: false });
+    const ctx = createPluginContext(fakeTarget, appContext);
+    plugin.install(ctx);
+    expect(globalQueryDefaults.refetchOnFocus).toBe(false);
+  });
+
+  it('sets defaultStaleTime on globalQueryDefaults', () => {
+    const plugin = queryPlugin({ defaultStaleTime: 30_000 });
+    const ctx = createPluginContext(fakeTarget, appContext);
+    plugin.install(ctx);
+    expect(globalQueryDefaults.staleTime).toBe(30_000);
+  });
+
+  it('sets defaultRetry on globalQueryDefaults', () => {
+    const plugin = queryPlugin({ defaultRetry: 1 });
+    const ctx = createPluginContext(fakeTarget, appContext);
+    plugin.install(ctx);
+    expect(globalQueryDefaults.retry).toBe(1);
+  });
+
+  it('sets defaultRetryDelay on globalQueryDefaults', () => {
+    const plugin = queryPlugin({ defaultRetryDelay: 500 });
+    const ctx = createPluginContext(fakeTarget, appContext);
+    plugin.install(ctx);
+    expect(globalQueryDefaults.retryDelay).toBe(500);
+  });
+
+  it('sets defaultCacheTime on globalQueryDefaults', () => {
+    const plugin = queryPlugin({ defaultCacheTime: 60_000 });
+    const ctx = createPluginContext(fakeTarget, appContext);
+    plugin.install(ctx);
+    expect(globalQueryDefaults.cacheTime).toBe(60_000);
+  });
+
+  it('does not override defaults when option is not provided', () => {
+    const plugin = queryPlugin({});
+    const ctx = createPluginContext(fakeTarget, appContext);
+    plugin.install(ctx);
+    expect(globalQueryDefaults.refetchOnFocus).toBe(true);
+    expect(globalQueryDefaults.retry).toBe(3);
+  });
+
+  it('per-query option wins over global default', async () => {
+    const plugin = queryPlugin({ defaultRetry: 0 });
+    const ctx = createPluginContext(fakeTarget, appContext);
+    plugin.install(ctx);
+
+    let attempts = 0;
+    const query = createQuery({
+      key: 'per-query-retry',
+      fn: () => { attempts++; return Promise.reject(new Error('fail')); },
+      retry: 2,       // overrides global default of 0
+      retryDelay: 0,  // no wait between retries
+    });
+
+    await vi.waitFor(() => expect(query.error()).not.toBeNull());
+    // retry: 2 → 1 initial + 2 retries = 3 attempts
+    expect(attempts).toBe(3);
+    query.dispose();
+  });
+
+  it('cleanup resets global defaults', () => {
+    const plugin = queryPlugin({ defaultRefetchOnFocus: false, defaultRetry: 0 });
+    const ctx = createPluginContext(fakeTarget, appContext);
+    const cleanup = plugin.install(ctx);
+
+    expect(globalQueryDefaults.refetchOnFocus).toBe(false);
+    expect(globalQueryDefaults.retry).toBe(0);
+
+    if (typeof cleanup === 'function') cleanup();
+
+    expect(globalQueryDefaults.refetchOnFocus).toBe(true);
+    expect(globalQueryDefaults.retry).toBe(3);
   });
 });

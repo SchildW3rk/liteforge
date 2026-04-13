@@ -1,6 +1,6 @@
 {
   "name": "@liteforge/admin",
-  "version": "8.0.0",
+  "version": "9.0.0",
   "description": "Signals-based admin panel for LiteForge",
   "main": "dist/index.js",
   "module": "dist/index.js",

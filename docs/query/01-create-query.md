@@ -131,11 +131,17 @@ createApp({ root: App, target: '#app' })
 
 **`QueryPluginOptions`:**
 
-| Option | Type | Description |
-|--------|------|-------------|
-| `onError` | `(error: Error, ctx: QueryErrorContext) => void` | Called for every unhandled query or mutation error |
-| `defaultStaleTime` | `number` | — |
-| `defaultCacheTime` | `number` | — |
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `defaultStaleTime` | `number` | `0` | Global stale time for all queries |
+| `defaultCacheTime` | `number` | `300000` | Global cache time for all queries |
+| `defaultRefetchOnFocus` | `boolean` | `true` | Global refetch-on-focus behavior |
+| `defaultRefetchInterval` | `number` | `undefined` | Global poll interval in ms |
+| `defaultRetry` | `number` | `3` | Global retry count on failure |
+| `defaultRetryDelay` | `number` | `1000` | Global delay between retries in ms |
+| `onError` | `(error: Error, ctx: QueryErrorContext) => void` | — | Called for every unhandled query or mutation error |
+
+Per-query options always win over global defaults — `queryPlugin` only sets the fallback.
 
 **`QueryErrorContext`:**
 
@@ -149,6 +155,27 @@ createApp({ root: App, target: '#app' })
 **Execution order for mutation errors:** per-mutation `onError` callback → global `onError` handler.
 
 The handler is automatically cleared when the app is destroyed (plugin cleanup).
+
+#### Common pattern — disable refetch-on-focus globally
+
+`refetchOnFocus: true` is the default but can be undesirable for CRUD apps where every tab-switch triggers refetches. Override it once in `queryPlugin` instead of patching every call site:
+
+```ts
+createApp({ root: App, target: '#app' })
+  .use(queryPlugin({
+    defaultRefetchOnFocus: false,
+    defaultStaleTime: 30_000,
+    defaultRetry: 1,
+  }))
+  .mount()
+
+// Individual queries can still opt in:
+const liveFeed = createQuery({
+  key: 'live-feed',
+  fn: fetchFeed,
+  refetchOnFocus: true,  // overrides the global default
+})
+```
 
 #### Common pattern — show a toast on every error
 

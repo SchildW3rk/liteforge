@@ -1,5 +1,13 @@
 # @liteforge/runtime
 
+## 0.6.8
+
+### Patch Changes
+
+- Warn in dev mode when a Signal is passed unresolved to JSX
+
+  Detects the silent bug `{store.email}` (renders signal toString) instead of `{() => store.email()}`. A `console.error` fires when a function with `.set` and `.peek` methods (signal shape) is resolved as a JSX child or prop value. Dev-mode only (`import.meta.env.DEV`).
+
 ## 0.6.7
 
 ### Patch Changes
