@@ -10,7 +10,7 @@ import { effect } from '@liteforge/core';
 /** Duck-type check for a signal: has .set and .peek methods. */
 function isSignalLike(v: unknown): boolean {
   if (typeof v !== 'function') return false;
-  const fn = v as Record<string, unknown>;
+  const fn = v as unknown as Record<string, unknown>;
   return typeof fn['set'] === 'function' && typeof fn['peek'] === 'function';
 }
 
