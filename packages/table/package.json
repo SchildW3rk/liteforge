@@ -1,6 +1,6 @@
 {
   "name": "@liteforge/table",
-  "version": "2.2.0",
+  "version": "2.2.1",
   "description": "Reactive data table with sorting, filtering, pagination, column visibility, and row selection.",
   "author": "SchildW3rk <contact@schildw3rk.dev>",
   "license": "MIT",

@@ -1,5 +1,16 @@
 # @liteforge/table
 
+## 2.2.1
+
+### Patch Changes
+
+- fix(@liteforge/table): rename `TableResult.searchQuery()` → `search()` (#44)
+
+  The search signal accessor on `TableResult` was named `searchQuery` but documented
+  as `search`. Renamed to `search()` for consistency. Also adds a `console.warn` when
+  `setSearch()` is called without `search: { enabled: true }` in `createTable()` options
+  — previously a silent no-op.
+
 ## 2.2.0
 
 ### Minor Changes

@@ -1,5 +1,17 @@
 # @liteforge/runtime
 
+## 0.7.2
+
+### Patch Changes
+
+- fix(@liteforge/runtime): function children passed via props.children now render correctly (#43)
+
+  `resolveChildToNode` now recursively calls plain function children. Previously, when
+  a component received `{() => label()}` as children and rendered `{() => props.children}`,
+  the outer getter returned the inner function object — which was serialized as text.
+  Now the inner function is called so the actual string/Node is rendered and reactive
+  updates propagate correctly.
+
 ## 0.7.1
 
 ### Patch Changes
