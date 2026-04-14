@@ -1,6 +1,6 @@
 {
   "name": "@liteforge/theme",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Shared design-token system for LiteForge UI packages. Primitive + semantic CSS variables, dark mode, optional reset.",
   "author": "SchildW3rk <contact@schildw3rk.dev>",
   "license": "MIT",
