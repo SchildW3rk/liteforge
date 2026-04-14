@@ -66,7 +66,7 @@ export function createTemplateVisitor(state: TemplateTransformState): Visitor {
         path.replaceWith(compiled.hydratedExpression);
       } else {
         // Fall back to h() calls for dynamic elements
-        const hCall = transformJsxElement(path.node);
+        const hCall = transformJsxElement(path.node, state.autoWrapProps);
         path.replaceWith(hCall);
       }
     },
@@ -76,7 +76,7 @@ export function createTemplateVisitor(state: TemplateTransformState): Visitor {
       state.hasFragment = true;
 
       // Fragments always use h() - no benefit from template extraction
-      const hCall = transformJsxFragment(path.node);
+      const hCall = transformJsxFragment(path.node, state.autoWrapProps);
       path.replaceWith(hCall);
     },
   };

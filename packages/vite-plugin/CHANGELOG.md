@@ -1,5 +1,20 @@
 # @liteforge/vite-plugin
 
+## 0.5.0
+
+### Minor Changes
+
+- feat(@liteforge/vite-plugin): auto-wrap props.\* in JSX content position — closes #38
+
+  `{props.label}` in JSX content position is now automatically transformed to
+  `{() => props.label}` at compile time, preventing the silent reactivity bug
+  where a props access evaluates once at render time and never updates.
+
+  - Detects `props.x` and `props.x.y` (any depth) member accesses in content position
+  - Does not double-wrap expressions already inside `() => ...`
+  - Can be opted out globally via `liteforge({ autoWrapProps: false })`
+  - Known limitation: destructured props (`const { label } = props`) are not detected
+
 ## 0.4.5
 
 ### Patch Changes

@@ -33,6 +33,26 @@ export interface LiteForgePluginOptions {
    * ```
    */
   templateExtraction?: boolean | 'auto';
+  /**
+   * Automatically wrap `props.*` member accesses in JSX content position with
+   * a reactive getter (default: true).
+   *
+   * When enabled, `{props.label}` is transformed to `{() => props.label}` at
+   * compile time, preventing the common silent reactivity bug where a props
+   * access evaluates once and never updates.
+   *
+   * Disable only if you intentionally read props once at render time.
+   *
+   * **Known limitation:** only `props.x` / `props.x.y` syntax is detected.
+   * Destructured props (`const { label } = props`) are not auto-wrapped.
+   *
+   * @example
+   * ```ts
+   * // Opt out globally (not recommended):
+   * liteforge({ autoWrapProps: false })
+   * ```
+   */
+  autoWrapProps?: boolean;
 }
 
 /**
@@ -43,6 +63,8 @@ export interface ResolvedPluginOptions {
   hmr: boolean;
   importSource: string;
   templateExtraction: boolean | 'auto';
+  /** Auto-wrap props.* accesses in JSX content position (default: true) */
+  autoWrapProps: boolean;
 }
 
 // =============================================================================
@@ -106,6 +128,8 @@ export interface JsxTransformState {
   hasFragmentImport: boolean;
   /** The import source to use */
   importSource: string;
+  /** Auto-wrap props.* accesses in JSX content position */
+  autoWrapProps: boolean;
 }
 
 // =============================================================================

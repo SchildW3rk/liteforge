@@ -18,6 +18,7 @@ const DEFAULT_OPTIONS: ResolvedPluginOptions = {
   hmr: true,
   importSource: '@liteforge/runtime',
   templateExtraction: true,
+  autoWrapProps: true,
 };
 
 /**
@@ -32,6 +33,7 @@ export function resolveOptions(
     hmr: options?.hmr ?? (isDev ? DEFAULT_OPTIONS.hmr : false),
     importSource: options?.importSource ?? DEFAULT_OPTIONS.importSource,
     templateExtraction: options?.templateExtraction ?? DEFAULT_OPTIONS.templateExtraction,
+    autoWrapProps: options?.autoWrapProps ?? DEFAULT_OPTIONS.autoWrapProps,
   };
 }
 

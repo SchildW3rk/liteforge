@@ -96,6 +96,7 @@ function transformWithHCalls(
     hasHImport: false,
     hasFragmentImport: false,
     importSource: options.importSource,
+    autoWrapProps: options.autoWrapProps,
   };
 
   // Check for existing imports
@@ -163,6 +164,7 @@ function transformWithTemplates(
     hasHImport: false,
     hasFragmentImport: false,
     importSource: options.importSource,
+    autoWrapProps: options.autoWrapProps,
     templateCounter: 0,
     templateDeclarations: [],
     templateImports: new Set(),
@@ -259,6 +261,7 @@ export function transformCode(
       hmr: false,
       importSource,
       templateExtraction: useTemplateExtraction,
+      autoWrapProps: true,
     },
     !useTemplateExtraction // isDev = opposite of useTemplateExtraction for this API
   );

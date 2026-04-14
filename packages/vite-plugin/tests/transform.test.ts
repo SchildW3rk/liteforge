@@ -327,3 +327,43 @@ describe('Control Flow Components', () => {
     expect(result).toContain('"props"');
   });
 });
+
+// =============================================================================
+// autoWrapProps — Issue #38
+// =============================================================================
+
+describe('autoWrapProps transform', () => {
+  it('wraps {props.label} in content position to () => props.label', () => {
+    const code = '<button>{props.label}</button>';
+    const result = transformCode(code);
+    // transformCode uses Babel generate with default spacing
+    expect(result).toMatch(/\(\)\s*=>\s*props\.label/);
+  });
+
+  it('wraps nested {props.user.name} to () => props.user.name', () => {
+    const code = '<span>{props.user.name}</span>';
+    const result = transformCode(code);
+    expect(result).toMatch(/\(\)\s*=>\s*props\.user\.name/);
+  });
+
+  it('does NOT double-wrap {() => props.label} — already a getter', () => {
+    const code = '<span>{() => props.label}</span>';
+    const result = transformCode(code);
+    // Should contain a single getter, not ()=>()=>...
+    expect(result).toMatch(/\(\)\s*=>\s*props\.label/);
+    expect(result).not.toMatch(/\(\)\s*=>\s*\(\)\s*=>/);
+  });
+
+  it('wraps props.x ?? fallback expression (LogicalExpression)', () => {
+    const code = '<span>{props.label ?? "—"}</span>';
+    const result = transformCode(code);
+    expect(result).toMatch(/\(\)\s*=>/);
+    expect(result).toContain('props.label');
+  });
+
+  it('wraps props.x in a fragment child', () => {
+    const code = '<>{props.title}</>';
+    const result = transformCode(code);
+    expect(result).toMatch(/\(\)\s*=>\s*props\.title/);
+  });
+});

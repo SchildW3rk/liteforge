@@ -136,6 +136,33 @@ export function isMemberExpression(node: t.Node): node is t.MemberExpression {
 }
 
 /**
+ * Check if an expression is a `props.*` or `props.*.*` member access.
+ *
+ * Returns true for:
+ *   props.label           — MemberExpression: props.label
+ *   props.address.street  — MemberExpression: props.address.street
+ *
+ * Returns false for:
+ *   () => props.label     — already wrapped (ArrowFunctionExpression)
+ *   props                 — bare identifier (no member access)
+ *   other.label           — not a props access
+ *
+ * Note: destructured props (`const { label } = props`) cannot be detected
+ * at the AST level here and are a known limitation.
+ */
+export function isPropsAccess(node: t.Expression | t.JSXEmptyExpression): boolean {
+  if (!t.isMemberExpression(node)) return false;
+
+  // Walk the leftmost object of the member expression chain
+  let root: t.Expression | t.V8IntrinsicIdentifier = node.object;
+  while (t.isMemberExpression(root)) {
+    root = root.object;
+  }
+
+  return t.isIdentifier(root) && root.name === 'props';
+}
+
+/**
  * Check if expression is an identifier (variable reference)
  */
 export function isIdentifier(node: t.Node): node is t.Identifier {

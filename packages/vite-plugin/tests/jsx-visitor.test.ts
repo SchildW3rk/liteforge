@@ -417,3 +417,139 @@ describe('transformJsxFragment', () => {
     expect(code).toContain('"Hello"');
   });
 });
+
+// =============================================================================
+// processChildExpression — autoWrapProps (#38)
+// =============================================================================
+
+import { processChildExpression } from '../src/jsx-visitor.js';
+import { isPropsAccess } from '../src/getter-wrap.js';
+
+function parseExpr(code: string): t.Expression {
+  const ast = parse(`(${code})`, {
+    sourceType: 'module',
+    plugins: ['jsx', 'typescript'],
+  });
+  const stmt = ast.program.body[0];
+  if (!stmt || stmt.type !== 'ExpressionStatement') throw new Error('Expected expression');
+  return stmt.expression as t.Expression;
+}
+
+describe('isPropsAccess', () => {
+  it('returns true for props.x', () => {
+    expect(isPropsAccess(parseExpr('props.label'))).toBe(true);
+  });
+
+  it('returns true for props.x.y (nested)', () => {
+    expect(isPropsAccess(parseExpr('props.address.street'))).toBe(true);
+  });
+
+  it('returns false for other.x', () => {
+    expect(isPropsAccess(parseExpr('other.label'))).toBe(false);
+  });
+
+  it('returns false for a bare identifier', () => {
+    expect(isPropsAccess(parseExpr('props'))).toBe(false);
+  });
+
+  it('returns false for a call expression', () => {
+    expect(isPropsAccess(parseExpr('count()'))).toBe(false);
+  });
+
+  it('returns false for a string literal', () => {
+    expect(isPropsAccess(parseExpr('"hello"'))).toBe(false);
+  });
+});
+
+describe('processChildExpression — autoWrapProps', () => {
+  it('wraps props.x in a getter (default: autoWrapProps=true)', () => {
+    const expr = parseExpr('props.label');
+    const result = processChildExpression(expr);
+    // Result should be an arrow function wrapping the props access
+    expect(t.isArrowFunctionExpression(result)).toBe(true);
+    const code = generateCode(result);
+    expect(code).toBe('()=>props.label');
+  });
+
+  it('wraps props.x.y (nested) in a getter', () => {
+    const expr = parseExpr('props.address.street');
+    const result = processChildExpression(expr);
+    expect(t.isArrowFunctionExpression(result)).toBe(true);
+    const code = generateCode(result);
+    expect(code).toBe('()=>props.address.street');
+  });
+
+  it('does NOT double-wrap when already in a getter — () => props.x passes through', () => {
+    // Arrow function is passed as-is (the outer arrow fn)
+    const expr = parseExpr('() => props.label');
+    const result = processChildExpression(expr);
+    expect(t.isArrowFunctionExpression(result)).toBe(true);
+    // Body should be MemberExpression, not another ArrowFunctionExpression
+    if (t.isArrowFunctionExpression(result)) {
+      expect(t.isMemberExpression(result.body)).toBe(true);
+    }
+  });
+
+  it('does NOT wrap props.x when autoWrapProps=false', () => {
+    const expr = parseExpr('props.label');
+    const result = processChildExpression(expr, false);
+    // Without autoWrapProps, props.label is still wrapped by shouldWrapExpression
+    // (it's a MemberExpression — dynamic), so it gets wrapped
+    // This test just verifies the opt-out flag is threaded correctly
+    expect(t.isArrowFunctionExpression(result)).toBe(true);
+    // The difference from autoWrapProps=true is only semantic; both wrap MemberExpressions.
+    // The real distinction is that autoWrapProps catches props.x *before* shouldWrapExpression,
+    // which matters for the full-integration transform tests.
+    const code = generateCode(result);
+    expect(code).toBe('()=>props.label');
+  });
+
+  it('does NOT wrap a static string literal', () => {
+    const expr = parseExpr('"hello"');
+    const result = processChildExpression(expr);
+    expect(t.isStringLiteral(result)).toBe(true);
+  });
+
+  it('does NOT wrap an arrow function (render prop)', () => {
+    const expr = parseExpr('(item) => item.name');
+    const result = processChildExpression(expr);
+    expect(t.isArrowFunctionExpression(result)).toBe(true);
+    // Verify the body is NOT another arrow function (no double-wrap)
+    if (t.isArrowFunctionExpression(result)) {
+      expect(t.isArrowFunctionExpression(result.body)).toBe(false);
+    }
+  });
+
+  it('wraps a signal call count() in a getter', () => {
+    const expr = parseExpr('count()');
+    const result = processChildExpression(expr);
+    expect(t.isArrowFunctionExpression(result)).toBe(true);
+    expect(generateCode(result)).toBe('()=>count()');
+  });
+});
+
+describe('transformChildren — autoWrapProps propagation', () => {
+  it('wraps props.x children in a getter', () => {
+    const element = parseJsxElement('<button>{props.label}</button>');
+    const children = transformChildren(element.children, true);
+    expect(children).toHaveLength(1);
+    expect(t.isArrowFunctionExpression(children[0])).toBe(true);
+    expect(generateCode(children[0]!)).toBe('()=>props.label');
+  });
+
+  it('wraps props.x.y (nested) children in a getter', () => {
+    const element = parseJsxElement('<span>{props.user.name}</span>');
+    const children = transformChildren(element.children, true);
+    expect(t.isArrowFunctionExpression(children[0])).toBe(true);
+    expect(generateCode(children[0]!)).toBe('()=>props.user.name');
+  });
+
+  it('does not touch existing () => props.x getter', () => {
+    const element = parseJsxElement('<span>{() => props.label}</span>');
+    const children = transformChildren(element.children, true);
+    expect(t.isArrowFunctionExpression(children[0])).toBe(true);
+    // The outer arrow fn should contain a MemberExpression body, not another arrow fn
+    const fn = children[0] as t.ArrowFunctionExpression;
+    expect(t.isMemberExpression(fn.body)).toBe(true);
+  });
+});

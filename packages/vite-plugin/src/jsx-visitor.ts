@@ -18,7 +18,7 @@
 import type { Visitor, NodePath } from '@babel/traverse';
 import * as t from '@babel/types';
 import type { JsxTransformState } from './types.js';
-import { shouldWrapExpression, wrapInGetter } from './getter-wrap.js';
+import { shouldWrapExpression, wrapInGetter, isPropsAccess } from './getter-wrap.js';
 import { isEventHandler, isComponent } from './utils.js';
 
 // =============================================================================
@@ -32,14 +32,14 @@ export function createJsxVisitor(state: JsxTransformState): Visitor {
   return {
     JSXElement(path: NodePath<t.JSXElement>) {
       state.hasJsx = true;
-      const hCall = transformJsxElement(path.node);
+      const hCall = transformJsxElement(path.node, state.autoWrapProps);
       path.replaceWith(hCall);
     },
 
     JSXFragment(path: NodePath<t.JSXFragment>) {
       state.hasJsx = true;
       state.hasFragment = true;
-      const hCall = transformJsxFragment(path.node);
+      const hCall = transformJsxFragment(path.node, state.autoWrapProps);
       path.replaceWith(hCall);
     },
   };
@@ -52,7 +52,7 @@ export function createJsxVisitor(state: JsxTransformState): Visitor {
 /**
  * Transform a JSX element into an h() call
  */
-export function transformJsxElement(element: t.JSXElement): t.CallExpression {
+export function transformJsxElement(element: t.JSXElement, autoWrapProps = true): t.CallExpression {
   const tag = getTagExpression(element.openingElement);
   // For component tags (PascalCase), props are passed as-is — the component
   // manages its own reactivity. Only HTML element props need getter wrapping.
@@ -61,7 +61,7 @@ export function transformJsxElement(element: t.JSXElement): t.CallExpression {
     : '';
   const isComponentTag = isComponent(tagName);
   const props = transformAttributes(element.openingElement.attributes, isComponentTag);
-  const children = transformChildren(element.children);
+  const children = transformChildren(element.children, autoWrapProps);
 
   return createHCall(tag, props, children);
 }
@@ -69,8 +69,8 @@ export function transformJsxElement(element: t.JSXElement): t.CallExpression {
 /**
  * Transform a JSX fragment into an h(Fragment, null, ...) call
  */
-export function transformJsxFragment(fragment: t.JSXFragment): t.CallExpression {
-  const children = transformChildren(fragment.children);
+export function transformJsxFragment(fragment: t.JSXFragment, autoWrapProps = true): t.CallExpression {
+  const children = transformChildren(fragment.children, autoWrapProps);
   return createHCall(t.identifier('Fragment'), null, children);
 }
 
@@ -288,12 +288,13 @@ export function processAttributeValue(
  * Transform JSX children into an array of h() call arguments
  */
 export function transformChildren(
-  children: t.JSXElement['children']
+  children: t.JSXElement['children'],
+  autoWrapProps = true,
 ): t.Expression[] {
   const result: t.Expression[] = [];
 
   for (const child of children) {
-    const transformed = transformChild(child);
+    const transformed = transformChild(child, autoWrapProps);
     if (transformed !== null) {
       result.push(transformed);
     }
@@ -306,7 +307,8 @@ export function transformChildren(
  * Transform a single JSX child
  */
 export function transformChild(
-  child: t.JSXElement['children'][number]
+  child: t.JSXElement['children'][number],
+  autoWrapProps = true,
 ): t.Expression | null {
   // Text content
   if (t.isJSXText(child)) {
@@ -326,17 +328,17 @@ export function transformChild(
       return null;
     }
 
-    return processChildExpression(expr);
+    return processChildExpression(expr, autoWrapProps);
   }
 
   // Nested JSX element
   if (t.isJSXElement(child)) {
-    return transformJsxElement(child);
+    return transformJsxElement(child, autoWrapProps);
   }
 
   // JSX fragment
   if (t.isJSXFragment(child)) {
-    return transformJsxFragment(child);
+    return transformJsxFragment(child, autoWrapProps);
   }
 
   // JSX spread child: {...children} - rare, convert to spread
@@ -350,9 +352,14 @@ export function transformChild(
 }
 
 /**
- * Process a child expression, wrapping if necessary
+ * Process a child expression, wrapping if necessary.
+ *
+ * @param expr - The expression to process
+ * @param autoWrapProps - When true (default), `props.*` member accesses that
+ *   are not already inside a getter are automatically wrapped in `() => ...`
+ *   to prevent silent reactivity bugs.
  */
-export function processChildExpression(expr: t.Expression): t.Expression {
+export function processChildExpression(expr: t.Expression, autoWrapProps = true): t.Expression {
   // Arrow functions that are render props should NOT be additionally wrapped
   // They're already functions: {(item) => <li>{item}</li>}
   if (t.isArrowFunctionExpression(expr) || t.isFunctionExpression(expr)) {
@@ -376,6 +383,13 @@ export function processChildExpression(expr: t.Expression): t.Expression {
     ) {
       return expr;
     }
+  }
+
+  // Auto-wrap props.* accesses in content position.
+  // props.x evaluates once at render time; wrapping to () => props.x makes it
+  // reactive so it re-evaluates whenever the parent re-renders.
+  if (autoWrapProps && isPropsAccess(expr)) {
+    return wrapInGetter(expr);
   }
 
   // Static values don't need wrapping
