@@ -175,6 +175,31 @@ describe('h() - Reactive Props', () => {
     expect(el.dataset.count).toBe('5');
     expect(el.dataset.active).toBe('true');
   });
+
+  it('handles precomputed getter variable: class={myGetter} (#41)', async () => {
+    // Reproduces issue #41:
+    // When a getter is stored in a variable and passed as class={myGetter},
+    // the vite-plugin wraps the identifier to () => myGetter (not () => myGetter()).
+    // The runtime must double-resolve: call the outer wrapper, detect the result
+    // is itself a function, and call it again to get the real value.
+    const active = signal(false);
+    const myGetter = () => active() ? 'active' : '';
+
+    // Simulate what the vite-plugin emits for class={myGetter}:
+    // processAttributeValue wraps the identifier → () => myGetter
+    const el = h('div', { class: () => myGetter }) as HTMLElement;
+    container.appendChild(el);
+
+    expect(el.className).toBe('');
+
+    active.set(true);
+    await tick();
+    expect(el.className).toBe('active');
+
+    active.set(false);
+    await tick();
+    expect(el.className).toBe('');
+  });
 });
 
 // =============================================================================

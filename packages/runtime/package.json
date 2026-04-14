@@ -1,6 +1,6 @@
 {
   "name": "@liteforge/runtime",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "description": "Component runtime with JSX support. Control flow components for conditional and list rendering.",
   "author": "SchildW3rk <contact@schildw3rk.dev>",
   "license": "MIT",

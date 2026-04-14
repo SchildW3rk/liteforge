@@ -1,5 +1,19 @@
 # @liteforge/runtime
 
+## 0.7.1
+
+### Patch Changes
+
+- fix(@liteforge/runtime): double-resolve precomputed getter variables in JSX attributes (#41)
+
+  When a getter is stored in a variable and passed as a JSX attribute (`class={myGetter}`),
+  the vite-plugin wraps the identifier to `() => myGetter` (not `() => myGetter()`).
+  The runtime now detects when a getter returns another plain function and calls it once
+  more, so `class={myGetter}` works identically to `class={() => myGetter()}`.
+
+  Affects both `h()` (JSX path) and `_setProp()` (template-compiler path).
+  Signals are excluded from double-resolution to preserve the existing unresolved-signal warning.
+
 ## 0.7.0
 
 ### Minor Changes

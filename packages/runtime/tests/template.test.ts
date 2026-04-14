@@ -300,11 +300,26 @@ describe('_setProp', () => {
     it('handles reactive class', () => {
       const theme = signal('light');
       _setProp(el, 'class', () => theme());
-      
+
       expect(el.className).toBe('light');
-      
+
       theme.set('dark');
       expect(el.className).toBe('dark');
+    });
+
+    it('double-resolves precomputed getter variable — class={myGetter} (#41)', () => {
+      // Simulates vite-plugin wrapping class={myGetter} to () => myGetter
+      // (identifier wrapped, not called). The runtime must detect the result is
+      // itself a function and call it once more.
+      const active = signal(false);
+      const myGetter = () => active() ? 'active' : '';
+
+      _setProp(el, 'class', () => myGetter); // outer wrapper returns the fn, not its result
+
+      expect(el.className).toBe('');
+
+      active.set(true);
+      expect(el.className).toBe('active');
     });
   });
 

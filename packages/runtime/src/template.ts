@@ -7,6 +7,13 @@
 
 import { effect } from '@liteforge/core';
 
+/** Duck-type check for a signal: has .set and .peek methods. */
+function isSignalLike(v: unknown): boolean {
+  if (typeof v !== 'function') return false;
+  const fn = v as Record<string, unknown>;
+  return typeof fn['set'] === 'function' && typeof fn['peek'] === 'function';
+}
+
 // =============================================================================
 // _template()
 // =============================================================================
@@ -198,9 +205,15 @@ export function _setProp(
 
   // Handle reactive values
   if (typeof value === 'function' && !name.startsWith('on')) {
-    // It's a getter - create effect
+    // It's a getter - create effect.
+    // Double-resolve: if the getter itself returns a plain function (e.g.
+    // when a precomputed getter variable is passed as class={myGetter}),
+    // the vite-plugin wraps the identifier to () => myGetter. Calling it
+    // yields the inner function, so we call once more to get the real value.
+    // Signals are functions too — skip them to preserve unresolved-signal behavior.
     effect(() => {
-      const val = (value as () => unknown)();
+      let val = (value as () => unknown)();
+      if (typeof val === 'function' && !isSignalLike(val)) val = (val as () => unknown)();
       applyProp(el, name, val);
     });
   } else {

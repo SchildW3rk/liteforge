@@ -263,7 +263,16 @@ function applyProps(element: HTMLElement, props: Props, isSvg = false): void {
     if (typeof value === 'function') {
       const getter = value as () => unknown;
       effect(() => {
-        const resolved = getter();
+        // Double-resolve: if the getter itself returns a plain function (e.g.
+        // when a precomputed getter variable is passed as class={myGetter}),
+        // the vite-plugin wraps the identifier to () => myGetter. Calling it
+        // yields the inner function, so we call once more to get the real value.
+        // Exception: signals are functions too — don't call them here; the
+        // isSignal warning below handles the unresolved-signal case.
+        let resolved = getter();
+        if (typeof resolved === 'function' && !isSignal(resolved)) {
+          resolved = (resolved as () => unknown)();
+        }
         setProp(element, key, resolved, isSvg);
       });
       continue;
