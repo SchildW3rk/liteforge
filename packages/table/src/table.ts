@@ -830,6 +830,17 @@ export function createTable<T>(options: TableOptions<T>): TableResult<T> {
 
     // Pagination
     if (paginationOptions) {
+      const lbl = paginationOptions.labels ?? {}
+      const lblShowing   = lbl.showing   ?? 'Showing'
+      const lblTo        = lbl.to        ?? '-'
+      const lblOf        = lbl.of        ?? 'of'
+      const lblNoResults = lbl.noResults ?? 'No results'
+      const lblPage      = lbl.page      ?? 'Page'
+      const lblPageOf    = lbl.pageOf    ?? 'of'
+      const lblPrevious  = lbl.previous  ?? '← Prev'
+      const lblNext      = lbl.next      ?? 'Next →'
+      const lblPerPage   = lbl.perPage   ?? '/ page'
+
       const paginationDiv = document.createElement('div')
       paginationDiv.className = classes.pagination ?? 'lf-table-pagination'
 
@@ -845,9 +856,9 @@ export function createTable<T>(options: TableOptions<T>): TableResult<T> {
         const end = Math.min(page * size, total)
 
         if (total === 0) {
-          infoSpan.textContent = 'No results'
+          infoSpan.textContent = lblNoResults
         } else {
-          infoSpan.textContent = `Showing ${start}-${end} of ${total}`
+          infoSpan.textContent = `${lblShowing} ${start}${lblTo}${end} ${lblOf} ${total}`
         }
       })
 
@@ -858,16 +869,16 @@ export function createTable<T>(options: TableOptions<T>): TableResult<T> {
       controlsDiv.className = classes.paginationControls ?? 'lf-table-pagination-controls'
 
       const prevBtn = document.createElement('button')
-      prevBtn.textContent = '← Prev'
+      prevBtn.textContent = lblPrevious
       prevBtn.addEventListener('click', prevPage)
 
       const pageInfo = document.createElement('span')
       effect(() => {
-        pageInfo.textContent = `Page ${currentPage()} of ${pageCountComputed()}`
+        pageInfo.textContent = `${lblPage} ${currentPage()} ${lblPageOf} ${pageCountComputed()}`
       })
 
       const nextBtn = document.createElement('button')
-      nextBtn.textContent = 'Next →'
+      nextBtn.textContent = lblNext
       nextBtn.addEventListener('click', nextPage)
 
       // Disable buttons at boundaries
@@ -889,7 +900,7 @@ export function createTable<T>(options: TableOptions<T>): TableResult<T> {
         for (const size of paginationOptions.pageSizes) {
           const option = document.createElement('option')
           option.value = String(size)
-          option.textContent = `${size} / page`
+          option.textContent = `${size} ${lblPerPage}`
           sizeSelect.appendChild(option)
         }
 

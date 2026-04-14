@@ -1,5 +1,33 @@
 # @liteforge/table
 
+## 2.2.2
+
+### Patch Changes
+
+- feat(@liteforge/table): pagination labels / i18n support (#54)
+
+  `PaginationOptions` now accepts an optional `labels` field to customize all
+  pagination strings. All labels have English defaults — existing code is unaffected.
+
+  ```ts
+  createTable({
+    pagination: {
+      pageSize: 25,
+      labels: {
+        showing: "Zeige",
+        to: "bis",
+        of: "von",
+        noResults: "Keine Ergebnisse",
+        page: "Seite",
+        pageOf: "von",
+        previous: "← Zurück",
+        next: "Weiter →",
+        perPage: "/ Seite",
+      },
+    },
+  });
+  ```
+
 ## 2.2.1
 
 ### Patch Changes

@@ -111,9 +111,31 @@ export interface SearchOptions<T> {
 
 // ─── Pagination Options ────────────────────────────────────
 
+export interface PaginationLabels {
+  /** Text before the range, e.g. "Showing". Default: `"Showing"` */
+  showing?: string
+  /** Range separator, e.g. "-". Default: `"-"` */
+  to?: string
+  /** Text before total count, e.g. "of". Default: `"of"` */
+  of?: string
+  /** Text shown when there are no results. Default: `"No results"` */
+  noResults?: string
+  /** Prefix for page indicator, e.g. "Page". Default: `"Page"` */
+  page?: string
+  /** Separator between current and total pages, e.g. "of". Default: `"of"` */
+  pageOf?: string
+  /** Label for the previous-page button. Default: `"← Prev"` */
+  previous?: string
+  /** Label for the next-page button. Default: `"Next →"` */
+  next?: string
+  /** Suffix appended to each page-size option, e.g. "/ page". Default: `"/ page"` */
+  perPage?: string
+}
+
 export interface PaginationOptions {
   pageSize: number
   pageSizes?: number[]
+  labels?: PaginationLabels
 }
 
 // ─── Selection Options ─────────────────────────────────────

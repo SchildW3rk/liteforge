@@ -1,0 +1,46 @@
+/**
+ * @liteforge/theme — Tailwind v4 @theme registration
+ *
+ * Registers --lf-color-* tokens as Tailwind utility class aliases.
+ * Import this AFTER @liteforge/theme/css/base to enable utilities like
+ * text-lf-accent, bg-lf-surface, border-lf-border, etc.
+ *
+ * Usage:
+ *   @import "@liteforge/theme/css/base";
+ *   @import "@liteforge/theme/css/tailwind";
+ */
+
+@theme {
+  /* Backgrounds */
+  --color-lf-bg:            var(--lf-color-bg);
+  --color-lf-bg-subtle:     var(--lf-color-bg-subtle);
+  --color-lf-bg-muted:      var(--lf-color-bg-muted);
+  --color-lf-bg-overlay:    var(--lf-color-bg-overlay);
+
+  /* Surfaces */
+  --color-lf-surface:        var(--lf-color-surface);
+  --color-lf-surface-raised: var(--lf-color-surface-raised);
+
+  /* Borders */
+  --color-lf-border:         var(--lf-color-border);
+  --color-lf-border-strong:  var(--lf-color-border-strong);
+
+  /* Text */
+  --color-lf-text:           var(--lf-color-text);
+  --color-lf-text-muted:     var(--lf-color-text-muted);
+  --color-lf-text-subtle:    var(--lf-color-text-subtle);
+  --color-lf-text-on-accent: var(--lf-color-text-on-accent);
+
+  /* Accent */
+  --color-lf-accent:         var(--lf-color-accent);
+  --color-lf-accent-hover:   var(--lf-color-accent-hover);
+  --color-lf-accent-subtle:  var(--lf-color-accent-subtle);
+
+  /* Semantic */
+  --color-lf-success:        var(--lf-color-success);
+  --color-lf-success-bg:     var(--lf-color-success-bg);
+  --color-lf-danger:         var(--lf-color-danger);
+  --color-lf-danger-bg:      var(--lf-color-danger-bg);
+  --color-lf-warning:        var(--lf-color-warning);
+  --color-lf-warning-bg:     var(--lf-color-warning-bg);
+}

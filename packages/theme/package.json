@@ -1,6 +1,6 @@
 {
   "name": "@liteforge/theme",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "Shared design-token system for LiteForge UI packages. Primitive + semantic CSS variables, dark mode, optional reset.",
   "author": "SchildW3rk <contact@schildw3rk.dev>",
   "license": "MIT",
@@ -44,6 +44,10 @@
     "./css/reset": {
       "import": "./css/reset.css",
       "default": "./css/reset.css"
+    },
+    "./css/tailwind": {
+      "import": "./css/tailwind.css",
+      "default": "./css/tailwind.css"
     }
   },
   "files": [

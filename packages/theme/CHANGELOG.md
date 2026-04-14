@@ -1,5 +1,20 @@
 # @liteforge/theme
 
+## 0.3.2
+
+### Patch Changes
+
+- feat(@liteforge/theme): add css/tailwind export for Tailwind v4 @theme registration (#53)
+
+  Adds `@liteforge/theme/css/tailwind` — a CSS file that registers all `--lf-color-*`
+  tokens in Tailwind v4's `@theme` block, enabling utility classes like `text-lf-accent`,
+  `bg-lf-surface`, `border-lf-border` etc.
+
+  ```css
+  @import "@liteforge/theme/css/base";
+  @import "@liteforge/theme/css/tailwind";
+  ```
+
 ## 0.3.0
 
 ### Minor Changes
