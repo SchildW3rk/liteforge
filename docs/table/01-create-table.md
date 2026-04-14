@@ -100,6 +100,35 @@ const table = createTable<User>({
 |-------|------|-------------|
 | `pageSize` | `number` | Rows per page |
 | `pageSizes` | `number[]` | Options for page size selector |
+| `labels` | `PaginationLabels` | Custom text for all pagination strings (i18n) |
+
+**`PaginationLabels`** (all fields optional, English defaults):
+
+| Field | Default | Description |
+|-------|---------|-------------|
+| `showing` | `"Showing"` | Prefix before the range |
+| `to` | `"-"` | Range separator |
+| `of` | `"of"` | Separator before total count |
+| `noResults` | `"No results"` | Shown when row count is 0 |
+| `page` | `"Page"` | Prefix in page indicator |
+| `pageOf` | `"of"` | Separator in page indicator |
+| `previous` | `"← Prev"` | Previous-page button label |
+| `next` | `"Next →"` | Next-page button label |
+| `perPage` | `"/ page"` | Suffix in page-size options |
+
+```ts
+// German example:
+pagination: {
+  pageSize: 25,
+  labels: {
+    showing: 'Zeige', to: 'bis', of: 'von',
+    noResults: 'Keine Ergebnisse',
+    page: 'Seite', pageOf: 'von',
+    previous: '← Zurück', next: 'Weiter →',
+    perPage: '/ Seite',
+  }
+}
+```
 
 **`SelectionOptions`:**
 
@@ -127,7 +156,7 @@ const table = createTable<User>({
 | `setFilter(key, value)` | Method | Set a column filter |
 | `selected` | `Signal<Set<T>>` | Selected rows |
 | `selectAll()` | Method | Select all filtered rows |
-| `clearSelection()` | Method | Clear selection |
+| `deselectAll()` | Method | Clear selection |
 | `visibleColumns` | `Signal<ColumnDef<T>[]>` | Currently visible columns |
 | `toggleColumn(key)` | Method | Show/hide a column |
 

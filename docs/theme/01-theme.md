@@ -113,6 +113,36 @@ Every change is automatically:
 - Applied as `data-theme="light|dark"` on `<html>` (picked up by `@liteforge/theme` CSS variables)
 - Persisted to `localStorage` under `'lf-theme'`
 
+### Tailwind v4 integration
+
+Import `@liteforge/theme/css/tailwind` to register all `--lf-color-*` tokens in Tailwind v4's `@theme` block. This enables utility classes like `text-lf-accent`, `bg-lf-surface`, `border-lf-border` etc.:
+
+```css
+/* styles.css */
+@import "tailwindcss";
+@import "@liteforge/theme/css/base";
+@import "@liteforge/theme/css/tailwind";
+```
+
+Available utility prefixes (works with all Tailwind color utilities):
+
+| Tailwind class | Token |
+|---------------|-------|
+| `bg-lf-bg` / `text-lf-bg` | `--lf-color-bg` |
+| `bg-lf-surface` | `--lf-color-surface` |
+| `bg-lf-surface-raised` | `--lf-color-surface-raised` |
+| `border-lf-border` | `--lf-color-border` |
+| `border-lf-border-strong` | `--lf-color-border-strong` |
+| `text-lf-text` | `--lf-color-text` |
+| `text-lf-text-muted` | `--lf-color-text-muted` |
+| `text-lf-text-subtle` | `--lf-color-text-subtle` |
+| `bg-lf-accent` / `text-lf-accent` | `--lf-color-accent` |
+| `text-lf-success` / `bg-lf-success-bg` | `--lf-color-success` |
+| `text-lf-danger` / `bg-lf-danger-bg` | `--lf-color-danger` |
+| `text-lf-warning` / `bg-lf-warning-bg` | `--lf-color-warning` |
+
+Since the tokens are CSS custom properties, dark mode works automatically — the Tailwind classes adapt when `data-theme="dark"` is set on `<html>`.
+
 ### Tailwind v3 integration
 
 Set `darkMode: 'class'` in your Tailwind config and sync the `.dark` class via an effect:
