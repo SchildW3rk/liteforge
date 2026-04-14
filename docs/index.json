@@ -199,6 +199,20 @@
       "tags": ["admin", "defineResource", "defineDashboard", "AdminLayout", "DataTable", "ResourceForm"],
       "related": ["createTable", "createForm", "createRouter"],
       "path": "admin/01-admin.md"
+    },
+    {
+      "title": "Theme",
+      "category": "theme",
+      "tags": ["theme", "injectTheme", "colorScheme", "dark-mode", "css-variables", "design-tokens", "tokens"],
+      "related": ["Installation", "createCalendar", "createTable", "createModal"],
+      "path": "theme/01-theme.md"
+    },
+    {
+      "title": "Client",
+      "category": "client",
+      "tags": ["client", "createClient", "clientPlugin", "resource", "fetch", "interceptors", "middleware", "ApiError", "queryIntegration"],
+      "related": ["createQuery", "Context", "Installation"],
+      "path": "client/01-client.md"
     }
   ]
 }
