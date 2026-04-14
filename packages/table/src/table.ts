@@ -13,10 +13,21 @@ import type {
   SortState,
   SortDirection,
   FilterDef,
+  CellContext,
 } from './types.js'
 import { injectDefaultStyles } from './styles.js'
 
 // ─── Utility Functions ─────────────────────────────────────
+
+/**
+ * Extract column key as a string.
+ * ColumnDef.key can be keyof T (which may include number | symbol in rare cases),
+ * but in practice all table column keys are strings.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function colKey(col: { key: any }): string {
+  return String(col.key)
+}
 
 /**
  * Get nested property value using dot notation
@@ -158,7 +169,7 @@ export function createTable<T>(options: TableOptions<T>): TableResult<T> {
     const cols = getColumns()
     const visibility: Record<string, boolean> = {}
     for (const col of cols) {
-      visibility[col.key] = col.visible !== false
+      visibility[colKey(col)] = col.visible !== false
     }
     columnVisibility.set(visibility)
   }
@@ -191,10 +202,10 @@ export function createTable<T>(options: TableOptions<T>): TableResult<T> {
 
     // Apply global search
     if (searchOptions?.enabled && query.trim()) {
-      const searchCols = searchOptions.columns ?? cols.map(c => c.key as keyof T & string)
+      const searchCols = searchOptions.columns ?? cols.map(c => String(c.key) as keyof T & string)
       rows = rows.filter(row =>
-        searchCols.some(colKey =>
-          matchesSearch(getNestedValue(row, colKey as string), query)
+        searchCols.some(k =>
+          matchesSearch(getNestedValue(row, k as string), query)
         )
       )
     }
@@ -253,7 +264,7 @@ export function createTable<T>(options: TableOptions<T>): TableResult<T> {
   const visibleColumnsComputed = computed(() => {
     const cols = getColumns()
     const visibility = columnVisibility()
-    return cols.filter(c => visibility[c.key] !== false).map(c => c.key)
+    return cols.filter(c => visibility[colKey(c)] !== false).map(c => colKey(c))
   })
 
   const selectedComputed = computed(() => Array.from(selectedRows()))
@@ -472,16 +483,16 @@ export function createTable<T>(options: TableOptions<T>): TableResult<T> {
         dropdown.innerHTML = ''
 
         for (const col of cols) {
-          if (col.key.startsWith('_')) continue // Skip virtual columns
+          if (colKey(col).startsWith('_')) continue // Skip virtual columns
 
           const label = document.createElement('label')
           label.className = 'lf-table-column-toggle-item'
 
           const checkbox = document.createElement('input')
           checkbox.type = 'checkbox'
-          checkbox.checked = visibility[col.key] !== false
+          checkbox.checked = visibility[colKey(col)] !== false
           checkbox.addEventListener('change', () => {
-            toggleColumn(col.key)
+            toggleColumn(colKey(col))
           })
 
           const text = document.createTextNode(col.header)
@@ -498,13 +509,13 @@ export function createTable<T>(options: TableOptions<T>): TableResult<T> {
     }
 
     // Column filters row (if any columns are filterable)
-    const filterableCols = getColumns().filter(c => c.filterable && filterDefs[c.key])
+    const filterableCols = getColumns().filter(c => c.filterable && filterDefs[colKey(c)])
     if (filterableCols.length > 0) {
       const filtersDiv = document.createElement('div')
       filtersDiv.className = classes.filters ?? 'lf-table-filters'
 
       for (const col of filterableCols) {
-        const filterDef = filterDefs[col.key]
+        const filterDef = filterDefs[colKey(col)]
         if (!filterDef) continue
 
         const filterWrapper = document.createElement('div')
@@ -519,7 +530,7 @@ export function createTable<T>(options: TableOptions<T>): TableResult<T> {
           input.placeholder = `Filter ${col.header}...`
 
           const handleInput = debounce((value: string) => {
-            setFilter(col.key, value || undefined)
+            setFilter(colKey(col), value || undefined)
           }, filterDef.debounce ?? 300)
 
           input.addEventListener('input', () => handleInput(input.value))
@@ -531,7 +542,7 @@ export function createTable<T>(options: TableOptions<T>): TableResult<T> {
           // Generate options from data if not provided
           effect(() => {
             const opts = filterDef.options ?? [...new Set(data().map(row =>
-              String(getNestedValue(row, col.key) ?? '')
+              String(getNestedValue(row, colKey(col)) ?? '')
             ))].filter(Boolean).sort()
 
             select.innerHTML = '<option value="">All</option>'
@@ -544,7 +555,7 @@ export function createTable<T>(options: TableOptions<T>): TableResult<T> {
           })
 
           select.addEventListener('change', () => {
-            setFilter(col.key, select.value || undefined)
+            setFilter(colKey(col), select.value || undefined)
           })
 
           filterWrapper.appendChild(filterLabel)
@@ -558,9 +569,9 @@ export function createTable<T>(options: TableOptions<T>): TableResult<T> {
           `
           select.addEventListener('change', () => {
             if (select.value === '') {
-              clearFilter(col.key)
+              clearFilter(colKey(col))
             } else {
-              setFilter(col.key, select.value === 'true')
+              setFilter(colKey(col), select.value === 'true')
             }
           })
 
@@ -638,14 +649,14 @@ export function createTable<T>(options: TableOptions<T>): TableResult<T> {
       const currentSort = sortingState()
 
       for (const col of cols) {
-        if (visibility[col.key] === false) continue
+        if (visibility[colKey(col)] === false) continue
 
         const th = document.createElement('th')
         let thClass = classes.headerCell ?? 'lf-table-header-cell'
 
         if (col.sortable) {
           thClass += ' lf-table-header-cell--sortable'
-          if (currentSort?.key === col.key) {
+          if (currentSort?.key === colKey(col)) {
             thClass += ` lf-table-header-cell--sorted-${currentSort.direction}`
           }
         }
@@ -667,7 +678,7 @@ export function createTable<T>(options: TableOptions<T>): TableResult<T> {
           if (col.sortable) {
             const sortIcon = document.createElement('span')
             sortIcon.className = 'lf-table-sort-icon'
-            if (currentSort?.key === col.key) {
+            if (currentSort?.key === colKey(col)) {
               sortIcon.textContent = currentSort.direction === 'asc' ? ' ▲' : ' ▼'
             } else {
               sortIcon.textContent = ' ⇅'
@@ -679,7 +690,7 @@ export function createTable<T>(options: TableOptions<T>): TableResult<T> {
         // Click to sort
         if (col.sortable) {
           th.style.cursor = 'pointer'
-          th.addEventListener('click', () => sort(col.key))
+          th.addEventListener('click', () => sort(colKey(col)))
         }
 
         headerRow.appendChild(th)
@@ -707,7 +718,7 @@ export function createTable<T>(options: TableOptions<T>): TableResult<T> {
         const emptyRow = document.createElement('tr')
         const emptyCell = document.createElement('td')
         emptyCell.className = classes.empty ?? 'lf-table-empty'
-        emptyCell.colSpan = cols.filter(c => visibility[c.key] !== false).length +
+        emptyCell.colSpan = cols.filter(c => visibility[colKey(c)] !== false).length +
           (selectionOptions?.enabled ? 1 : 0)
         emptyCell.textContent = 'No data available'
         emptyRow.appendChild(emptyCell)
@@ -770,19 +781,26 @@ export function createTable<T>(options: TableOptions<T>): TableResult<T> {
 
         // Data cells
         for (const col of cols) {
-          if (visibility[col.key] === false) continue
+          if (visibility[colKey(col)] === false) continue
 
           const td = document.createElement('td')
           td.className = classes.cell ?? 'lf-table-cell'
 
           // Get value (undefined for virtual columns)
-          const value = col.key.startsWith('_')
+          const value = colKey(col).startsWith('_')
             ? undefined
-            : getNestedValue(row, col.key)
+            : getNestedValue(row, colKey(col))
 
           if (col.cell) {
-            // Custom cell renderer
-            const rendered = col.cell(value, row)
+            const info: CellContext<T, unknown> = {
+              getValue: () => value,
+              renderValue: () => value ?? null,
+              row,
+              column: { key: colKey(col), header: col.header, width: col.width },
+              rowIndex: index,
+              isSelected: selected.has(row),
+            }
+            const rendered = col.cell(info as never)
             td.appendChild(rendered)
           } else {
             // Default: text content

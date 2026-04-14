@@ -151,10 +151,10 @@ export interface ArrayFieldResult<T = unknown> {
  */
 export interface FormResult<TSchema extends z.ZodObject<z.ZodRawShape>> {
   // Field access
-  /** Get a field by path (supports dot-notation for nested fields) */
-  field: <P extends FieldPaths<z.input<TSchema>> | string>(
-    path: P
-  ) => FieldResult<PathValue<z.input<TSchema>, P>>;
+  /** Get a typed field by path (literal path → typed value) */
+  field<P extends FieldPaths<z.input<TSchema>>>(path: P): FieldResult<PathValue<z.input<TSchema>, P>>;
+  /** Get an untyped field by a runtime string path */
+  field(path: string): FieldResult<unknown>;
   
   /** Get an array field by path */
   array: <P extends string>(

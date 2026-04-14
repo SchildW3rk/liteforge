@@ -28,7 +28,7 @@ const table = createTable<User>({
     {
       key: '_actions',
       header: '',
-      cell: (_, row) => <button onclick={() => edit(row)}>Edit</button>,
+      cell: ({ row }) => <button onclick={() => edit(row)}>Edit</button>,
     },
   ],
   pagination: { pageSize: 20 },
@@ -56,18 +56,43 @@ const table = createTable<User>({
 | `styles` | `TableStyles` | — | CSS variable overrides per instance |
 | `classes` | `TableClasses` | — | BEM class overrides |
 
-**`ColumnDef<T>`:**
+**`ColumnDef<T, TValue>`:**
 
 | Field | Type | Default | Description |
 |-------|------|---------|-------------|
-| `key` | `string` | required | Data key or `'_virtual'` prefix |
+| `key` | `keyof T \| string` | required | Data field key or virtual column prefix (`_actions`, `_status`, etc.) |
 | `header` | `string` | required | Header text |
 | `width` | `number \| string` | — | Column width |
 | `sortable` | `boolean` | `false` | Enable column sort |
 | `filterable` | `boolean` | `false` | Enable column filter |
 | `visible` | `boolean` | `true` | Initial visibility |
-| `cell` | `(value, row: T) => Node \| Element` | — | Custom cell renderer |
+| `cell` | `(info: CellContext<T, TValue>) => Node \| Element` | — | Custom cell renderer |
 | `headerCell` | `() => Node \| Element` | — | Custom header renderer |
+
+**`CellContext<T, TValue>`:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `getValue` | `() => TValue` | Cell value typed to `T[key]`; `undefined` for virtual columns |
+| `renderValue` | `() => TValue \| null` | null-safe `getValue` — returns `null` instead of `undefined` |
+| `row` | `T` | The full row object |
+| `column` | `ColumnMeta` | `{ key, header, width }` |
+| `rowIndex` | `number` | 0-based index in the current paginated view |
+| `isSelected` | `boolean` | Whether this row is currently selected |
+
+```ts
+// Typed field access via getValue():
+{ key: 'status', header: 'Status', cell: ({ getValue }) => statusBadge(getValue()) }
+//                                                                       ^ string | undefined
+
+// Full row access:
+{ key: '_actions', header: '', cell: ({ row }) => <button onclick={() => edit(row)}>Edit</button> }
+
+// Destructure what you need:
+{ key: 'name', cell: ({ getValue, row, isSelected }) => (
+  <a class={isSelected ? 'bold' : ''} href={`/users/${row.id}`}>{getValue()}</a>
+)}
+```
 
 **`PaginationOptions`:**
 
@@ -139,6 +164,34 @@ const table = createTable<User>({
   Delete {() => table.selected().size} selected
 </button>
 <table.Root />
+```
+
+## Column type inference — `columnHelper<T>()`
+
+When columns are written as plain objects in a `ColumnDef<T>[]` array, TypeScript cannot infer a literal type for `key`, so `getValue()` returns the union of all field types. Use `columnHelper<T>()` to bind `key` and `TValue` in a single typed call — before the array is created:
+
+```ts
+import { createTable, columnHelper } from '@liteforge/table'
+
+const h = columnHelper<Customer>()
+
+createTable<Customer>({
+  data: () => customers(),
+  columns: [
+    h.field('email',  { cell: ({ getValue }) => <span>{getValue() ?? '—'}</span> }),
+    //                                                   ^ string | null  ✓
+    h.field('total',  { cell: ({ getValue }) => <span>{getValue().toFixed(2)}</span> }),
+    //                                                   ^ number  ✓
+    h.virtual('_actions', { cell: ({ row }) => <button>{row.name}</button> }),
+    //  getValue() is () => never — calling it is a compile-time error
+  ],
+})
+```
+
+- **`h.field(key, def)`** — real field column; `getValue()` returns `T[key]`
+- **`h.virtual(key, def)`** — virtual column (no data binding); `getValue()` is `() => never`
+
+Without `columnHelper`, plain object syntax still works — `getValue()` just returns the union of all field types:
 ```
 
 ## Notes

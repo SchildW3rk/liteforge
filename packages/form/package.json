@@ -1,6 +1,6 @@
 {
   "name": "@liteforge/form",
-  "version": "0.1.0",
+  "version": "0.3.0",
   "description": "Form management with Zod validation. Signal-driven field state with nested fields and array fields.",
   "author": "SchildW3rk <contact@schildw3rk.dev>",
   "license": "MIT",

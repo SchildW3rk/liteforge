@@ -39,6 +39,7 @@ export default defineConfig({
       ['packages/table/**', 'happy-dom'],
       ['packages/calendar/**', 'happy-dom'],
       ['packages/modal/**', 'happy-dom'],
+      ['packages/form/**', 'happy-dom'],
       ['packages/client/**', 'node'],
       ['packages/i18n/**', 'node'],
       ['packages/admin/**', 'happy-dom'],

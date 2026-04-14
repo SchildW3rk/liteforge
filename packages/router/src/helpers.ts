@@ -81,6 +81,32 @@ export function useQuery<T extends QueryParams = QueryParams>(): T {
  * Prefer the specific composables (`useParam`, `useParams`, `usePath`, `useQuery`)
  * over this for better type safety.
  */
+/**
+ * Returns the parsed numeric ID from a route parameter for edit/create forms.
+ * Returns `null` when the param is absent, empty, non-numeric, `NaN`, or `≤ 0`.
+ *
+ * @param param - Route param name (default: `'id'`)
+ *
+ * @example
+ * ```ts
+ * setup() {
+ *   const { editId, isEdit } = useEditParam()
+ *   // editId: number | null
+ *   // isEdit: boolean
+ * }
+ *
+ * // Custom param name:
+ * const { editId, isEdit } = useEditParam('invoiceId')
+ * ```
+ */
+export function useEditParam(param = 'id'): { editId: number | null; isEdit: boolean } {
+  const raw = useParam(param);
+  const raw$ = raw();
+  const parsed = raw$ ? Number(raw$) : NaN;
+  const editId = Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+  return { editId, isEdit: editId !== null };
+}
+
 export function useRouter(): Router {
   return use<Router>('router');
 }

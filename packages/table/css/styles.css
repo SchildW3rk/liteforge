@@ -177,6 +177,8 @@
 .lf-table-pagination-sizes {
   appearance: none;
   -webkit-appearance: none;
+  width: auto;
+  min-width: fit-content;
   padding-right: 28px;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2394a3b8' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
@@ -191,8 +193,27 @@
 }
 
 /* ─── Table Container (Scroll) ─────────────────────────────── */
+/* Scoped design tokens — override per instance without touching :root */
 
 .lf-table-container {
+  /* Typography */
+  --lf-table-font-size:              var(--lf-table-cell-font-size, 14px);
+  /* Borders */
+  --lf-table-border-color:           var(--lf-table-border, #e2e8f0);
+  /* Header */
+  --lf-table-header-bg:              var(--lf-table-header-bg, #f8fafc);
+  --lf-table-header-color:           var(--lf-table-header-color, #374151);
+  /* Cell */
+  --lf-table-cell-padding:           var(--lf-table-cell-padding, 12px 16px);
+  /* Row states */
+  --lf-table-row-hover-bg:           var(--lf-table-row-bg-hover, #f1f5f9);
+  --lf-table-row-selected-bg:        var(--lf-table-row-bg-selected, #eff6ff);
+  /* Empty state */
+  --lf-table-empty-color:            var(--lf-color-text-subtle, #9ca3af);
+  /* Pagination */
+  --lf-table-pagination-gap:         0.75rem;
+  --lf-table-pagination-size-width:  auto;
+
   overflow-x: auto;
 }
 
@@ -294,8 +315,8 @@
 .lf-table-empty {
   padding: 40px;
   text-align: center;
-  color: var(--lf-color-text-subtle, #9ca3af);
-  font-size: var(--lf-text-base, 14px);
+  color: var(--lf-table-empty-color, var(--lf-color-text-subtle, #9ca3af));
+  font-size: var(--lf-table-font-size, var(--lf-text-base, 14px));
 }
 
 /* ─── Pagination ───────────────────────────────────────────── */
@@ -318,7 +339,7 @@
 .lf-table-pagination-controls {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--lf-table-pagination-gap, 0.75rem);
 }
 
 .lf-table-pagination-controls button {
@@ -342,6 +363,8 @@
 }
 
 .lf-table-pagination-sizes {
+  width: var(--lf-table-pagination-size-width, auto);
+  min-width: fit-content;
   padding: 6px 10px;
   border: 1px solid var(--lf-table-border);
   border-radius: var(--lf-radius-sm, 4px);

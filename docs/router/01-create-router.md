@@ -102,11 +102,29 @@ router.navigate('/typo')  // TS error
 
 ```ts
 import {
-  createBrowserHistory,  // uses window.history (pushState)
-  createHashHistory,     // uses hash: #/path
-  createMemoryHistory,   // in-memory (SSR / tests)
+  createBrowserHistory,  // uses window.history (pushState) — use this for browser SPAs
+  createHashHistory,     // uses hash: #/path — no server config needed
+  createMemoryHistory,   // in-memory (SSR / tests) — this is the default
 } from '@liteforge/router'
 ```
+
+> **Browser SPAs must pass `history: createBrowserHistory()` explicitly.**
+> The default is `createMemoryHistory`, which is intended for SSR and testing.
+> Without an explicit history, the router ignores `window.location` entirely and always starts at `/` — direct URL access and page refresh will always land on the root route.
+
+#### Vite dev server — `historyApiFallback`
+
+When using `createBrowserHistory`, the dev server must serve `index.html` for all routes (not just `/`). Add this to `vite.config.ts`:
+
+```ts
+export default defineConfig({
+  server: {
+    historyApiFallback: true,
+  },
+})
+```
+
+Without this, navigating directly to `http://localhost:5173/users/42` returns a 404 from the dev server instead of loading the app.
 
 ### Navigation guards
 

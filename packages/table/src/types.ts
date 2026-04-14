@@ -30,11 +30,49 @@ export type FilterDef =
   | BooleanFilterDef
   | NumberRangeFilterDef
 
+// ─── Column Meta ───────────────────────────────────────────
+
+/** Static column metadata — available inside every cell renderer */
+export interface ColumnMeta {
+  /** Field key as a string */
+  key: string
+  /** Header label */
+  header: string
+  /** Configured column width, if set */
+  width: number | string | undefined
+}
+
+// ─── Cell Context ──────────────────────────────────────────
+
+/**
+ * The single argument passed to every `cell` renderer.
+ * `TValue` is inferred from the column `key` — no casts needed.
+ *
+ * ```ts
+ * { key: 'email', cell: ({ getValue, row }) => <span>{getValue()}</span> }
+ * //                                                    ^ string | null ✓
+ * ```
+ */
+export interface CellContext<T, TValue> {
+  /** Returns the cell value, typed to T[key] for real fields, undefined for virtual columns */
+  getValue: () => TValue
+  /** null-safe getValue — returns null instead of undefined */
+  renderValue: () => TValue | null
+  /** The full row object */
+  row: T
+  /** Static column metadata */
+  column: ColumnMeta
+  /** 0-based index of this row in the current paginated view */
+  rowIndex: number
+  /** Whether this row is currently selected */
+  isSelected: boolean
+}
+
 // ─── Column Definition ─────────────────────────────────────
 
-export interface ColumnDef<T> {
+export interface ColumnDef<T, TValue = T extends object ? T[keyof T] : unknown> {
   /** Field key in data OR '_prefix' for virtual columns */
-  key: string
+  key: keyof T | (string & {})
   /** Display header text */
   header: string
   /** Column width (px number or CSS string like '20%') */
@@ -45,8 +83,11 @@ export interface ColumnDef<T> {
   filterable?: boolean
   /** Initial visibility (default: true) */
   visible?: boolean
-  /** Custom cell renderer — return JSX/DOM Node */
-  cell?: (value: unknown, row: T) => Node | Element
+  /**
+   * Custom cell renderer — receives a CellContext with getValue() typed to TValue.
+   * TValue is inferred from the column key automatically.
+   */
+  cell?: (info: CellContext<T, TValue>) => Node | Element
   /** Custom header renderer */
   headerCell?: () => Node | Element
 }
@@ -165,7 +206,8 @@ export interface TableOptions<T> {
   /** Reactive data source - Signal or getter */
   data: () => T[]
   /** Column definitions - static array or Signal for dynamic columns */
-  columns: ColumnDef<T>[] | (() => ColumnDef<T>[])
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  columns: ColumnDef<T, any>[] | (() => ColumnDef<T, any>[])
 
   // ── Filtering ──
   /** Global search configuration */
@@ -275,6 +317,65 @@ export interface TableResult<T> {
   // ── Data Access ──
   /** Current visible rows (filtered, sorted, paginated) */
   rows: () => T[]
+}
+
+// ─── columnHelper ──────────────────────────────────────────
+
+/**
+ * Type-safe column builder. Binds `T` and `K` in a single call so
+ * `getValue()` inside `cell` is narrowed to `T[K]` instead of the
+ * union of all field types.
+ *
+ * ```ts
+ * const h = columnHelper<Customer>()
+ *
+ * createTable<Customer>({
+ *   columns: [
+ *     h.field('email',    { cell: ({ getValue }) => <span>{getValue()}</span> }),
+ *     //                                                    ^ string | null  ✓
+ *     h.field('total',    { cell: ({ getValue }) => <span>{getValue().toFixed(2)}</span> }),
+ *     //                                                    ^ number  ✓
+ *     h.virtual('_actions', { cell: ({ row }) => <button>{row.id}</button> }),
+ *     //  getValue() is () => never — virtual columns carry no field value
+ *   ],
+ * })
+ * ```
+ */
+export function columnHelper<T>(): {
+  /**
+   * Define a column bound to a real field of T.
+   * `getValue()` in the cell renderer is typed to `T[K]`.
+   */
+  field<K extends keyof T>(key: K, def: Omit<ColumnDef<T, T[K]>, 'key'>): ColumnDef<T, T[K]>
+  /**
+   * Define a virtual column (no data binding).
+   * `getValue()` is typed as `() => never` inside the cell renderer — calling it is a
+   * compile-time error. The return type is widened to `ColumnDef<T, any>` so it is
+   * assignable to `ColumnDef<T, any>[]` with `exactOptionalPropertyTypes: true`.
+   */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  virtual(key: string & {}, def: Omit<ColumnDef<T, never>, 'key'>): ColumnDef<T, any>
+} {
+  return {
+    field<K extends keyof T>(key: K, def: Omit<ColumnDef<T, T[K]>, 'key'>): ColumnDef<T, T[K]> {
+      return { ...def, key } as ColumnDef<T, T[K]>
+    },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    virtual(key: string & {}, def: Omit<ColumnDef<T, never>, 'key'>): ColumnDef<T, any> {
+      return { ...def, key } as ColumnDef<T, any>
+    },
+  }
+}
+
+// ─── Column Helper (deprecated) ────────────────────────────
+
+/**
+ * @deprecated Use `columnHelper<T>()` instead.
+ * Will be removed in the next major version.
+ */
+export function col<T>() {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (def: ColumnDef<T, any>): ColumnDef<T> => def
 }
 
 // ─── Utility Types ─────────────────────────────────────────

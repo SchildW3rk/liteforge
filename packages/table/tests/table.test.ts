@@ -2,9 +2,9 @@
  * @liteforge/table - Comprehensive Test Suite
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
+import { describe, it, expect, expectTypeOf, beforeEach, afterEach, vi } from 'vitest'
 import { signal } from '@liteforge/core'
-import { createTable, resetStylesInjection } from '../src/index.js'
+import { createTable, col, columnHelper, resetStylesInjection } from '../src/index.js'
 import type { ColumnDef } from '../src/types.js'
 
 // ─── Test Data ─────────────────────────────────────────────
@@ -105,7 +105,8 @@ describe('createTable - Basic Rendering', () => {
       {
         key: 'active',
         header: 'Active',
-        cell: (value) => {
+        cell: ({ getValue }) => {
+          const value = getValue()
           const span = document.createElement('span')
           span.className = value ? 'badge-active' : 'badge-inactive'
           span.textContent = value ? 'Yes' : 'No'
@@ -133,7 +134,7 @@ describe('createTable - Basic Rendering', () => {
       {
         key: '_actions',
         header: 'Actions',
-        cell: (_, row) => {
+        cell: ({ row }) => {
           const btn = document.createElement('button')
           btn.textContent = `Edit ${row.name}`
           btn.className = 'action-btn'
@@ -1272,5 +1273,246 @@ describe('createTable - Style Tokens', () => {
     expect(root.style.getPropertyValue('--lf-table-pagination-bg')).toBe('v16')
     expect(root.style.getPropertyValue('--lf-table-search-border')).toBe('v17')
     expect(root.style.getPropertyValue('--lf-table-search-focus')).toBe('v18')
+  })
+})
+
+// ─── CellContext ───────────────────────────────────────────
+
+describe('CellContext', () => {
+  it('getValue() returns the correct field value', () => {
+    const receivedEmails: unknown[] = []
+    const receivedIds: unknown[] = []
+
+    const table = createTable<User>({
+      data: () => testUsers.slice(0, 2),
+      columns: [
+        { key: 'id',    header: 'ID',    cell: ({ getValue }) => { receivedIds.push(getValue());    return document.createElement('td') } },
+        { key: 'email', header: 'Email', cell: ({ getValue }) => { receivedEmails.push(getValue()); return document.createElement('td') } },
+      ],
+    })
+    document.body.appendChild(table.Root() as Node)
+    expect(receivedIds).toEqual([1, 2])
+    expect(receivedEmails).toEqual(['alice@test.com', 'bob@test.com'])
+  })
+
+  it('row contains the full row object', () => {
+    const receivedNames: string[] = []
+    const table = createTable<User>({
+      data: () => testUsers.slice(0, 2),
+      columns: [
+        { key: 'id', header: 'ID', cell: ({ row }) => { receivedNames.push(row.name); return document.createElement('td') } },
+      ],
+    })
+    document.body.appendChild(table.Root() as Node)
+    expect(receivedNames).toEqual(['Alice', 'Bob'])
+  })
+
+  it('rowIndex reflects position in paginated view', () => {
+    const receivedIndices: number[] = []
+    const table = createTable<User>({
+      data: () => testUsers.slice(0, 3),
+      columns: [
+        { key: 'name', header: 'Name', cell: ({ rowIndex }) => { receivedIndices.push(rowIndex); return document.createElement('td') } },
+      ],
+    })
+    document.body.appendChild(table.Root() as Node)
+    expect(receivedIndices).toEqual([0, 1, 2])
+  })
+
+  it('isSelected reflects current selection state at render time', () => {
+    const selectedAtRender: boolean[] = []
+    const table = createTable<User>({
+      data: () => testUsers.slice(0, 2),
+      columns: [
+        { key: 'name', header: 'Name', cell: ({ isSelected }) => {
+          selectedAtRender.push(isSelected)
+          return document.createElement('td')
+        }},
+      ],
+      selection: { enabled: true, mode: 'multi' },
+    })
+    // No selection — all false
+    document.body.appendChild(table.Root() as Node)
+    expect(selectedAtRender).toEqual([false, false])
+  })
+
+  it('column contains key, header, and width', () => {
+    const receivedMeta: unknown[] = []
+    const table = createTable<User>({
+      data: () => testUsers.slice(0, 1),
+      columns: [
+        { key: 'email', header: 'Email', width: 200, cell: ({ column }) => { receivedMeta.push(column); return document.createElement('td') } },
+      ],
+    })
+    document.body.appendChild(table.Root() as Node)
+    expect(receivedMeta[0]).toMatchObject({ key: 'email', header: 'Email', width: 200 })
+  })
+
+  it('renderValue() returns null for undefined virtual columns', () => {
+    const received: unknown[] = []
+    const table = createTable<User>({
+      data: () => testUsers.slice(0, 1),
+      columns: [
+        { key: '_actions', header: '', cell: ({ renderValue }) => { received.push(renderValue()); return document.createElement('td') } },
+      ],
+    })
+    document.body.appendChild(table.Root() as Node)
+    expect(received[0]).toBeNull()
+  })
+
+  it('virtual columns receive undefined from getValue()', () => {
+    const received: unknown[] = []
+    const table = createTable<User>({
+      data: () => testUsers.slice(0, 1),
+      columns: [
+        { key: '_actions', header: '', cell: ({ getValue }) => { received.push(getValue()); return document.createElement('td') } },
+      ],
+    })
+    document.body.appendChild(table.Root() as Node)
+    expect(received[0]).toBeUndefined()
+  })
+})
+
+// ─── col() Helper (deprecated) ────────────────────────────
+
+describe('col() helper', () => {
+  it('returns the column definition unchanged at runtime', () => {
+    const c = col<User>()
+    const def = c({ key: 'email', header: 'Email' })
+    expect(def.key).toBe('email')
+    expect(def.header).toBe('Email')
+  })
+
+  it('still works with CellContext cell renderer', () => {
+    const c = col<User>()
+    const receivedValues: unknown[] = []
+    const table = createTable<User>({
+      data: () => testUsers.slice(0, 2),
+      columns: [
+        c({
+          key: 'email',
+          header: 'Email',
+          cell: ({ getValue }) => {
+            receivedValues.push(getValue())
+            const el = document.createElement('span')
+            el.textContent = String(getValue())
+            return el
+          },
+        }),
+      ],
+    })
+    document.body.appendChild(table.Root() as Node)
+    expect(receivedValues).toEqual(['alice@test.com', 'bob@test.com'])
+  })
+
+  it('is compatible with ColumnDef<T>[] (no cast needed)', () => {
+    const c = col<User>()
+    const columns: ColumnDef<User>[] = [
+      c({ key: 'id', header: 'ID' }),
+      c({ key: 'name', header: 'Name' }),
+      c({ key: '_actions', header: '' }),
+    ]
+    expect(columns).toHaveLength(3)
+  })
+})
+
+// ─── columnHelper ──────────────────────────────────────────
+
+describe('columnHelper', () => {
+  it('h.field() produces the correct key at runtime', () => {
+    const h = columnHelper<User>()
+    const def = h.field('email', { header: 'Email' })
+    expect(def.key).toBe('email')
+    expect(def.header).toBe('Email')
+  })
+
+  it('h.virtual() produces the correct key at runtime', () => {
+    const h = columnHelper<User>()
+    const def = h.virtual('_actions', { header: '' })
+    expect(def.key).toBe('_actions')
+  })
+
+  it('h.field() getValue() is narrowed to T[K] — type test', () => {
+    const h = columnHelper<User>()
+    createTable<User>({
+      data: () => [],
+      columns: [
+        h.field('id',     { cell: ({ getValue }) => { expectTypeOf(getValue()).toEqualTypeOf<number>();  return document.createElement('td') } }),
+        h.field('email',  { cell: ({ getValue }) => { expectTypeOf(getValue()).toEqualTypeOf<string>(); return document.createElement('td') } }),
+        h.field('active', { cell: ({ getValue }) => { expectTypeOf(getValue()).toEqualTypeOf<boolean>(); return document.createElement('td') } }),
+      ],
+    })
+  })
+
+  it('h.virtual() getValue is typed as () => never', () => {
+    const h = columnHelper<User>()
+    h.virtual('_actions', {
+      cell: ({ getValue }) => {
+        expectTypeOf(getValue).toEqualTypeOf<() => never>()
+        return document.createElement('td')
+      },
+    })
+  })
+
+  it('h.field() getValue() returns the correct value at runtime', () => {
+    const h = columnHelper<User>()
+    const receivedEmails: unknown[] = []
+    const receivedIds: unknown[] = []
+
+    const table = createTable<User>({
+      data: () => testUsers.slice(0, 2),
+      columns: [
+        h.field('id',    { cell: ({ getValue }) => { receivedIds.push(getValue());    return document.createElement('td') } }),
+        h.field('email', { cell: ({ getValue }) => { receivedEmails.push(getValue()); return document.createElement('td') } }),
+      ],
+    })
+    document.body.appendChild(table.Root() as Node)
+    expect(receivedIds).toEqual([1, 2])
+    expect(receivedEmails).toEqual(['alice@test.com', 'bob@test.com'])
+  })
+
+  it('h.virtual() row is accessible and correctly typed', () => {
+    const h = columnHelper<User>()
+    const receivedNames: string[] = []
+
+    const table = createTable<User>({
+      data: () => testUsers.slice(0, 2),
+      columns: [
+        h.virtual('_actions', {
+          header: '',
+          cell: ({ row }) => {
+            receivedNames.push(row.name)
+            return document.createElement('td')
+          },
+        }),
+      ],
+    })
+    document.body.appendChild(table.Root() as Node)
+    expect(receivedNames).toEqual(['Alice', 'Bob'])
+  })
+
+  it('mixes h.field() and h.virtual() in the same columns array', () => {
+    const h = columnHelper<User>()
+    const table = createTable<User>({
+      data: () => testUsers.slice(0, 1),
+      columns: [
+        h.field('name', { header: 'Name' }),
+        h.field('email', { header: 'Email' }),
+        h.virtual('_actions', { header: '' }),
+      ],
+    })
+    document.body.appendChild(table.Root() as Node)
+    const cells = document.querySelectorAll('td')
+    expect(cells.length).toBeGreaterThan(0)
+  })
+
+  it('is compatible with ColumnDef<T>[] — no cast needed', () => {
+    const h = columnHelper<User>()
+    const columns: ColumnDef<User>[] = [
+      h.field('id', { header: 'ID' }),
+      h.field('email', { header: 'Email' }),
+      h.virtual('_actions', { header: '' }),
+    ]
+    expect(columns).toHaveLength(3)
   })
 })

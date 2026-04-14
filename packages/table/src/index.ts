@@ -5,12 +5,15 @@
  */
 
 export { createTable } from './table.js'
+export { columnHelper, col } from './types.js'
 
 export type {
   // Main types
   TableOptions,
   TableResult,
   ColumnDef,
+  CellContext,
+  ColumnMeta,
   TableClasses,
   TableStyles,
 
