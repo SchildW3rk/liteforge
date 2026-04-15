@@ -468,3 +468,39 @@ describe('h() - function children resolved correctly (#43)', () => {
     expect(el.textContent).toBe('deep');
   });
 });
+
+// =============================================================================
+// Issue #58 — reactive children in <textarea> should set textContent
+// =============================================================================
+
+describe('h() - textarea reactive children (#58)', () => {
+  it('sets initial textContent for reactive string child', () => {
+    const notes = signal('hello');
+    const el = h('textarea', null, () => notes()) as HTMLTextAreaElement;
+    expect(el.textContent).toBe('hello');
+    expect(el.value).toBe('hello');
+  });
+
+  it('updates textContent reactively when signal changes', async () => {
+    const notes = signal('hello');
+    const el = h('textarea', null, () => notes()) as HTMLTextAreaElement;
+    expect(el.textContent).toBe('hello');
+
+    notes.set('world');
+    await Promise.resolve();
+    expect(el.textContent).toBe('world');
+  });
+
+  it('does NOT insert a comment node into textarea', () => {
+    const notes = signal('hello');
+    const el = h('textarea', null, () => notes()) as HTMLTextAreaElement;
+    const hasComment = Array.from(el.childNodes).some(n => n.nodeType === Node.COMMENT_NODE);
+    expect(hasComment).toBe(false);
+  });
+
+  it('handles null/undefined value as empty string', () => {
+    const notes = signal<string | null>(null);
+    const el = h('textarea', null, () => notes()) as HTMLTextAreaElement;
+    expect(el.textContent).toBe('');
+  });
+});

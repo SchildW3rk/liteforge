@@ -54,10 +54,29 @@ Attach a tooltip to a DOM element.
 | `disabled` | `boolean` | `false` | Disable the tooltip |
 | `showWhen` | `() => boolean` | — | Guard function evaluated on every pointerenter |
 | `triggerOnFocus` | `boolean` | `true` | Also trigger on keyboard focus/blur |
+| `class` | `string` | — | Extra CSS class(es) added to the tooltip element |
+| `styles` | `TooltipStyles` | — | Inline style overrides for the tooltip (and arrow) |
+| `borderRadius` | `string` | — | Shorthand to set `border-radius` inline (overrides CSS variable) |
+| `dismissOn` | `'auto' \| 'click' \| 'manual'` | `'auto'` | How the tooltip is dismissed (see below) |
+
+**`dismissOn` values:**
+
+| Value | Behavior |
+|-------|----------|
+| `'auto'` | Hides on `pointerleave` + `blur` + click (default) |
+| `'click'` | Hides on click only — stays visible on `pointerleave` |
+| `'manual'` | Only the returned cleanup function hides the tooltip |
+
+**`TooltipStyles`:**
+
+| Field | Description |
+|-------|-------------|
+| `tooltip` | Inline style string applied to the tooltip element via `cssText +=` |
+| `arrow` | Stored as `data-arrow-style` attribute — cannot be applied directly since the arrow is a `::before` pseudo-element |
 
 ### `Tooltip(props)` → `Node`
 
-JSX component wrapper.
+JSX component wrapper. All `TooltipOptions` fields are accepted as props including the new `class`, `styles`, `borderRadius`, and `dismissOn`.
 
 **Props (`TooltipProps`):**
 
@@ -70,6 +89,10 @@ JSX component wrapper.
 | `disabled` | `boolean` | Disable tooltip |
 | `showWhen` | `() => boolean` | Guard function |
 | `triggerOnFocus` | `boolean` | Focus/blur trigger |
+| `class` | `string` | Extra CSS class(es) |
+| `styles` | `TooltipStyles` | Inline style overrides |
+| `borderRadius` | `string` | `border-radius` override |
+| `dismissOn` | `'auto' \| 'click' \| 'manual'` | Dismiss behavior |
 
 Children are wrapped in a `display:contents` span.
 
@@ -112,6 +135,37 @@ tooltip(navItem, {
   content: 'Dashboard',
   position: 'right',
   showWhen: () => !sidebarOpen(),
+})
+```
+
+### Custom styling
+
+```tsx
+// Via directive
+tooltip(el, {
+  content: 'Custom styled',
+  borderRadius: '0px',
+  styles: { tooltip: 'background: var(--lf-color-surface); border: 1px solid var(--lf-color-border); color: var(--lf-color-text);' },
+  class: 'my-tooltip',
+})
+
+// Via component
+<Tooltip
+  content="Custom styled"
+  borderRadius="0px"
+  styles={{ tooltip: 'background: var(--lf-color-surface);' }}
+  class="my-tooltip"
+>
+  <span>Hover me</span>
+</Tooltip>
+```
+
+### Click-to-dismiss (no auto-hide on mouse-out)
+
+```ts
+tooltip(el, {
+  content: 'Click me to dismiss',
+  dismissOn: 'click',
 })
 ```
 

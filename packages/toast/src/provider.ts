@@ -1,7 +1,7 @@
 import { effect } from '@liteforge/core';
 import { toasts, removeToast } from './store.js';
 import { injectDefaultStyles } from './styles.js';
-import type { ToastEntry, ToastPosition } from './types.js';
+import type { ToastClasses, ToastEntry, ToastPosition, ToastStyles } from './types.js';
 
 const ICON_SVG: Record<string, string> = {
   success: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>',
@@ -12,16 +12,36 @@ const ICON_SVG: Record<string, string> = {
 
 const CLOSE_SVG = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
 
-function renderToast(entry: ToastEntry, container: HTMLElement): void {
+function renderToast(
+  entry: ToastEntry,
+  container: HTMLElement,
+  providerStyles?: ToastStyles,
+  providerClasses?: ToastClasses,
+): void {
   const el = document.createElement('div');
-  el.className = `lf-toast lf-toast--${entry.type}`;
+
+  // Build class list: base classes, provider-level toast/type classes, per-toast class
+  const classes = [`lf-toast`, `lf-toast--${entry.type}`];
+  if (providerClasses?.toast) classes.push(providerClasses.toast);
+  const typeClass = providerClasses?.[entry.type as keyof ToastClasses];
+  if (typeClass) classes.push(typeClass);
+  if (entry.options.class) classes.push(entry.options.class);
+  el.className = classes.join(' ');
+
   el.setAttribute('role', 'alert');
   el.setAttribute('aria-live', 'polite');
   el.dataset['id'] = entry.id;
 
+  // Apply provider-level toast style, then per-toast style (override)
+  if (providerStyles?.toast) el.style.cssText += providerStyles.toast;
+  if (entry.options.styles?.toast) el.style.cssText += entry.options.styles.toast;
+
   const icon = document.createElement('span');
   icon.className = 'lf-toast__icon';
+  if (providerClasses?.icon) icon.classList.add(providerClasses.icon);
   icon.innerHTML = ICON_SVG[entry.type] ?? '';
+  if (providerStyles?.icon) icon.style.cssText += providerStyles.icon;
+  if (entry.options.styles?.icon) icon.style.cssText += entry.options.styles.icon;
   el.appendChild(icon);
 
   const msg = document.createElement('span');
@@ -32,8 +52,11 @@ function renderToast(entry: ToastEntry, container: HTMLElement): void {
   if (entry.options.closable) {
     const closeBtn = document.createElement('button');
     closeBtn.className = 'lf-toast__close';
+    if (providerClasses?.close) closeBtn.classList.add(providerClasses.close);
     closeBtn.innerHTML = CLOSE_SVG;
     closeBtn.setAttribute('aria-label', 'Dismiss');
+    if (providerStyles?.close) closeBtn.style.cssText += providerStyles.close;
+    if (entry.options.styles?.close) closeBtn.style.cssText += entry.options.styles.close;
     closeBtn.addEventListener('click', () => dismissToast(entry.id, el, container));
     el.appendChild(closeBtn);
   }
@@ -84,7 +107,14 @@ function dismissToast(id: string, el: HTMLElement, container: HTMLElement): void
   }, { once: true });
 }
 
-export function ToastProvider(opts?: { position?: ToastPosition; unstyled?: boolean }): HTMLElement {
+export interface ToastProviderOptions {
+  position?: ToastPosition;
+  unstyled?: boolean;
+  styles?: ToastStyles;
+  classes?: ToastClasses;
+}
+
+export function ToastProvider(opts?: ToastProviderOptions): HTMLElement {
   if (!opts?.unstyled) {
     injectDefaultStyles();
   }
@@ -92,9 +122,15 @@ export function ToastProvider(opts?: { position?: ToastPosition; unstyled?: bool
   const position = opts?.position ?? 'bottom-right';
 
   const container = document.createElement('div');
-  container.className = `lf-toast-container lf-toast-container--${position}`;
+  const containerClasses = [`lf-toast-container`, `lf-toast-container--${position}`];
+  if (opts?.classes?.container) containerClasses.push(opts.classes.container);
+  container.className = containerClasses.join(' ');
   container.setAttribute('aria-live', 'assertive');
   container.setAttribute('aria-atomic', 'false');
+
+  if (opts?.styles?.container) {
+    container.style.cssText += opts.styles.container;
+  }
 
   const rendered = new Set<string>();
 
@@ -114,7 +150,7 @@ export function ToastProvider(opts?: { position?: ToastPosition; unstyled?: bool
     for (const entry of current) {
       if (!rendered.has(entry.id)) {
         rendered.add(entry.id);
-        renderToast(entry, container);
+        renderToast(entry, container, opts?.styles, opts?.classes);
       }
     }
   });

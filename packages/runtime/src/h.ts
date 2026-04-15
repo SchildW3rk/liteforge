@@ -410,16 +410,28 @@ function appendChild(parent: Node, child: HChild): void {
 
   // Reactive child (function)
   if (typeof child === 'function') {
+    // <textarea> and <select> treat child nodes as content but browsers only
+    // render .value / .textContent — insert a comment marker and swap DOM nodes
+    // would show nothing. Use textContent for these elements instead.
+    const parentName = (parent as Element).nodeName;
+    if (parentName === 'TEXTAREA') {
+      effect(() => {
+        const value = (child as () => HChild)();
+        (parent as HTMLTextAreaElement).textContent = value == null ? '' : String(value);
+      });
+      return;
+    }
+
     // Create a placeholder and marker for reactive content
     const marker = document.createComment('reactive');
     parent.appendChild(marker);
-    
+
     let currentNode: Node | null = null;
-    
+
     effect(() => {
       const value = (child as () => HChild)();
       const newNode = resolveChildToNode(value);
-      
+
       // Replace existing node
       if (currentNode !== null && currentNode.parentNode) {
         if (newNode !== null) {
@@ -430,7 +442,7 @@ function appendChild(parent: Node, child: HChild): void {
       } else if (newNode !== null && marker.parentNode) {
         marker.parentNode.insertBefore(newNode, marker.nextSibling);
       }
-      
+
       currentNode = newNode;
     });
     return;

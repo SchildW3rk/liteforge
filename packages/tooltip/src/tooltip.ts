@@ -18,6 +18,22 @@ function createTooltipElement(opts: TooltipOptions): HTMLElement {
     el.appendChild(opts.content);
   }
 
+  if (opts.class) {
+    el.classList.add(...opts.class.split(/\s+/).filter(Boolean));
+  }
+
+  if (opts.styles?.tooltip) {
+    el.style.cssText += opts.styles.tooltip;
+  }
+
+  if (opts.borderRadius) {
+    el.style.borderRadius = opts.borderRadius;
+  }
+
+  if (opts.styles?.arrow) {
+    el.dataset['arrowStyle'] = opts.styles.arrow;
+  }
+
   return el;
 }
 
@@ -144,21 +160,28 @@ export function tooltip(el: HTMLElement, input: TooltipInput): () => void {
     setTimeout(() => dying.remove(), 160);
   };
 
-  const focusEnabled = opts.triggerOnFocus !== false
+  const focusEnabled = opts.triggerOnFocus !== false;
+  const dismissOn = opts.dismissOn ?? 'auto';
+
+  // 'auto'   → hide on pointerleave + blur + click
+  // 'click'  → hide on click only (not pointerleave/blur)
+  // 'manual' → no auto-hide events at all
+  const autoHide = dismissOn === 'auto';
+  const clickHide = dismissOn === 'auto' || dismissOn === 'click';
 
   el.addEventListener('pointerenter', show);
-  el.addEventListener('pointerleave', hide);
+  if (autoHide) el.addEventListener('pointerleave', hide);
   if (focusEnabled) el.addEventListener('focus', show);
-  if (focusEnabled) el.addEventListener('blur', hide);
-  el.addEventListener('click', hide);
+  if (focusEnabled && autoHide) el.addEventListener('blur', hide);
+  if (clickHide) el.addEventListener('click', hide);
 
   return () => {
     hide();
     el.removeEventListener('pointerenter', show);
-    el.removeEventListener('pointerleave', hide);
+    if (autoHide) el.removeEventListener('pointerleave', hide);
     if (focusEnabled) el.removeEventListener('focus', show);
-    if (focusEnabled) el.removeEventListener('blur', hide);
-    el.removeEventListener('click', hide);
+    if (focusEnabled && autoHide) el.removeEventListener('blur', hide);
+    if (clickHide) el.removeEventListener('click', hide);
   };
 }
 

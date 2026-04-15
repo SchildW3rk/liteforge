@@ -66,6 +66,8 @@ toast.promise(saveData(), {
 | `duration` | `number` | `4000` | Auto-dismiss delay in ms. `0` = persistent. |
 | `pauseOnHover` | `boolean` | `true` | Pause timer on hover |
 | `closable` | `boolean` | `true` | Show close button |
+| `class` | `string` | — | Extra class(es) for this specific toast |
+| `styles` | `Pick<ToastStyles, 'toast' \| 'icon' \| 'close'>` | — | Inline style overrides for this toast (applied after provider styles) |
 
 ### `ToastProvider(props?)`
 
@@ -78,8 +80,55 @@ Mount the toast stack in the DOM.
 | `pauseOnHover` | `boolean` | `true` | Default pause behavior |
 | `closable` | `boolean` | `true` | Default closable |
 | `unstyled` | `boolean` | `false` | Skip default CSS |
+| `styles` | `ToastStyles` | — | Inline style overrides for container and toast parts |
+| `classes` | `ToastClasses` | — | Extra class(es) for container and toast parts |
 
 **`ToastPosition`:** `'top-left' \| 'top-center' \| 'top-right' \| 'bottom-left' \| 'bottom-center' \| 'bottom-right'`
+
+### `ToastStyles`
+
+Inline style strings applied to the corresponding part. Applied as `element.style.cssText +=`.
+
+| Field | Element |
+|-------|---------|
+| `container` | The outer container `div` |
+| `toast` | Each toast `div` |
+| `icon` | The icon `span` |
+| `close` | The close `button` |
+
+### `ToastClasses`
+
+Extra class names appended to the corresponding part (in addition to BEM defaults).
+
+| Field | Applied to |
+|-------|-----------|
+| `container` | Container `div` |
+| `toast` | All toast items |
+| `success` | Success toast items |
+| `error` | Error toast items |
+| `warning` | Warning toast items |
+| `info` | Info toast items |
+| `icon` | Icon `span` |
+| `close` | Close `button` |
+
+```ts
+<ToastProvider
+  styles={{
+    container: 'top: 24px; right: 24px;',
+    toast: 'border-radius: 0; font-size: 13px;',
+  }}
+  classes={{
+    toast: 'my-toast',
+    success: 'my-toast--success',
+  }}
+/>
+
+// Per-toast override (applied on top of provider styles)
+toast.success('Saved', {
+  class: 'my-toast--custom',
+  styles: { toast: 'min-width: 300px;' },
+})
+```
 
 ### Low-level API
 

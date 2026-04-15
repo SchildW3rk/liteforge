@@ -26,6 +26,8 @@ export function addToast(type: ToastType, message: string, options?: ToastOption
       duration: options?.duration ?? cfg.duration,
       pauseOnHover: options?.pauseOnHover ?? cfg.pauseOnHover,
       closable: options?.closable ?? cfg.closable,
+      class: options?.class,
+      styles: options?.styles,
     },
   };
   toasts.update(list => [...list, entry]);

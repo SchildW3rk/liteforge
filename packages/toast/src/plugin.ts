@@ -32,6 +32,8 @@ export function toastPlugin(options?: ToastPluginOptions): LiteForgePlugin {
         position: options?.position ?? 'bottom-right',
       };
       if (options?.unstyled === true) providerOpts.unstyled = true;
+      if (options?.styles) providerOpts.styles = options.styles;
+      if (options?.classes) providerOpts.classes = options.classes;
       const provider = ToastProvider(providerOpts);
       container.appendChild(provider);
 
