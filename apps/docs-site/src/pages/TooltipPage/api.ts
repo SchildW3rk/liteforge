@@ -7,6 +7,12 @@ export const getOptionsApi = (t: (key: string) => string): ApiRow[] => [
   { name: 'offset', type: 'number', default: '8', description: t('tooltip.apiOffset') },
   { name: 'disabled', type: 'boolean', default: 'false', description: t('tooltip.apiDisabled') },
   { name: 'showWhen', type: '() => boolean', description: t('tooltip.apiShowWhen') },
+  { name: 'class', type: 'string', description: t('tooltip.apiClass') },
+  { name: 'styles.tooltip', type: 'string', description: t('tooltip.apiStylesTooltip') },
+  { name: 'styles.arrow', type: 'string', description: t('tooltip.apiStylesArrow') },
+  { name: 'borderRadius', type: 'string', description: t('tooltip.apiBorderRadius') },
+  { name: 'dismissOn', type: "'auto' | 'click' | 'manual'", default: "'auto'", description: t('tooltip.apiDismissOn') },
+  { name: 'triggerOnFocus', type: 'boolean', default: 'true', description: t('tooltip.apiTriggerOnFocus') },
 ]
 
 export const getFuncApi = (t: (key: string) => string): ApiRow[] => [
@@ -21,5 +27,9 @@ export const getComponentApi = (t: (key: string) => string): ApiRow[] => [
   { name: 'offset', type: 'number', description: t('tooltip.apiCompOffset') },
   { name: 'disabled', type: 'boolean', description: t('tooltip.apiCompDisabled') },
   { name: 'showWhen', type: '() => boolean', description: t('tooltip.apiCompShowWhen') },
+  { name: 'class', type: 'string', description: t('tooltip.apiClass') },
+  { name: 'styles', type: 'TooltipStyles', description: t('tooltip.apiCompStyles') },
+  { name: 'borderRadius', type: 'string', description: t('tooltip.apiBorderRadius') },
+  { name: 'dismissOn', type: "'auto' | 'click' | 'manual'", default: "'auto'", description: t('tooltip.apiDismissOn') },
   { name: 'children', type: 'Node', description: t('tooltip.apiCompChildren') },
 ]

@@ -12,6 +12,8 @@ import {
   COMPONENT_CODE,
   CSS_CODE,
   AUTO_CODE,
+  STYLING_CODE,
+  DISMISS_CODE,
 } from './snippets.js';
 import { getOptionsApi, getFuncApi, getComponentApi } from './api.js';
 import {
@@ -19,6 +21,8 @@ import {
   DelayExample,
   ShowWhenExample,
   CleanupExample,
+  StylingExample,
+  DismissExample,
 } from './TooltipExamples.js';
 
 export const TooltipPage = createComponent({
@@ -32,6 +36,8 @@ export const TooltipPage = createComponent({
       { id: 'show-when',     label: () => t('tooltip.showWhen'),      level: 2 },
       { id: 'delay',         label: () => t('tooltip.delay'),         level: 2 },
       { id: 'cleanup',       label: () => t('tooltip.cleanup'),       level: 2 },
+      { id: 'styling',       label: () => t('tooltip.styling'),       level: 2 },
+      { id: 'dismiss',       label: () => t('tooltip.dismiss'),       level: 2 },
       { id: 'gotcha',        label: () => t('tooltip.gotcha'),        level: 2 },
       { id: 'component',     label: () => t('tooltip.component'),     level: 2 },
       { id: 'auto',          label: () => t('tooltip.auto'),          level: 2 },
@@ -92,6 +98,24 @@ export const TooltipPage = createComponent({
             title={() => t('tooltip.liveCleanupTitle')}
             code={`const cleanup = tooltip(el, 'Hello');\ncleanup(); // removes tooltip`}
             component={CleanupExample}
+          />
+        </DocSection>
+
+        <DocSection title={() => t('tooltip.styling')} id="styling" description={() => t('tooltip.stylingDesc')}>
+          <CodeBlock code={STYLING_CODE} language="typescript" />
+          <LiveExample
+            title={() => t('tooltip.liveStylingTitle')}
+            code={`tooltip(el, { content: 'Square', borderRadius: '0px' })`}
+            component={StylingExample}
+          />
+        </DocSection>
+
+        <DocSection title={() => t('tooltip.dismiss')} id="dismiss" description={() => t('tooltip.dismissDesc')}>
+          <CodeBlock code={DISMISS_CODE} language="typescript" />
+          <LiveExample
+            title={() => t('tooltip.liveDismissTitle')}
+            code={`tooltip(btn, { content: '…', dismissOn: 'click' })`}
+            component={DismissExample}
           />
         </DocSection>
 

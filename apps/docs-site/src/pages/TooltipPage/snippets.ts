@@ -78,3 +78,39 @@ export const CSS_CODE = `:root {
 
 export const AUTO_CODE = `// position: 'auto' — tries top first, flips if overflows viewport
 tooltip(el, { content: 'I find my own way', position: 'auto' });`
+
+export const STYLING_CODE = `// Extra class + inline style override
+tooltip(el, {
+  content:      'Steuersatz',
+  class:        'my-tooltip',
+  borderRadius: '0px',
+  styles: {
+    tooltip: 'background: var(--lf-color-surface); border: 1px solid var(--lf-color-border); color: var(--lf-color-text);',
+  },
+});
+
+// Same via JSX component
+<Tooltip
+  content="Steuersatz"
+  class="my-tooltip"
+  borderRadius="0px"
+  styles={{ tooltip: 'background: var(--lf-color-surface);' }}
+>
+  <span>USt</span>
+</Tooltip>`
+
+export const DISMISS_CODE = `// 'auto' (default) — hides on pointerleave, blur, and click
+tooltip(el, { content: 'Auto-hide', dismissOn: 'auto' });
+
+// 'click' — stays visible on mouse-out, hides on click
+tooltip(btn, {
+  content:   'Click me to dismiss',
+  dismissOn: 'click',
+});
+
+// 'manual' — never hides automatically; call cleanup() to hide
+const cleanup = tooltip(el, {
+  content:   'Persistent tooltip',
+  dismissOn: 'manual',
+});
+// later: cleanup();`

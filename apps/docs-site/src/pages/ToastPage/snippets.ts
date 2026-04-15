@@ -43,3 +43,24 @@ export const CSS_CODE = `:root {
   --lf-toast-offset:  20px;
   --lf-toast-gap:     10px;
 }`;
+
+export const STYLING_CODE = `// Provider-level styles + classes
+<ToastProvider
+  styles={{
+    container: 'top: 24px; right: 24px;',
+    toast:     'border-radius: 0; font-size: 13px;',
+    icon:      'border-radius: 0;',
+    close:     'border-radius: 0;',
+  }}
+  classes={{
+    toast:   'my-toast',
+    success: 'my-toast--success',
+    error:   'my-toast--error',
+  }}
+/>
+
+// Per-toast override (layers on top of provider styles)
+toast.success('Gespeichert', {
+  class:  'my-toast--custom',
+  styles: { toast: 'min-width: 300px;' },
+});`;

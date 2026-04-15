@@ -20,4 +20,24 @@ export const getOptsApi = (t: (key: string) => string): ApiRow[] => [
   { name: 'duration', type: 'number', description: t('toast.apiOptDuration') },
   { name: 'closable', type: 'boolean', description: t('toast.apiClosable') },
   { name: 'id', type: 'string', description: t('toast.apiId') },
+  { name: 'class', type: 'string', description: t('toast.apiOptClass') },
+  { name: 'styles', type: "Pick<ToastStyles, 'toast' | 'icon' | 'close'>", description: t('toast.apiOptStyles') },
+];
+
+export const getProviderStylesApi = (t: (key: string) => string): ApiRow[] => [
+  { name: 'container', type: 'string', description: t('toast.apiStylesContainer') },
+  { name: 'toast', type: 'string', description: t('toast.apiStylesToast') },
+  { name: 'icon', type: 'string', description: t('toast.apiStylesIcon') },
+  { name: 'close', type: 'string', description: t('toast.apiStylesClose') },
+];
+
+export const getProviderClassesApi = (t: (key: string) => string): ApiRow[] => [
+  { name: 'container', type: 'string', description: t('toast.apiClassesContainer') },
+  { name: 'toast', type: 'string', description: t('toast.apiClassesToast') },
+  { name: 'success', type: 'string', description: t('toast.apiClassesSuccess') },
+  { name: 'error', type: 'string', description: t('toast.apiClassesError') },
+  { name: 'warning', type: 'string', description: t('toast.apiClassesWarning') },
+  { name: 'info', type: 'string', description: t('toast.apiClassesInfo') },
+  { name: 'icon', type: 'string', description: t('toast.apiClassesIcon') },
+  { name: 'close', type: 'string', description: t('toast.apiClassesClose') },
 ];

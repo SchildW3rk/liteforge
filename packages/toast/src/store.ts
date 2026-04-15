@@ -18,18 +18,14 @@ export const toastConfig = signal<ToastConfig>({
 export function addToast(type: ToastType, message: string, options?: ToastOptions): string {
   const cfg = toastConfig();
   const id = `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
-  const entry: ToastEntry = {
-    id,
-    type,
-    message,
-    options: {
-      duration: options?.duration ?? cfg.duration,
-      pauseOnHover: options?.pauseOnHover ?? cfg.pauseOnHover,
-      closable: options?.closable ?? cfg.closable,
-      class: options?.class,
-      styles: options?.styles,
-    },
+  const opts: ToastEntry['options'] = {
+    duration: options?.duration ?? cfg.duration,
+    pauseOnHover: options?.pauseOnHover ?? cfg.pauseOnHover,
+    closable: options?.closable ?? cfg.closable,
   };
+  if (options?.class !== undefined) opts.class = options.class;
+  if (options?.styles !== undefined) opts.styles = options.styles;
+  const entry: ToastEntry = { id, type, message, options: opts };
   toasts.update(list => [...list, entry]);
   return id;
 }
