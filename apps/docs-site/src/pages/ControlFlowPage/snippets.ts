@@ -72,6 +72,20 @@ export const SHOW_JSX_CODE = `// JSX tag syntax — same thing, different style
   {(user) => <Dashboard user={user} />}
 </Show>`;
 
+export const SHOW_KEEP_ALIVE_CODE = `// keepAlive — hide via display:none, never remove from DOM
+// Effects inside the child stay alive across toggle cycles.
+// Use this when the child has live subscriptions, polling effects, or
+// WebSocket bindings that must keep running while hidden.
+
+<Show when={() => isPanelOpen()} keepAlive>
+  {() => <LiveDataPanel />}
+</Show>
+
+// Contrast: normal Show — node removed, effects disposed on false
+<Show when={() => isVisible()}>
+  {() => <ExpensiveChart />}
+</Show>`;
+
 export const SWITCH_CODE = `import { Switch, Match } from 'liteforge';
 import { signal } from 'liteforge';
 

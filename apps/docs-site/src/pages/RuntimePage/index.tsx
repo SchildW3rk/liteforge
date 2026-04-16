@@ -13,6 +13,7 @@ import {
   LIFECYCLE_CODE,
   TOGGLE_CODE,
   FOR_LIVE_CODE,
+  USE_CLICK_OUTSIDE_CODE,
 } from './snippets.js';
 import { getComponentApi } from './api.js';
 import { ToggleExample } from './ToggleExample.js';
@@ -24,12 +25,13 @@ export const RuntimePage = createComponent({
     const { t } = use('i18n');
 
     setToc([
-      { id: 'create-component', label: () => t('runtime.createComponent'), level: 2 },
-      { id: 'jsx',              label: () => t('runtime.jsx'),              level: 2 },
-      { id: 'show',             label: () => t('runtime.show'),             level: 2 },
-      { id: 'for',              label: () => t('runtime.for'),              level: 2 },
-      { id: 'use',              label: () => t('runtime.use'),              level: 2 },
-      { id: 'lifecycle',        label: () => t('runtime.lifecycle'),        level: 2 },
+      { id: 'create-component',   label: () => t('runtime.createComponent'),   level: 2 },
+      { id: 'jsx',                label: () => t('runtime.jsx'),                level: 2 },
+      { id: 'show',               label: () => t('runtime.show'),               level: 2 },
+      { id: 'for',                label: () => t('runtime.for'),                level: 2 },
+      { id: 'use',                label: () => t('runtime.use'),                level: 2 },
+      { id: 'lifecycle',          label: () => t('runtime.lifecycle'),          level: 2 },
+      { id: 'use-click-outside',  label: () => t('runtime.useClickOutside'),    level: 2 },
     ]);
     return (
       <div>
@@ -113,6 +115,14 @@ export const RuntimePage = createComponent({
           description={() => t('runtime.lifecycleDesc')}
         >
           <CodeBlock code={LIFECYCLE_CODE} language="tsx" />
+        </DocSection>
+
+        <DocSection
+          title={() => t('runtime.useClickOutside')}
+          id="use-click-outside"
+          description={() => t('runtime.useClickOutsideDesc')}
+        >
+          <CodeBlock code={USE_CLICK_OUTSIDE_CODE} language="tsx" />
         </DocSection>
       </div>
     );

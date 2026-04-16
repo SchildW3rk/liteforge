@@ -4,6 +4,7 @@ export const getShowApi = (t: (key: string) => string): ApiRow[] => [
   { name: 'when', type: '() => T | T', description: t('controlflow.apiShowWhen') },
   { name: 'children', type: '(value: NonNullable<T>) => Node', description: t('controlflow.apiShowChildren') },
   { name: 'fallback', type: '() => Node', default: 'nothing', description: t('controlflow.apiShowFallback') },
+  { name: 'keepAlive', type: 'boolean', default: 'false', description: t('controlflow.apiShowKeepAlive') },
 ];
 
 export const getForApi = (t: (key: string) => string): ApiRow[] => [

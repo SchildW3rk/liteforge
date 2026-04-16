@@ -167,6 +167,8 @@ const en = defineLocale({
     apiError: 'Rendered when load() throws — receives error and retry()',
     apiMounted: 'Called after component is mounted to the DOM',
     apiDestroyed: 'Called when component is removed from the DOM',
+    useClickOutside: 'useClickOutside()',
+    useClickOutsideDesc: 'Attach an outside-click handler to one or more elements. Registers the document listener via setTimeout(0) so the click that opened the dropdown does not immediately close it. Auto-registers onCleanup() when called inside setup() or an effect — returns a manual cleanup function otherwise.',
   },
 
   // ─── App page ────────────────────────────────────────────────────────
@@ -747,6 +749,9 @@ const en = defineLocale({
     apiSwitchFallback: 'Rendered when no Match condition is true',
     apiMatchWhen: 'Condition — first true match in a Switch wins',
     apiMatchChildren: 'Render function for this case',
+    keepAlive: 'Show — keepAlive',
+    keepAliveDesc: 'When keepAlive is set, the child node is hidden via display:none instead of being removed. Reactive effects inside the child stay alive across toggle cycles. Use this when the child has live subscriptions, polling effects, or WebSocket bindings that must keep running while hidden. Note: fallback is ignored in keepAlive mode.',
+    apiShowKeepAlive: 'Hide via display:none instead of removing from DOM — effects inside the child stay alive',
   },
 
   // ─── Lifecycle page ──────────────────────────────────────────────────

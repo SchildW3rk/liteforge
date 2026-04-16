@@ -167,6 +167,8 @@ export default defineLocale({
     apiError: 'Wird bei load()-Fehler angezeigt — erhält error und retry()',
     apiMounted: 'Aufgerufen, nachdem die Komponente ins DOM eingehängt wurde',
     apiDestroyed: 'Aufgerufen, wenn die Komponente aus dem DOM entfernt wird',
+    useClickOutside: 'useClickOutside()',
+    useClickOutsideDesc: 'Registriert einen Outside-Click-Handler für ein oder mehrere Elemente. Der Document-Listener wird via setTimeout(0) registriert, damit der Klick der das Dropdown öffnet es nicht sofort wieder schließt. Registriert automatisch onCleanup() wenn innerhalb von setup() oder einem Effekt aufgerufen — andernfalls manuell über den Rückgabewert aufräumen.',
   },
 
   // ─── App page ────────────────────────────────────────────────────────
@@ -747,6 +749,9 @@ export default defineLocale({
     apiSwitchFallback: 'Wird angezeigt, wenn keine Match-Bedingung zutrifft',
     apiMatchWhen: 'Bedingung — erster true Match in einem Switch gewinnt',
     apiMatchChildren: 'Render-Funktion für diesen Fall',
+    keepAlive: 'Show — keepAlive',
+    keepAliveDesc: 'Wenn keepAlive gesetzt ist, wird der Kindknoten per display:none versteckt statt entfernt zu werden. Reaktive Effekte im Kind bleiben über alle Toggle-Zyklen aktiv. Verwende dies, wenn das Kind Live-Subscriptions, Polling-Effekte oder WebSocket-Verbindungen hat, die weiterlaufen müssen. Hinweis: fallback wird im keepAlive-Modus ignoriert.',
+    apiShowKeepAlive: 'Versteckt per display:none statt aus dem DOM zu entfernen — Effekte im Kind bleiben aktiv',
   },
 
   // ─── Lifecycle page ──────────────────────────────────────────────────

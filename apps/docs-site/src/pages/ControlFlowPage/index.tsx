@@ -11,6 +11,7 @@ import {
   SHOW_BASIC_CODE,
   SHOW_REALISTIC_CODE,
   SHOW_JSX_CODE,
+  SHOW_KEEP_ALIVE_CODE,
   SWITCH_CODE,
   SWITCH_JSX_CODE,
   FOR_BASIC_CODE,
@@ -55,7 +56,12 @@ export const ControlFlowPage = createComponent({
     const { t } = use('i18n');
 
     setToc([
-      { id: 'decision-guide', label: () => t('controlflow.whenToUse'), level: 2 },
+      { id: 'show',          label: () => t('controlflow.show'),          level: 2 },
+      { id: 'keep-alive',    label: () => t('controlflow.keepAlive'),     level: 3 },
+      { id: 'switch',        label: () => t('controlflow.switchMatch'),   level: 2 },
+      { id: 'for',           label: () => t('controlflow.for'),           level: 2 },
+      { id: 'decision-guide', label: () => t('controlflow.whenToUse'),   level: 2 },
+      { id: 'patterns',      label: () => t('controlflow.patterns'),      level: 2 },
     ]);
     const decisionTable = createTable<DecisionRow>({
       data: () => DECISION_ROWS,
@@ -134,6 +140,14 @@ export const ControlFlowPage = createComponent({
               code={LIVE_SHOW_CODE}
             />
           </div>
+        </DocSection>
+
+        <DocSection
+          title={() => t('controlflow.keepAlive')}
+          id="keep-alive"
+          description={() => t('controlflow.keepAliveDesc')}
+        >
+          <CodeBlock code={SHOW_KEEP_ALIVE_CODE} language="tsx" />
         </DocSection>
 
         {/* Section 3: Switch / Match */}

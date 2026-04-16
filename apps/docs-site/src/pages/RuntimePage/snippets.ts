@@ -135,6 +135,33 @@ export const TOGGLE_CODE = `const open = signal(false);
   <p>Hidden content</p>
 </Show>`;
 
+export const USE_CLICK_OUTSIDE_CODE = `import { useClickOutside } from '@liteforge/runtime';
+import { signal } from 'liteforge';
+
+const open = signal(false);
+let containerEl: HTMLElement | null = null;
+
+// Auto-cleanup when called inside setup() or an effect.
+// Returns a manual cleanup function when used outside a reactive context.
+useClickOutside(() => containerEl, () => open.set(false));
+
+return (
+  <div ref={(el) => { containerEl = el; }}>
+    <button onclick={() => open.set(true)}>Open dropdown</button>
+    <Show when={() => open()}>
+      {() => (
+        <ul class="dropdown">
+          <li>Option A</li>
+          <li>Option B</li>
+        </ul>
+      )}
+    </Show>
+  </div>
+);
+
+// Multiple elements — trigger and floating panel are separate nodes
+useClickOutside(() => [triggerEl, panelEl], () => open.set(false));`;
+
 export const FOR_LIVE_CODE = `const items = signal(['Appointments', 'Patients', 'Invoices']);
 
 <input
