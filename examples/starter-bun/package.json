@@ -12,7 +12,8 @@
     "@liteforge/core": "workspace:*",
     "@liteforge/router": "workspace:*",
     "@liteforge/form": "workspace:*",
-    "@liteforge/toast": "workspace:*"
+    "@liteforge/toast": "workspace:*",
+    "zod": "^3.24.0"
   },
   "devDependencies": {
     "@liteforge/bun-plugin": "workspace:*",

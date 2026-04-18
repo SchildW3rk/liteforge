@@ -103,6 +103,9 @@ importers:
       liteforge:
         specifier: workspace:*
         version: link:../../packages/liteforge
+      zod:
+        specifier: ^3.24.0
+        version: 3.25.76
     devDependencies:
       '@liteforge/bun-plugin':
         specifier: workspace:*

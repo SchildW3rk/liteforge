@@ -3,6 +3,7 @@ import { routerPlugin, defineRouter, createBrowserHistory } from '@liteforge/rou
 import { toastPlugin } from '@liteforge/toast'
 import { HomePage } from './pages/Home.js'
 import { AboutPage } from './pages/About.js'
+import { App } from './App.js'
 import './styles.css'
 
 const router = defineRouter({
@@ -14,7 +15,7 @@ const router = defineRouter({
 })
 
 await defineApp({
-  root: () => <div id="router-root" />,
+  root: App,
   target: '#app',
 })
   .use(routerPlugin(router))

@@ -2,15 +2,22 @@ import { defineComponent, signal } from 'liteforge'
 import { createForm } from '@liteforge/form'
 import { toast } from '@liteforge/toast'
 import { Link } from '@liteforge/router'
+import { z } from 'zod';
+
+const nameSchema = z.object({
+  name: z.string().min(2, 'Name muss mindestens 2 Zeichen haben'),
+});
 
 export const HomePage = defineComponent({
   component() {
     const count = signal(0)
 
     const form = createForm({
+      schema: nameSchema,
       initial: { name: '' },
       onSubmit(values) {
-        toast.show({ message: `Hello, ${values.name}!`, type: 'success' })
+        console.log('[FORM] onSubmit values:', values)  // ← neu
+        toast.info(`Hello, ${values.name}!`)
         form.reset()
       },
     })
@@ -27,7 +34,11 @@ export const HomePage = defineComponent({
 
         <section>
           <h2>Form</h2>
-          <form onsubmit={(e: Event) => { e.preventDefault(); form.submit() }}>
+          <form onsubmit={(e: Event) => {
+            console.log('[FORM] submit triggered')
+            e.preventDefault()
+            form.submit()
+          }}>
             <input
               type="text"
               placeholder="Your name"
@@ -39,7 +50,7 @@ export const HomePage = defineComponent({
         </section>
 
         <nav>
-          <Link to="/about">About →</Link>
+          <Link href="/about">About →</Link>
         </nav>
       </div>
     )
