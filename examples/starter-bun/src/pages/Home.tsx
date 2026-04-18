@@ -16,7 +16,6 @@ export const HomePage = defineComponent({
       schema: nameSchema,
       initial: { name: '' },
       onSubmit(values) {
-        console.log('[FORM] onSubmit values:', values)  // ← neu
         toast.info(`Hello, ${values.name}!`)
         form.reset()
       },
@@ -34,11 +33,7 @@ export const HomePage = defineComponent({
 
         <section>
           <h2>Form</h2>
-          <form onsubmit={(e: Event) => {
-            console.log('[FORM] submit triggered')
-            e.preventDefault()
-            form.submit()
-          }}>
+          <form onsubmit={(e: Event) => { e.preventDefault(); form.submit() }}>
             <input
               type="text"
               placeholder="Your name"
@@ -54,5 +49,5 @@ export const HomePage = defineComponent({
         </nav>
       </div>
     )
-  },
+  }
 })

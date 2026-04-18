@@ -53,8 +53,8 @@ core (no deps)
 └── calendar
 
 transform (standalone, no liteforge deps — bundler-agnostic AST core)
-└── vite-plugin (thin Vite adapter over @liteforge/transform)
-    └── [future] bun-plugin (thin Bun adapter over @liteforge/transform)
+├── vite-plugin (thin Vite adapter over @liteforge/transform)
+└── bun-plugin  (thin Bun adapter over @liteforge/transform)
 
 devtools (depends on core + store)
 ```
@@ -77,9 +77,10 @@ Build order follows this graph. `pnpm -r build` handles it automatically.
 | `@liteforge/calendar` | 0.1.0 | ~22kb | 184 | createCalendar with 4 views, drag & drop, resources |
 | `@liteforge/transform` | 0.1.0 | ~2kb | 25 | Bundler-agnostic AST transform core (JSX→h(), For/Show, getter-wrap) |
 | `@liteforge/vite-plugin` | 0.5.1 | ~2kb | 388 | Thin Vite adapter over @liteforge/transform + HMR |
+| `@liteforge/bun-plugin` | 0.1.0 | ~1kb | 11+4 | Bun-native adapter over @liteforge/transform (11 unit / 4 integration) |
 | `@liteforge/devtools` | 0.1.0 | ~16kb | ~100 | 5-tab debug panel with time-travel |
 
-**Total: 3507+ tests across all packages**
+**Total: 3518+ tests across all packages**
 
 ---
 
@@ -353,8 +354,11 @@ Dark mode: CSS variables under `:root.dark`, `[data-theme="dark"]`, and `@media 
   └── configResolved + transform hook + HMR injection
       delegates to transformJsx() from @liteforge/transform
 
-[future] @liteforge/bun-plugin — Bun adapter
+@liteforge/bun-plugin          — Bun adapter
+  └── BunPlugin onLoad for .tsx/.jsx
       delegates to transformJsx() from @liteforge/transform
+      loader: 'tsx'/'jsx' — Bun strips TS after JSX transform
+      @liteforge/bun-plugin/dev → createDevServer() (Bun.serve + SPA fallback)
 ```
 
 **Event handler detection** lives in `packages/transform/src/utils.ts` → `isEventHandler()`:
