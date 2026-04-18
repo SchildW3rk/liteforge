@@ -1,5 +1,18 @@
 # @liteforge/toast
 
+## 0.1.1
+
+### Behavior Change — `injectDefaultStyles()`
+
+`injectDefaultStyles()` now injects an inline `<style>` tag instead of an external `<link>` tag. Visual output is identical for all standard configurations.
+
+**Impact on edge cases:**
+- **CSP `style-src` policies:** Inline styles require `'unsafe-inline'` or a nonce. If your app has a strict CSP, use `unstyled: true` and import the CSS directly: `import '@liteforge/toast/css/styles.css'`
+- **Caching:** External `<link>` tags are cacheable by the browser; inline `<style>` tags are not. Impact is negligible given the small CSS size (~5 KB).
+- **Load order:** `<link>` loads async; `<style>` is synchronous. No observable difference for toast styling.
+
+**Why this change:** Removes a Vite-specific `?url` import that prevented bundling in non-Vite environments (Bun, Webpack, esbuild). The `css/styles.css` file remains available for direct import.
+
 ## 6.0.0
 
 ### Patch Changes

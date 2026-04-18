@@ -1,19 +1,181 @@
-import stylesUrl from '../css/styles.css?url';
+const CSS = `/* ─── CSS Variables ─────────────────────────────────────────── */
+@layer lf-toast-defaults {
+  :root {
+    --lf-toast-bg: #1e1e2e;
+    --lf-toast-color: #cdd6f4;
+    --lf-toast-border: rgba(205, 214, 244, 0.1);
+    --lf-toast-radius: 8px;
+    --lf-toast-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    --lf-toast-gap: 10px;
+    --lf-toast-padding: 12px 16px;
+    --lf-toast-font-size: 14px;
+    --lf-toast-z: 9999;
+    --lf-toast-offset: 20px;
+    --lf-toast-width: 360px;
 
-let stylesInjected = false;
+    /* Type colors */
+    --lf-toast-success-bg: #a6e3a1;
+    --lf-toast-success-color: #1e1e2e;
+    --lf-toast-error-bg: #f38ba8;
+    --lf-toast-error-color: #1e1e2e;
+    --lf-toast-warning-bg: #f9e2af;
+    --lf-toast-warning-color: #1e1e2e;
+    --lf-toast-info-bg: #89b4fa;
+    --lf-toast-info-color: #1e1e2e;
+  }
+
+  [data-theme="light"] {
+    --lf-toast-bg: #ffffff;
+    --lf-toast-color: #1e1e2e;
+    --lf-toast-border: rgba(0, 0, 0, 0.08);
+    --lf-toast-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  }
+
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+      --lf-toast-bg: #ffffff;
+      --lf-toast-color: #1e1e2e;
+      --lf-toast-border: rgba(0, 0, 0, 0.08);
+      --lf-toast-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    }
+  }
+}
+
+/* ─── Container ─────────────────────────────────────────────── */
+.lf-toast-container {
+  position: fixed;
+  z-index: var(--lf-toast-z);
+  display: flex;
+  flex-direction: column;
+  gap: var(--lf-toast-gap);
+  pointer-events: none;
+  max-width: var(--lf-toast-width);
+  width: 100%;
+}
+
+/* Positions */
+.lf-toast-container--top-left {
+  top: var(--lf-toast-offset);
+  left: var(--lf-toast-offset);
+}
+.lf-toast-container--top-center {
+  top: var(--lf-toast-offset);
+  left: 50%;
+  transform: translateX(-50%);
+}
+.lf-toast-container--top-right {
+  top: var(--lf-toast-offset);
+  right: var(--lf-toast-offset);
+}
+.lf-toast-container--bottom-left {
+  bottom: var(--lf-toast-offset);
+  left: var(--lf-toast-offset);
+  flex-direction: column-reverse;
+}
+.lf-toast-container--bottom-center {
+  bottom: var(--lf-toast-offset);
+  left: 50%;
+  transform: translateX(-50%);
+  flex-direction: column-reverse;
+}
+.lf-toast-container--bottom-right {
+  bottom: var(--lf-toast-offset);
+  right: var(--lf-toast-offset);
+  flex-direction: column-reverse;
+}
+
+/* ─── Toast ─────────────────────────────────────────────────── */
+.lf-toast {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: var(--lf-toast-padding);
+  background: var(--lf-toast-bg);
+  color: var(--lf-toast-color);
+  border: 1px solid var(--lf-toast-border);
+  border-radius: var(--lf-toast-radius);
+  box-shadow: var(--lf-toast-shadow);
+  font-size: var(--lf-toast-font-size);
+  pointer-events: all;
+  cursor: default;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  word-break: break-word;
+}
+
+.lf-toast--visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.lf-toast--hiding {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+/* Type variants — colored left border */
+.lf-toast--success { border-left: 4px solid var(--lf-toast-success-bg); }
+.lf-toast--error   { border-left: 4px solid var(--lf-toast-error-bg); }
+.lf-toast--warning { border-left: 4px solid var(--lf-toast-warning-bg); }
+.lf-toast--info    { border-left: 4px solid var(--lf-toast-info-bg); }
+
+/* ─── Icon ──────────────────────────────────────────────────── */
+.lf-toast__icon {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lf-toast--success .lf-toast__icon { background: var(--lf-toast-success-bg); color: var(--lf-toast-success-color); }
+.lf-toast--error   .lf-toast__icon { background: var(--lf-toast-error-bg);   color: var(--lf-toast-error-color); }
+.lf-toast--warning .lf-toast__icon { background: var(--lf-toast-warning-bg); color: var(--lf-toast-warning-color); }
+.lf-toast--info    .lf-toast__icon { background: var(--lf-toast-info-bg);    color: var(--lf-toast-info-color); }
+
+/* ─── Message ───────────────────────────────────────────────── */
+.lf-toast__message {
+  flex: 1;
+  min-width: 0;
+  line-height: 1.4;
+}
+
+/* ─── Close Button ──────────────────────────────────────────── */
+.lf-toast__close {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  color: currentColor;
+  opacity: 0.5;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  transition: opacity 0.15s;
+}
+
+.lf-toast__close:hover {
+  opacity: 1;
+}`
+
+let stylesInjected = false
 
 export function injectDefaultStyles(): void {
-  if (stylesInjected) return;
-  if (typeof document === 'undefined') return;
-  const link = document.createElement('link');
-  link.rel = 'stylesheet';
-  link.href = stylesUrl;
-  link.setAttribute('data-lf-toast', '');
-  document.head.appendChild(link);
-  stylesInjected = true;
+  if (stylesInjected) return
+  if (typeof document === 'undefined') return
+  const style = document.createElement('style')
+  style.setAttribute('data-lf-toast', '')
+  style.textContent = CSS
+  document.head.appendChild(style)
+  stylesInjected = true
 }
 
 export function resetStylesInjection(): void {
-  stylesInjected = false;
-  document.querySelector('link[data-lf-toast]')?.remove();
+  stylesInjected = false
+  document.querySelector('style[data-lf-toast]')?.remove()
 }

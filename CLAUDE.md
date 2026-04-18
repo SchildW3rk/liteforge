@@ -431,6 +431,37 @@ When a test is red in refactored code, check in this order:
 
 **Never rewrite a test to match the current output without first verifying what the original code produced.**
 
+### Test-Assertion Change Discipline
+
+When you change a test assertion, state explicitly which of these applies:
+
+1. **Behavior is technically identical** — same DOM, same data, same side-effects. Test selector changed only because implementation detail changed (e.g. attribute name). Safe to update assertion silently.
+2. **Behavior is semantically equivalent for end-users** — observable result is the same, but internal mechanism differs in ways that could matter in edge cases (CSP, caching, load order). Update assertion AND document the difference in CHANGELOG.
+3. **Behavior changed intentionally** — new behavior is the design. Update assertion, document in CHANGELOG, communicate in PR.
+
+`<link>` → `<style>` is category 2, not category 1. "Visual result identical" ≠ "technically identical".
+
+---
+
+## Bun Bundler Compatibility (as of Apr 2026)
+
+Packages using `import x from '*.css?url'` (Vite-specific) are incompatible with Bun's bundler. Status:
+
+| Package | CSS size | Status | Notes |
+|---|---|---|---|
+| `@liteforge/toast` | 5 KB | ✅ Fixed | Inline `<style>` via string literal — PR merged |
+| `@liteforge/modal` | 4 KB | ❌ Incompatible | `?url` pattern — Toast fix pattern applicable |
+| `@liteforge/tooltip` | 3 KB | ❌ Incompatible | `?url` pattern — Toast fix pattern applicable |
+| `@liteforge/table` | 11 KB | ❌ Incompatible | `?url` pattern — Toast fix pattern applicable |
+| `@liteforge/admin` | 20 KB | ❌ Incompatible | `?url` pattern — consider build-step for size |
+| `@liteforge/calendar` | 47 KB | ❌ Incompatible | `?url` pattern — build-step required (too large for inline) |
+
+**Fix pattern (modal/tooltip/table/admin):** Replace `import stylesUrl from '../css/styles.css?url'` with inline CSS string constant. Inject via `<style>` tag. See `packages/toast/src/styles.ts` as reference.
+
+**Fix pattern (calendar):** Use a build step that generates a `src/styles-generated.ts` from `css/styles.css` at build time. Do not inline 47 KB as a string literal.
+
+**Workaround for users:** Pass `unstyled: true` to the affected component and import CSS directly: `import '@liteforge/<package>/css/styles.css'`
+
 ---
 
 ## Future Roadmap
