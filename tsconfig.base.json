@@ -15,6 +15,8 @@
       "@liteforge/store/*": ["./packages/store/src/*"],
       "@liteforge/router": ["./packages/router/src/index.ts"],
       "@liteforge/router/*": ["./packages/router/src/*"],
+      "@liteforge/transform": ["./packages/transform/src/index.ts"],
+      "@liteforge/transform/*": ["./packages/transform/src/*"],
       "@liteforge/vite-plugin": ["./packages/vite-plugin/src/index.ts"],
       "@liteforge/vite-plugin/*": ["./packages/vite-plugin/src/*"],
       "@liteforge/devtools": ["./packages/devtools/src/index.ts"],

@@ -1,27 +1,28 @@
 {
-  "name": "@liteforge/vite-plugin",
-  "version": "0.5.1",
-  "description": "Vite plugin for LiteForge JSX transform. Converts JSX to direct DOM operations with signal-safe reactivity.",
+  "name": "@liteforge/transform",
+  "version": "0.1.0",
+  "description": "Bundler-agnostic AST transform core for LiteForge. Converts JSX to direct DOM operations with signal-safe reactivity.",
   "author": "SchildW3rk <contact@schildw3rk.dev>",
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/schildw3rk/liteforge",
-    "directory": "packages/vite-plugin"
+    "directory": "packages/transform"
   },
   "homepage": "https://github.com/schildw3rk/liteforge#readme",
   "bugs": {
     "url": "https://github.com/schildw3rk/liteforge/issues"
   },
   "keywords": [
-    "vite",
-    "vite-plugin",
     "liteforge",
     "jsx",
     "transform",
+    "ast",
+    "babel",
     "signals",
     "reactivity",
-    "build-tool"
+    "build-tool",
+    "bundler-agnostic"
   ],
   "type": "module",
   "main": "./dist/index.js",
@@ -49,25 +50,22 @@
     "build": "tsc -p tsconfig.build.json",
     "dev": "tsc -p tsconfig.build.json --watch",
     "typecheck": "tsc --noEmit",
+    "test": "vitest run",
     "clean": "rm -rf dist *.tsbuildinfo"
   },
   "dependencies": {
-    "@liteforge/transform": "workspace:*"
-  },
-  "peerDependencies": {
-    "vite": "^5.0.0 || ^6.0.0 || ^7.0.0"
-  },
-  "devDependencies": {
     "@babel/core": "^7.26.0",
     "@babel/generator": "^7.26.0",
     "@babel/parser": "^7.26.0",
     "@babel/traverse": "^7.26.0",
-    "@babel/types": "^7.26.0",
+    "@babel/types": "^7.26.0"
+  },
+  "devDependencies": {
     "@types/babel__core": "^7.20.5",
     "@types/babel__generator": "^7.6.8",
     "@types/babel__traverse": "^7.20.6",
     "@types/node": "^25.3.2",
     "typescript": "^5.7.2",
-    "vite": "^6.0.7"
+    "vitest": "^3.2.4"
   }
 }
