@@ -52,7 +52,10 @@ core (no deps)
 ├── table
 └── calendar
 
-vite-plugin (standalone, no liteforge deps)
+transform (standalone, no liteforge deps — bundler-agnostic AST core)
+└── vite-plugin (thin Vite adapter over @liteforge/transform)
+    └── [future] bun-plugin (thin Bun adapter over @liteforge/transform)
+
 devtools (depends on core + store)
 ```
 
@@ -72,10 +75,11 @@ Build order follows this graph. `pnpm -r build` handles it automatically.
 | `@liteforge/form` | 0.1.0 | ~4kb | 48 | createForm with Zod, nested fields, array fields |
 | `@liteforge/table` | 0.1.0 | ~8kb | 61 | createTable with sort, filter, pagination, selection |
 | `@liteforge/calendar` | 0.1.0 | ~22kb | 184 | createCalendar with 4 views, drag & drop, resources |
-| `@liteforge/vite-plugin` | 0.1.0 | ~15kb | 275 | JSX transform, template extraction, signal-safe getters |
+| `@liteforge/transform` | 0.1.0 | ~2kb | 25 | Bundler-agnostic AST transform core (JSX→h(), For/Show, getter-wrap) |
+| `@liteforge/vite-plugin` | 0.5.1 | ~2kb | 388 | Thin Vite adapter over @liteforge/transform + HMR |
 | `@liteforge/devtools` | 0.1.0 | ~16kb | ~100 | 5-tab debug panel with time-travel |
 
-**Total: 1474+ tests across all packages**
+**Total: 3507+ tests across all packages**
 
 ---
 
@@ -330,17 +334,38 @@ Dark mode: CSS variables under `:root.dark`, `[data-theme="dark"]`, and `@media 
 
 ---
 
-## Vite Plugin — Important Behavior
+## Transform Architecture
 
-The `@liteforge/vite-plugin` transforms JSX to direct DOM operations with signal-safe getter wrapping.
+`@liteforge/vite-plugin` is a thin Vite adapter. All AST logic lives in `@liteforge/transform`.
 
-**Event handler detection:** The `isEventHandler()` function in `packages/vite-plugin/src/utils.ts` recognizes:
+```
+@liteforge/transform          — bundler-agnostic core
+  transformJsx(code, opts, isDev) → TransformResult
+  ├── jsx-visitor.ts          — JSX → h() calls
+  ├── for-transform.ts        — For/Show/Switch control flow rewrites
+  ├── getter-wrap.ts          — signal-safe getter wrapping rules
+  ├── template-visitor.ts     — production template extraction mode
+  ├── template-extractor.ts   — static/dynamic element classification
+  ├── template-compiler.ts    — hydration code generation
+  └── path-resolver.ts        — DOM traversal path calculation
+
+@liteforge/vite-plugin        — Vite adapter
+  └── configResolved + transform hook + HMR injection
+      delegates to transformJsx() from @liteforge/transform
+
+[future] @liteforge/bun-plugin — Bun adapter
+      delegates to transformJsx() from @liteforge/transform
+```
+
+**Event handler detection** lives in `packages/transform/src/utils.ts` → `isEventHandler()`:
 - PascalCase: `onClick`, `onPointerDown`, etc. (any `on` + uppercase)
 - Lowercase: `onclick`, `onpointerdown`, etc. (checked against `KNOWN_EVENTS` set)
 
 Props like `online` or `once` are NOT treated as events.
 
-If a new DOM event isn't recognized as an event handler and gets wrapped in a getter function, add it to the `KNOWN_EVENTS` set in `utils.ts`.
+If a new DOM event isn't recognized, add it to `KNOWN_EVENTS` in `packages/transform/src/utils.ts`.
+
+**`autoWrapProps` option** — when `true` (default), `props.x` in JSX content position is wrapped in `() => props.x` via `isPropsAccess()` in `processChildExpression()`. Setting it to `false` skips that early-exit path, but `props.x` is still a `MemberExpression` and gets wrapped by `shouldWrapExpression()` anyway. The option only matters if you need to distinguish "wrapped because props" from "wrapped because dynamic".
 
 ---
 
@@ -381,12 +406,30 @@ If a new DOM event isn't recognized as an event handler and gets wrapped in a ge
 
 ## When Making Changes
 
-1. Always run `pnpm test` after changes
+1. Always run `pnpm test:run` after changes
 2. Always run `pnpm build:packages` to verify builds
 3. Test UI changes in the browser: `pnpm --filter starter dev`
 4. **For interaction features (drag, resize, click handlers): TEST IN THE BROWSER, not just in vitest**
 5. Create a changeset for any user-facing change: `pnpm changeset`
 6. When fixing a bug or learning a new gotcha — ADD IT to this file under Known Issues
+
+### Bug-Hunting Discipline
+
+When a hypothesis is disproven, form the **next hypothesis from the new data** — not by guessing in a different direction. Each debug step must narrow the hypothesis space. Concrete steps:
+1. State the hypothesis explicitly before running a diagnostic.
+2. Run the smallest diagnostic that can falsify it (a `console.log`, a direct unit call, reading the original source).
+3. If falsified: update the hypothesis using only the new evidence. Do not pivot to an unrelated theory.
+4. If confirmed: fix, then verify the fix closes the exact failure path found.
+
+### Refactoring Validation Rule
+
+When a test is red in refactored code, check in this order:
+
+1. **Test exists 1:1 in the original, was green there** → the refactoring broke the code. Fix the code, not the test.
+2. **Test exists in the original with a different assertion** → align the assertion to the original. Do not invent a new one.
+3. **Test is new** → determine the original code's behavior as source of truth first, then write the test to match it.
+
+**Never rewrite a test to match the current output without first verifying what the original code produced.**
 
 ---
 
