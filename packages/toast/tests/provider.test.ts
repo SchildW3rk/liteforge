@@ -174,19 +174,19 @@ describe('ToastProvider icons (#61)', () => {
 });
 
 describe('ToastProvider styles', () => {
-  it('injects <link data-lf-toast> into document head', () => {
+  it('injects <style data-lf-toast> into document head', () => {
     ToastProvider();
-    expect(document.querySelector('link[data-lf-toast]')).not.toBeNull();
+    expect(document.querySelector('style[data-lf-toast]')).not.toBeNull();
   });
 
   it('injects styles only once on repeated calls', () => {
     ToastProvider();
     ToastProvider();
-    expect(document.querySelectorAll('link[data-lf-toast]').length).toBe(1);
+    expect(document.querySelectorAll('style[data-lf-toast]').length).toBe(1);
   });
 
   it('skips CSS injection when unstyled: true', () => {
     ToastProvider({ unstyled: true });
-    expect(document.querySelector('link[data-lf-toast]')).toBeNull();
+    expect(document.querySelector('style[data-lf-toast]')).toBeNull();
   });
 });
