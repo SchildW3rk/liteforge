@@ -24,6 +24,8 @@ export default defineConfig({
       '@liteforge/flow': path.resolve(__dirname, 'packages/flow/src/index.ts'),
       '@liteforge/transform': path.resolve(__dirname, 'packages/transform/src/index.ts'),
       '@liteforge/bun-plugin': path.resolve(__dirname, 'packages/bun-plugin/src/index.ts'),
+      '@liteforge/server': path.resolve(__dirname, 'packages/server/src/index.ts'),
+      '@liteforge/server/client': path.resolve(__dirname, 'packages/server/src/client.ts'),
     },
   },
   test: {
@@ -52,6 +54,7 @@ export default defineConfig({
       ['packages/flow/**', 'happy-dom'],
       ['packages/transform/**', 'node'],
       ['packages/bun-plugin/**', 'node'],
+      ['packages/server/**', 'node'],
       ['packages/liteforge/**', 'node'],
       ['create-liteforge/**', 'node'],
     ],

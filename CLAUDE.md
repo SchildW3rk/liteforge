@@ -56,6 +56,9 @@ transform (standalone, no liteforge deps — bundler-agnostic AST core)
 ├── vite-plugin (thin Vite adapter over @liteforge/transform)
 └── bun-plugin  (thin Bun adapter over @liteforge/transform)
 
+server (standalone — no liteforge deps, peer: oakbun + zod)
+└── [future] integrated via defineApp in Phase 2 Step 1.5
+
 devtools (depends on core + store)
 ```
 
@@ -78,9 +81,10 @@ Build order follows this graph. `pnpm -r build` handles it automatically.
 | `@liteforge/transform` | 0.1.0 | ~2kb | 25 | Bundler-agnostic AST transform core (JSX→h(), For/Show, getter-wrap) |
 | `@liteforge/vite-plugin` | 0.5.1 | ~2kb | 388 | Thin Vite adapter over @liteforge/transform + HMR |
 | `@liteforge/bun-plugin` | 0.1.0 | ~1kb | 11+4 | Bun-native adapter over @liteforge/transform (11 unit / 4 integration) |
+| `@liteforge/server` | 0.1.0 | <1kb | 16 | Typed RPC bridge: defineServerModule, liteforgeServer OakBun plugin, serverClientPlugin |
 | `@liteforge/devtools` | 0.1.0 | ~16kb | ~100 | 5-tab debug panel with time-travel |
 
-**Total: 3518+ tests across all packages**
+**Total: 3534+ tests across all packages**
 
 ---
 
@@ -332,6 +336,31 @@ All UI packages (table, calendar) use this system:
 4. **`unstyled: true`** option to skip default CSS injection
 
 Dark mode: CSS variables under `:root.dark`, `[data-theme="dark"]`, and `@media (prefers-color-scheme: dark)`.
+
+---
+
+## Server Package — `@liteforge/server`
+
+**Status: Low-Level-API (Phase 2 Step 1).** This package provides the typed RPC foundation for LiteForge Fullstack. The high-level `defineApp` Fullstack facade that unifies frontend + backend + RPC into a single entry point is planned for Phase 2 Step 1.5 — until then, Client and Server are set up explicitly.
+
+**Core exports:**
+- `defineServerFn` — typed RPC handler with zod-validated input
+- `defineServerModule` — fluent builder for grouping serverFns under a namespace
+- `liteforgeServer({ modules: {...} })` — OakBun plugin that registers RPC routes
+- `serverClientPlugin<Api>()` (subpath `@liteforge/server/client`) — typed client-side proxy
+
+**Security defaults (always active):**
+- `X-Liteforge-RPC: 1` header required → 403 if missing
+- CORS: same-origin by default, configurable via `cors: { origins: [...] }`
+- Zod validation on every input → 400 with field errors
+
+**Routes registered:** `POST /api/_rpc/{moduleKey}/{fnName}` + OPTIONS preflight per route.
+
+**Architecture note:** In Step 1.5, `defineApp` in `@liteforge/server` will become the canonical entry point — a unified Fullstack facade with `.use()`, `.plugin()`, `.serverModules()`, a central `context` option, `defineDocument` integration, and terminal methods (`.mount()`, `.listen()`, `.build()`, `.dev()`). The Low-Level API documented here will remain available for expert usage and as the internal layer the facade builds on.
+
+**Current demo:** See `examples/starter-bun/src/server/` for a minimal demonstration. The example app itself does not yet consume RPC from the client — this integration lands with Step 1.5.
+
+**Client bundle:** < 1 kb gzip (pure Proxy, no deps).
 
 ---
 

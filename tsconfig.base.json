@@ -38,7 +38,9 @@
       "@liteforge/toast": ["./packages/toast/src/index.ts"],
       "@liteforge/toast/*": ["./packages/toast/src/*"],
       "@liteforge/flow": ["./packages/flow/src/index.ts"],
-      "@liteforge/flow/*": ["./packages/flow/src/*"]
+      "@liteforge/flow/*": ["./packages/flow/src/*"],
+      "@liteforge/server": ["./packages/server/src/index.ts"],
+      "@liteforge/server/*": ["./packages/server/src/*"]
     },
     "noUncheckedIndexedAccess": true,
     "noEmit": false,
