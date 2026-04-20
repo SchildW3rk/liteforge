@@ -13,6 +13,7 @@
     "@liteforge/router": "workspace:*",
     "@liteforge/form": "workspace:*",
     "@liteforge/toast": "workspace:*",
+    "@liteforge/server": "workspace:*",
     "zod": "^3.24.0"
   },
   "devDependencies": {

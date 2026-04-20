@@ -56,6 +56,9 @@ transform (standalone, no liteforge deps — bundler-agnostic AST core)
 ├── vite-plugin (thin Vite adapter over @liteforge/transform)
 └── bun-plugin  (thin Bun adapter over @liteforge/transform)
 
+server (standalone — no liteforge deps, peer: oakbun + zod)
+└── [future] integrated via defineApp in Phase 2 Step 1.5
+
 devtools (depends on core + store)
 ```
 
@@ -78,9 +81,10 @@ Build order follows this graph. `pnpm -r build` handles it automatically.
 | `@liteforge/transform` | 0.1.0 | ~2kb | 25 | Bundler-agnostic AST transform core (JSX→h(), For/Show, getter-wrap) |
 | `@liteforge/vite-plugin` | 0.5.1 | ~2kb | 388 | Thin Vite adapter over @liteforge/transform + HMR |
 | `@liteforge/bun-plugin` | 0.1.0 | ~1kb | 11+4 | Bun-native adapter over @liteforge/transform (11 unit / 4 integration) |
+| `@liteforge/server` | 0.1.0 | <1kb | 16 | Typed RPC bridge: defineServerModule, liteforgeServer OakBun plugin, serverClientPlugin |
 | `@liteforge/devtools` | 0.1.0 | ~16kb | ~100 | 5-tab debug panel with time-travel |
 
-**Total: 3518+ tests across all packages**
+**Total: 3534+ tests across all packages**
 
 ---
 
@@ -332,6 +336,47 @@ All UI packages (table, calendar) use this system:
 4. **`unstyled: true`** option to skip default CSS injection
 
 Dark mode: CSS variables under `:root.dark`, `[data-theme="dark"]`, and `@media (prefers-color-scheme: dark)`.
+
+---
+
+## Server Package — `@liteforge/server`
+
+```ts
+// server/greetings.server.ts
+import { defineServerModule } from '@liteforge/server'
+import { z } from 'zod'
+
+export const greetingsModule = defineServerModule('greetings')
+  .serverFn('hello', {
+    input: z.object({ name: z.string().min(1) }),
+    handler: async (input) => ({ greeting: `Hello, ${input.name}!`, timestamp: Date.now() }),
+  })
+  .build()
+
+// server/api.ts
+import { liteforgeServer, InferServerApi } from '@liteforge/server'
+export const api = liteforgeServer({ modules: { greetings: greetingsModule } })
+export type Api = InferServerApi<typeof api>
+
+// client
+import { serverClientPlugin } from '@liteforge/server/client'
+import type { Api } from './server/api'
+const { useServer } = serverClientPlugin<Api>()
+const server = useServer()
+const result = await server.greetings.hello({ name: 'René' })
+//    result.greeting → string ✓  (typed, envelope transparent)
+```
+
+**Security defaults (always active):**
+- `X-Liteforge-RPC: 1` header required → 403 if missing
+- CORS: same-origin by default, configurable via `cors: { origins: [...] }`
+- Zod validation on every input → 400 with field errors
+
+**Routes registered:** `POST /api/_rpc/{moduleKey}/{fnName}` + OPTIONS preflight per route.
+
+**OakBun integration:** `liteforgeServer()` returns a plain object with `name` + `install(hooks)`. Pass it to OakBun's plugin array. No hard import of OakBun — compatible without OakBun if routes registered manually via `.install({ route })`.
+
+**Client bundle:** < 1 kb gzip (pure Proxy, no deps).
 
 ---
 
