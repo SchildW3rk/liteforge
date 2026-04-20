@@ -101,11 +101,9 @@ Muss in einem Handler ankommen als:
 
 **Option B:** `defineApp` patched den `ctx` direkt in einem Request-Wrapper — für jeden RPC-Request werden Resolver aufgerufen, Ergebnisse in ein neues Objekt gemischt, das als `ctx` übergeben wird. OakBun-Ctx wird nicht erweitert.
 
-**Option C:** `context` wird vom `serverClientPlugin` getrennt behandelt — `defineApp` injiziert einen `LiteForgeContextProvider` der den aufgelösten Context als Proxy-Objekt bereitstellt, unabhängig von OakBun.
-
 **Compile-Check-Kriterium:** Gegeben `context: { tenantId: (req: Request) => string }`, muss `ctx.tenantId` in der Handler-Signatur als `string` typisiert sein — ohne expliziten Generic an `defineServerFn`. Der Type-Flow `(req) => string` → `string` muss automatisch inferiert werden.
 
-**Konkrete Type-Aufgabe für alle drei:** 
+**Konkrete Type-Aufgabe für beide:** 
 
 ```ts
 type ResolveContext<T extends Record<string, unknown>> = {
@@ -115,7 +113,7 @@ type ResolveContext<T extends Record<string, unknown>> = {
 // → { tenantId: string, version: '1.0' }
 ```
 
-Dieser Utility-Type ist die Kern-Mechanik. Alle drei Approaches bauen darauf auf — der Unterschied liegt darin wo und wie der aufgelöste Context in den Handler-Aufruf fließt.
+Dieser Utility-Type ist die Kern-Mechanik. Beide Approaches bauen darauf auf — der Unterschied liegt darin wo und wie der aufgelöste Context in den Handler-Aufruf fließt.
 
 ---
 
@@ -223,7 +221,6 @@ Für jede der vier Design-Fragen: Approach A, B, C in separaten Temp-Files mit e
 ```
 /tmp/proto-q1-a.ts   — Context-Flow: OakBun .extend()
 /tmp/proto-q1-b.ts   — Context-Flow: direktes Patching
-/tmp/proto-q1-c.ts   — Context-Flow: LiteForge-Context-Provider
 /tmp/proto-q2-a.ts   — OakBun-Timing: Eager (direkt bei defineApp())
 /tmp/proto-q2-b.ts   — OakBun-Timing: Lazy (bei Terminal-Methode)
 /tmp/proto-q3-a.ts   — serverClientPlugin-Install: sofort bei .serverModules()
@@ -245,7 +242,7 @@ Fehlschlag = disqualifiziert (oder begründete Ausnahme in DECISION.md).
 
 **Iteration 1 — Erstbewertung:** Für jede Frage: welcher Approach kompiliert, welcher nicht? Was sind die Vor-/Nachteile?
 
-**Iteration 2 — Cross-Fragen-Analyse:** Die vier Fragen sind nicht unabhängig. Welche Approach-Kombinationen sind intern konsistent? Z.B.: Frage-2-Option-A (Facade über OakBun-createApp) erzwingt bestimmte Antworten bei Frage 1 und 3.
+**Iteration 2 — Cross-Fragen-Analyse:** Die vier Fragen sind nicht unabhängig. Welche Approach-Kombinationen sind intern konsistent? Z.B.: Frage-2-Option-A (Eager OakBun-Instanziierung) erzwingt bestimmte Antworten bei Frage 1 und 3.
 
 **Iteration 3 — Risiko-Gewichtung:** Welche Entscheidung hat die größten Langzeit-Konsequenzen? (Hint: Frage 1 — Context-Type-Propagation — ist die härteste und bestimmt viele andere Entscheidungen.)
 
@@ -329,7 +326,7 @@ Ziel: `.plugin()`, `.use()`, `.serverModules()` implementieren mit internem Stat
 ```ts
 // Interner State (nicht public):
 interface AppBuilderState {
-  options: AppOptions<any>
+  options: AppOptions<unknown>
   oakbunPlugins: unknown[]
   liteforgePlugins: LiteForgePlugin[]
   modulesMap: ModulesMap | null
