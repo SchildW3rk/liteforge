@@ -6,6 +6,7 @@
  */
 
 import type { ContextValues, UseFn } from './types.js';
+import { createGlobalSingleton } from './_singleton.js';
 
 // ============================================================================
 // Context Stack
@@ -15,8 +16,12 @@ import type { ContextValues, UseFn } from './types.js';
  * Stack of context scopes. Each scope is a map of key → value.
  * The bottom of the stack is the app-level context.
  * Components can push their own scope when they have `provide`.
+ *
+ * Backed by a `globalThis` singleton to survive bundle duplication — see
+ * `./_singleton.ts` for the rationale. All module instances of `context.ts`
+ * share the same underlying array.
  */
-const contextStack: ContextValues[] = [];
+const contextStack = createGlobalSingleton<ContextValues[]>('contextStack', () => []);
 
 // ============================================================================
 // Public API

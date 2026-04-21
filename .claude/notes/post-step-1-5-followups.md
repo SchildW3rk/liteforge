@@ -67,3 +67,38 @@ Entstanden weil mehrere `ServerCtxRegistry`-Augmentations im selben TS-Programm 
 `packages/server/tests/types/augmented/server/use-server.augmented.types.test.ts.skip` — PluginRegistry-Augmentation via `declare module '@liteforge/runtime'` für `server`-Key. Wieder aktivieren nach Refactor.
 
 **Zusätzlich beim Refactor:** Pattern-Update im skipped Test von `typeof app['$server']` auf `ServerOf<typeof app>` umstellen (siehe Phase-D-Architektur-Fix in define-app.ts — ServerOf/CtxOf sind der kanonische Zugriff).
+
+## Runtime-Hardening: globalThis-Singletons für alle mutable Module-Scope-States (D.2)
+
+D.1 hat `contextStack` migriert. Für vollständige Bundle-Duplikations-Resilienz
+müssen diese weiteren States durch `createGlobalSingleton` laufen:
+
+- `component.ts`:
+  - `currentParentComponentId: string | undefined` (setup()-Tracking)
+  - `currentSetupCleanups: (() => void)[] | null` (onSetupCleanup)
+  - Strategie: ein Wrapper-Object `{ parentId, cleanups }` als Singleton,
+    existing code greift auf die Properties zu statt auf die Bare-Vars
+- `control-flow.ts`:
+  - `showInstanceId: number` (ID-Counter für `<Show>`)
+  - Strategie: `{ counter: 0 }`-Object als Singleton, increment via `.counter++`
+- `hmr.ts`:
+  - `componentRegistry: Map<string, ComponentDefinition>`
+  - Strategie: direkt die Map als Singleton (analog contextStack)
+
+**Scope:** eigener kleiner PR, runtime-only. Tests in
+`packages/runtime/tests/` müssen grün bleiben.
+
+**Nicht dringend:** Component-Tracking und showInstanceId sind latent,
+zeigen sich nur bei spezifischen Bundle-Duplikations-Szenarien. HMR
+bricht nur im Dev-Mode. Keiner dieser States ist heute aktiv gebrochen
+— nur `contextStack` war (Phase G Browser-Test-Blocker).
+
+**Helper existiert bereits:** `packages/runtime/src/_singleton.ts`
+(`createGlobalSingleton<T>(key, init): T`). Pattern ist etabliert.
+
+## A — Bundle-Deduplikation via build plugin (nach D.1 als Optimierung)
+
+D.1 macht Bundle-Duplikation harmlos. A eliminiert sie bundle-size-technisch.
+Scope: `bundleClient()` in `@liteforge/server` bekommt einen Resolve-Plugin
+der alle Pfade auf `@liteforge/runtime` auf einen Singleton-Pfad mapt
+(entweder alles auf `src/` oder alles auf `dist/`).
