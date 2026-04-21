@@ -53,6 +53,7 @@
     "build": "tsc -p tsconfig.build.json",
     "dev": "tsc -p tsconfig.build.json --watch",
     "typecheck": "tsc --noEmit",
+    "test:integration": "bun test tests/**/*.integration.test.ts",
     "clean": "rm -rf dist *.tsbuildinfo"
   },
   "dependencies": {

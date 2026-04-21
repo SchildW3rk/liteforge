@@ -14,9 +14,11 @@
 import type { Plugin } from 'oakbun'
 import type { AppInstance as RuntimeAppInstance, ComponentFactory, LiteForgePlugin } from '@liteforge/runtime'
 import { defineApp as runtimeDefineApp } from '@liteforge/runtime'
-import type { AnyServerModule, BaseCtx, InferServerApi, LiteForgeServerPlugin, ModulesMap } from './types.js'
+import type { AnyServerFn, AnyServerModule, BaseCtx, InferServerApi, LiteForgeServerPlugin, ModulesMap } from './types.js'
 import type { ContextMap, ResolveContext } from './context.js'
 import { resolveRequestContext } from './context.js'
+import { corsHeaders, DEFAULT_RPC_PREFIX, handleRpcRequest, RPC_HEADER } from './plugin.js'
+import { renderDocument } from './define-document.js'
 import type { DocumentDescriptor } from './define-document.js'
 import { serverClientPlugin as createServerClient, type ServerClientOptions } from './client.js'
 import { BUILDER_STATE, type BuilderState } from './_internal.js'
@@ -86,6 +88,18 @@ export interface AppInstance<
 
   /** Read a provided value from the app context (proxies to the runtime `use`). */
   use: RuntimeAppInstance['use']
+
+  /**
+   * Stop the server started by `.listen()` / `.dev()` and free the port.
+   * No-op for `.mount()` (there's no server to stop).
+   */
+  stop(): Promise<void>
+
+  /**
+   * Port the server is listening on, or `null` for `.mount()` / `.build()`.
+   * Useful in tests (e.g. when `.listen(0)` lets the OS pick a free port).
+   */
+  readonly port: number | null
 
   /**
    * Phantom-type carrier for `use('server')`. Undefined at runtime.
@@ -222,8 +236,8 @@ export function defineApp<TContext extends ContextMap = Record<never, never>>(
       const runtimeInstance = await runtimeBuilder.mount()
       return wrapRuntimeInstance(runtimeInstance)
     },
-    listen(_port: number) {
-      throw new Error('[@liteforge/server] .listen() not implemented yet (Phase F)')
+    async listen(port: number) {
+      return startServer(state, { port })
     },
     build(_options: { outDir: string }) {
       throw new Error('[@liteforge/server] .build() not implemented yet (Phase F)')
@@ -272,13 +286,134 @@ export type CtxOf<T> = T extends { readonly $ctx: infer C } ? C : never
 function wrapRuntimeInstance<
   TContext extends ContextMap,
   TModules extends ModulesMap,
->(runtime: RuntimeAppInstance): AppInstance<TContext, TModules> {
+>(
+  runtime: RuntimeAppInstance,
+  serverControl?: { stop: () => Promise<void>; port: number },
+): AppInstance<TContext, TModules> {
   return {
     unmount: runtime.unmount,
     use: runtime.use,
+    stop: serverControl ? serverControl.stop : async () => { /* no server to stop */ },
+    port: serverControl?.port ?? null,
     // Phantom carriers — runtime value is undefined; TS sees the precise type.
     $server: undefined as unknown as InferServerApi<LiteForgeServerPlugin<TModules>>,
     $ctx: undefined as unknown as BaseCtx & ResolveContext<TContext>,
+  }
+}
+
+// ─── startServer — internal implementation for .listen() ──────────────────────
+
+async function startServer<
+  TContext extends ContextMap,
+  TModules extends ModulesMap,
+>(
+  state: BuilderState,
+  options: { port: number; hostname?: string },
+): Promise<AppInstance<TContext, TModules>> {
+  // 1. Build OakBun app, apply user-registered OakBun plugins.
+  //    Dynamic import keeps OakBun out of the node-based test environments —
+  //    server-side code paths still require Bun runtime, but importing the
+  //    facade in vitest (node) does not trigger `bun:` module resolution.
+  const { createApp: createOakBunApp } = await import('oakbun')
+  const oakbun = createOakBunApp()
+  for (const p of state.oakbunPlugins) {
+    (oakbun as unknown as { plugin: (p: unknown) => void }).plugin(p)
+  }
+
+  // 2. Register context resolver as an OakBun plugin (if the app declared context)
+  //    Fields resolved per request are merged into the OakBun ctx via .extend().
+  if (state.options.context) {
+    const contextDeclaration = state.options.context
+    const extensionPlugin: Plugin<BaseCtx, Record<string, unknown>> = {
+      name: 'liteforge-context',
+      request: async (ctx) => {
+        const resolved = await resolveRequestContext(contextDeclaration, ctx.req)
+        return { ...ctx, ...resolved } as BaseCtx & Record<string, unknown>
+      },
+    }
+    ;(oakbun as unknown as { plugin: (p: unknown) => void }).plugin(extensionPlugin)
+  }
+
+  // 3. Register RPC routes for every module.fn in state.modulesMap
+  if (state.modulesMap) {
+    registerRpcRoutes(oakbun, state.modulesMap)
+  }
+
+  // 4. Register the HTML shell at GET / — served with the rendered document
+  const documentDescriptor = state.options.document as DocumentDescriptor | undefined
+  const mountId = resolveMountId(state.options.target)
+  ;(oakbun as unknown as {
+    get: (path: string, handler: (ctx: { req: Request }) => Response | Promise<Response>) => void
+  }).get('/', () => {
+    const html = documentDescriptor
+      ? renderDocument(documentDescriptor, { mountId })
+      : renderDocument(
+          { _tag: 'LiteForgeDocument', config: {} },
+          { mountId },
+        )
+    return new Response(html, {
+      status: 200,
+      headers: { 'Content-Type': 'text/html; charset=utf-8' },
+    })
+  })
+
+  // 5. Start Bun.serve via OakBun's .listen(). OakBun returns the Bun server.
+  //    Port 0 tells Bun to pick a free port — read back via server.port.
+  const bunServer = (oakbun as unknown as {
+    listen: (port: number) => { port: number; stop: () => Promise<void> | void }
+  }).listen(options.port)
+
+  // 6. Return an AppInstance shaped for the server context.
+  //    `unmount`/`use` are no-ops here — .mount() is the client-only path;
+  //    .listen() users interact with the server via HTTP.
+  return {
+    unmount: () => { /* no-op — server-only mode */ },
+    use: <T>(_key: string) => undefined as unknown as T,
+    stop: async () => {
+      await bunServer.stop()
+    },
+    port: bunServer.port,
+    $server: undefined as unknown as InferServerApi<LiteForgeServerPlugin<TModules>>,
+    $ctx: undefined as unknown as BaseCtx & ResolveContext<TContext>,
+  }
+}
+
+function resolveMountId(target: string | HTMLElement): string {
+  if (typeof target !== 'string') return 'app'
+  return target.startsWith('#') ? target.slice(1) : target
+}
+
+function registerRpcRoutes(oakbun: unknown, modulesMap: ModulesMap): void {
+  const register = oakbun as {
+    post: (path: string, handler: (ctx: { req: Request; [k: string]: unknown }) => Promise<Response>) => void
+    options: (path: string, handler: (ctx: { req: Request }) => Promise<Response>) => void
+  }
+
+  for (const [moduleKey, mod] of Object.entries(modulesMap)) {
+    const module = mod as AnyServerModule
+    for (const [fnName, fn] of Object.entries(module.fns)) {
+      const routePath = `${DEFAULT_RPC_PREFIX}/${moduleKey}/${fnName}`
+      const serverFn = fn as AnyServerFn
+
+      // Preflight — no custom header check, no body
+      register.options(routePath, async (ctx) => {
+        const headers = corsHeaders(ctx.req, [])
+        return new Response(null, { status: 204, headers })
+      })
+
+      // POST — RPC handler
+      register.post(routePath, async (ctx) => {
+        const req = ctx.req
+        const headers = corsHeaders(req, [])
+        if (!req.headers.get(RPC_HEADER)) {
+          return new Response(JSON.stringify({ error: `Missing ${RPC_HEADER} header` }), {
+            status: 403,
+            headers: { 'Content-Type': 'application/json', ...headers },
+          })
+        }
+        return handleRpcRequest(req, serverFn, ctx, headers)
+      })
+    }
   }
 }
 

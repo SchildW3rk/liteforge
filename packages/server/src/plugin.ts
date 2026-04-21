@@ -8,8 +8,13 @@ import type {
   RpcSuccessResponse,
 } from './types.js'
 
-const RPC_HEADER = 'X-Liteforge-RPC'
-const DEFAULT_RPC_PREFIX = '/api/_rpc'
+// ─── Internal helpers (exported for `.listen()` / `.dev()` reuse in Phase F) ──
+// These are intentionally not part of the public API — they're re-exposed via
+// define-app.ts for building the OakBun route handlers. The shape and names
+// may change without a major version bump.
+
+export const RPC_HEADER = 'X-Liteforge-RPC'
+export const DEFAULT_RPC_PREFIX = '/api/_rpc'
 
 function isSameOrigin(req: Request): boolean {
   const origin = req.headers.get('origin')
@@ -23,7 +28,7 @@ function isSameOrigin(req: Request): boolean {
   }
 }
 
-function corsHeaders(req: Request, allowedOrigins: string[]): Record<string, string> {
+export function corsHeaders(req: Request, allowedOrigins: string[]): Record<string, string> {
   const origin = req.headers.get('origin') ?? ''
   const allowed = allowedOrigins.length === 0
     ? isSameOrigin(req) ? origin : ''
@@ -48,7 +53,7 @@ function jsonResponse<T>(data: T, status: number, extraHeaders?: Record<string, 
   })
 }
 
-async function handleRpcRequest(
+export async function handleRpcRequest(
   req: Request,
   fn: AnyServerFn,
   ctx: unknown,
