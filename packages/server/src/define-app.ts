@@ -147,7 +147,7 @@ export interface FullstackAppBuilder<
   mount(): Promise<AppInstance<TContext, TModules>>
   listen(port: number): Promise<AppInstance<TContext, TModules>>
   build(options: { outDir: string }): Promise<void>
-  dev(options: { port: number }): Promise<AppInstance<TContext, TModules>>
+  dev(options: { port: number; watchDir?: string }): Promise<AppInstance<TContext, TModules>>
 
   /**
    * Phantom-type carrier for `use('server')`. Undefined at runtime.
@@ -242,8 +242,12 @@ export function defineApp<TContext extends ContextMap = Record<never, never>>(
     build(_options: { outDir: string }) {
       throw new Error('[@liteforge/server] .build() not implemented yet (Phase F)')
     },
-    dev(_options: { port: number }) {
-      throw new Error('[@liteforge/server] .dev() not implemented yet (Phase F)')
+    async dev(options: { port: number; watchDir?: string }) {
+      return startServer(state, {
+        port: options.port,
+        devMode: true,
+        ...(options.watchDir !== undefined ? { watchDir: options.watchDir } : {}),
+      })
     },
   }
 
@@ -303,12 +307,23 @@ function wrapRuntimeInstance<
 
 // ─── startServer — internal implementation for .listen() ──────────────────────
 
+interface StartServerOptions {
+  port: number
+  hostname?: string
+  /** When true, inject HMR client snippet and start file watcher + WS channel. */
+  devMode?: boolean
+  /** Dev-mode only: glob for file watcher (default: 'src'). */
+  watchDir?: string
+}
+
+const HMR_WS_PATH = '/__liteforge_hmr__'
+
 async function startServer<
   TContext extends ContextMap,
   TModules extends ModulesMap,
 >(
   state: BuilderState,
-  options: { port: number; hostname?: string },
+  options: StartServerOptions,
 ): Promise<AppInstance<TContext, TModules>> {
   // 1. Build OakBun app, apply user-registered OakBun plugins.
   //    Dynamic import keeps OakBun out of the node-based test environments —
@@ -339,42 +354,171 @@ async function startServer<
     registerRpcRoutes(oakbun, state.modulesMap)
   }
 
-  // 4. Register the HTML shell at GET / — served with the rendered document
+  // 4. Dev mode: start the parallel WebSocket+watcher server FIRST, so its
+  //    port is known before we render the HTML shell (we bake the WS URL
+  //    into the injected client snippet).
+  let devControl: { stop: () => Promise<void>; port: number } | null = null
+  if (options.devMode) {
+    devControl = await startDevHmr({ watchDir: options.watchDir ?? 'src' })
+  }
+
+  // 5. Register the HTML shell at GET / — served with the rendered document.
+  //    In dev mode, inject HMR client snippet at the end of <body>.
   const documentDescriptor = state.options.document as DocumentDescriptor | undefined
   const mountId = resolveMountId(state.options.target)
+  const capturedDevControl = devControl
   ;(oakbun as unknown as {
     get: (path: string, handler: (ctx: { req: Request }) => Response | Promise<Response>) => void
-  }).get('/', () => {
-    const html = documentDescriptor
+  }).get('/', (ctx: { req: Request }) => {
+    let html = documentDescriptor
       ? renderDocument(documentDescriptor, { mountId })
       : renderDocument(
           { _tag: 'LiteForgeDocument', config: {} },
           { mountId },
         )
+
+    if (options.devMode && capturedDevControl) {
+      const host = new URL(ctx.req.url).hostname
+      const hmrWsUrl = `ws://${host}:${capturedDevControl.port}${HMR_WS_PATH}`
+      html = injectHmrSnippet(html, hmrWsUrl)
+    }
+
     return new Response(html, {
       status: 200,
       headers: { 'Content-Type': 'text/html; charset=utf-8' },
     })
   })
 
-  // 5. Start Bun.serve via OakBun's .listen(). OakBun returns the Bun server.
+  // 6. Start Bun.serve via OakBun's .listen(). OakBun returns the Bun server.
   //    Port 0 tells Bun to pick a free port — read back via server.port.
   const bunServer = (oakbun as unknown as {
     listen: (port: number) => { port: number; stop: () => Promise<void> | void }
   }).listen(options.port)
 
-  // 6. Return an AppInstance shaped for the server context.
-  //    `unmount`/`use` are no-ops here — .mount() is the client-only path;
-  //    .listen() users interact with the server via HTTP.
+  // 7. Return an AppInstance shaped for the server context.
   return {
     unmount: () => { /* no-op — server-only mode */ },
     use: <T>(_key: string) => undefined as unknown as T,
     stop: async () => {
       await bunServer.stop()
+      if (devControl) await devControl.stop()
     },
     port: bunServer.port,
     $server: undefined as unknown as InferServerApi<LiteForgeServerPlugin<TModules>>,
     $ctx: undefined as unknown as BaseCtx & ResolveContext<TContext>,
+  }
+}
+
+// ─── HMR client snippet (injected into <body> in dev mode) ────────────────────
+
+function injectHmrSnippet(html: string, wsUrl: string): string {
+  const snippet = `<script type="module">
+(() => {
+  const url = ${JSON.stringify(wsUrl)};
+  let retry = 0;
+  function connect() {
+    const ws = new WebSocket(url);
+    ws.addEventListener('message', (evt) => {
+      try {
+        const msg = JSON.parse(evt.data);
+        if (msg.type === 'reload') window.location.reload();
+      } catch {}
+    });
+    ws.addEventListener('close', () => {
+      retry = Math.min(retry + 1, 5);
+      setTimeout(connect, 200 * retry);
+    });
+  }
+  connect();
+})();
+</script>`
+  return html.replace('</body>', `${snippet}\n  </body>`)
+}
+
+// ─── Dev HMR: WebSocket broadcast + file watcher ──────────────────────────────
+
+interface DevHmrOptions {
+  watchDir: string
+}
+
+async function startDevHmr(
+  options: DevHmrOptions,
+): Promise<{ stop: () => Promise<void>; port: number }> {
+  const { watch } = await import('node:fs')
+  const path = await import('node:path')
+
+  // Use a Set of active WebSocket clients — broadcast on file change.
+  // `Bun.ServerWebSocket` is untyped here to avoid a hard `bun` type import
+  // in node test environments.
+  const clients = new Set<unknown>()
+
+  // Start a dedicated Bun.serve on an OS-picked port for the HMR WS channel.
+  // We bind on the same process but a separate listener to keep OakBun's
+  // listen path free of @oakbun/ws adapter dependencies.
+  // Node-incompatible call — only reached at runtime under Bun.
+  const bunGlobal = (globalThis as unknown as {
+    Bun?: {
+      serve: (opts: unknown) => { port: number; stop: () => Promise<void> | void }
+    }
+  }).Bun
+  if (!bunGlobal) {
+    throw new Error('[@liteforge/server] .dev() requires Bun runtime')
+  }
+
+  // Debounced broadcast: multiple file changes within 100ms coalesce into one reload.
+  let debounceTimer: ReturnType<typeof setTimeout> | null = null
+  const broadcastReload = () => {
+    if (debounceTimer) clearTimeout(debounceTimer)
+    debounceTimer = setTimeout(() => {
+      const msg = JSON.stringify({ type: 'reload' })
+      for (const ws of clients) {
+        try {
+          ;(ws as { send: (data: string) => void }).send(msg)
+        } catch { /* ignore broken clients */ }
+      }
+    }, 100)
+  }
+
+  // HMR WS server — dedicated port, inherit auto-allocation
+  // The snippet reconnects automatically via `setTimeout(connect, retry*200)`
+  // so the WS port drift (on restart) is transparent to the user.
+  const wsServer = bunGlobal.serve({
+    port: 0,
+    fetch(req: Request, server: { upgrade: (r: Request) => boolean }) {
+      const url = new URL(req.url)
+      if (url.pathname === HMR_WS_PATH && server.upgrade(req)) {
+        return
+      }
+      return new Response('HMR channel', { status: 404 })
+    },
+    websocket: {
+      open(ws: unknown) { clients.add(ws) },
+      close(ws: unknown) { clients.delete(ws) },
+      message() { /* client → server not used */ },
+    },
+  })
+
+  // File watcher — recursive, src/** by default
+  const resolvedWatchDir = path.resolve(options.watchDir)
+  const watcher = watch(
+    resolvedWatchDir,
+    { recursive: true },
+    (event, filename) => {
+      if (!filename) return
+      if (event === 'change' || event === 'rename') broadcastReload()
+    },
+  )
+
+  return {
+    port: wsServer.port,
+    stop: async () => {
+      if (debounceTimer) clearTimeout(debounceTimer)
+      watcher.close()
+      // Force-close: pass `true` to abort in-flight WebSocket clients.
+      // Without this, .stop() hangs while clients stay connected.
+      await (wsServer as unknown as { stop: (closeActive?: boolean) => Promise<void> | void })
+        .stop(true)
+    },
   }
 }
 

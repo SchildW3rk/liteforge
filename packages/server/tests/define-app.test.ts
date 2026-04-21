@@ -87,9 +87,8 @@ describe('defineApp — builder chain (Phase B)', () => {
     expect(state.modulesMap).toBeNull()
   })
 
-  it('build/dev terminal methods still throw until Phase F.3/F.4', () => {
+  it('build terminal method still throws until Phase F.4', () => {
     const b = defineApp({ root: {}, target: '#app' })
     expect(() => b.build({ outDir: './dist' })).toThrow(/not implemented yet/)
-    expect(() => b.dev({ port: 3000 })).toThrow(/not implemented yet/)
   })
 })
