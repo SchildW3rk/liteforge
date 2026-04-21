@@ -28,7 +28,12 @@ export type {
   RpcErrorResponse,
 } from './types.js'
 
-export { createContextPlugin, createServerClientLiteForgePlugin, composeLiteForgePlugins } from './define-app.js'
+export {
+  createContextPlugin,
+  createServerClientLiteForgePlugin,
+  composeLiteForgePlugins,
+  composeLiteForgePluginsForServer,
+} from './define-app.js'
 export { resolveRequestContext } from './context.js'
 
 export type {

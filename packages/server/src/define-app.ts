@@ -139,7 +139,17 @@ export interface FullstackAppBuilder<
   TServerModulesCalled extends boolean = false,
 > {
   plugin(plugin: OakBunPluginLike): FullstackAppBuilder<TContext, TModules, TServerModulesCalled>
-  use(plugin: LiteForgePlugin): FullstackAppBuilder<TContext, TModules, TServerModulesCalled>
+  /**
+   * Register a LiteForge client plugin. Chainable.
+   *
+   * Accepts either an eager `LiteForgePlugin` object or a lazy factory
+   * `() => LiteForgePlugin`. Factories are only evaluated by `.mount()`
+   * (browser-side). `.listen()`, `.dev()`, and `.build()` skip factory
+   * entries entirely — use factories for plugins that touch `window`,
+   * `document`, or other browser-only globals at construction time (e.g.
+   * `createBrowserHistory()`).
+   */
+  use(plugin: LiteForgePlugin | (() => LiteForgePlugin)): FullstackAppBuilder<TContext, TModules, TServerModulesCalled>
   serverModules<TMap extends ModulesMap>(
     modules: ServerModulesInput<AppServerCtx<TContext>, TMap, TServerModulesCalled>,
   ): FullstackAppBuilder<TContext, TMap, true>
@@ -209,7 +219,7 @@ export function defineApp<TContext extends ContextMap = Record<never, never>>(
       return builder
     },
 
-    use(plugin: LiteForgePlugin) {
+    use(plugin: LiteForgePlugin | (() => LiteForgePlugin)) {
       state.liteforgePlugins.push(plugin)
       return builder
     },
@@ -930,11 +940,15 @@ export function createServerClientLiteForgePlugin<TMap extends ModulesMap>(
 
 // ─── Plugin composition — user plugins first, server last ─────────────────────
 // Given a builder state, returns the ordered LiteForgePlugin list that should
-// be installed on the runtime builder at terminal time (Phase F consumes this).
+// be installed on the runtime builder.
 //
-// Contract (verified in define-app.test.ts):
+// Factory entries (`() => LiteForgePlugin`) are evaluated here — this is the
+// `.mount()` path where the browser environment is present. The server-side
+// counterpart `composeLiteForgePluginsForServer()` skips factories entirely.
+//
+// Contract (verified in compose-plugins.test.ts):
 //   1. All user `.use()`-registered plugins appear first, in registration order
-//   2. If `.serverModules()` was called, the server client plugin is appended
+//   2. If `.serverModules()` was called, the server-client plugin is appended
 //      last — so user plugins see an empty `server` context, and the server
 //      client plugin is the final provider
 //   3. If `.serverModules()` was NOT called, no server plugin is added
@@ -942,9 +956,25 @@ export function composeLiteForgePlugins(
   state: BuilderState,
   options?: ServerClientOptions,
 ): LiteForgePlugin[] {
-  const plugins: LiteForgePlugin[] = [...state.liteforgePlugins]
+  const plugins: LiteForgePlugin[] = state.liteforgePlugins.map((entry) =>
+    typeof entry === 'function' ? entry() : entry,
+  )
   if (state.serverModulesCalled && state.modulesMap !== null) {
     plugins.push(createServerClientLiteForgePlugin(state.modulesMap, options))
   }
   return plugins
+}
+
+/**
+ * Server-side counterpart of composeLiteForgePlugins — skips factory entries.
+ *
+ * Used by `.listen()` and `.dev()` when they need to touch the client plugin
+ * list (they don't today, but expose the helper for consistency and future
+ * server-side plugin passes). Factories are never evaluated here because
+ * they may reference browser globals that crash the server import.
+ */
+export function composeLiteForgePluginsForServer(state: BuilderState): LiteForgePlugin[] {
+  return state.liteforgePlugins.filter(
+    (entry): entry is LiteForgePlugin => typeof entry !== 'function',
+  )
 }

@@ -1,7 +1,8 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import {
   defineApp,
   composeLiteForgePlugins,
+  composeLiteForgePluginsForServer,
   createServerClientLiteForgePlugin,
 } from '../src/define-app.js'
 import { BUILDER_STATE, type BuilderState } from '../src/_internal.js'
@@ -125,5 +126,50 @@ describe('createServerClientLiteForgePlugin — Phase D', () => {
 
     // Access chain produces a function — the fetch would happen if called
     expect(typeof server.greetings.hello).toBe('function')
+  })
+})
+
+describe('lazy plugin factories (Weg D)', () => {
+  it('composeLiteForgePlugins evaluates factories (for .mount() path)', () => {
+    const eager: LiteForgePlugin = { name: 'eager', install() {} }
+    const lazy: LiteForgePlugin = { name: 'lazy', install() {} }
+    const factory = vi.fn(() => lazy)
+
+    const b = defineApp({ root: {}, target: '#app' })
+      .use(eager)
+      .use(factory)
+
+    const plugins = composeLiteForgePlugins(getState(b))
+
+    expect(factory).toHaveBeenCalledTimes(1)
+    expect(plugins.map((p) => p.name)).toEqual(['eager', 'lazy'])
+  })
+
+  it('composeLiteForgePluginsForServer SKIPS factories (for .listen()/.dev() path)', () => {
+    const eager: LiteForgePlugin = { name: 'eager', install() {} }
+    const factory = vi.fn((): LiteForgePlugin => ({ name: 'would-crash-on-server', install() {} }))
+
+    const b = defineApp({ root: {}, target: '#app' })
+      .use(eager)
+      .use(factory)
+
+    const plugins = composeLiteForgePluginsForServer(getState(b))
+
+    expect(factory).not.toHaveBeenCalled()
+    expect(plugins.map((p) => p.name)).toEqual(['eager'])
+  })
+
+  it('factory is re-evaluated on every composeLiteForgePlugins call', () => {
+    // Important for HMR-style re-mounts — a factory may produce a fresh
+    // plugin instance per mount cycle.
+    const factory = vi.fn((): LiteForgePlugin => ({ name: 'fresh', install() {} }))
+
+    const b = defineApp({ root: {}, target: '#app' }).use(factory)
+
+    composeLiteForgePlugins(getState(b))
+    composeLiteForgePlugins(getState(b))
+    composeLiteForgePlugins(getState(b))
+
+    expect(factory).toHaveBeenCalledTimes(3)
   })
 })

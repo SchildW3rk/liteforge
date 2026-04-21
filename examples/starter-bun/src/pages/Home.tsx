@@ -2,7 +2,8 @@ import { defineComponent, signal } from 'liteforge'
 import { createForm } from '@liteforge/form'
 import { toast } from '@liteforge/toast'
 import { Link } from '@liteforge/router'
-import { z } from 'zod';
+import { z } from 'zod'
+import { GreetingDemo } from '../components/GreetingDemo.js'
 
 const nameSchema = z.object({
   name: z.string().min(2, 'Name muss mindestens 2 Zeichen haben'),
@@ -43,6 +44,8 @@ export const HomePage = defineComponent({
             <button type="submit">Say Hello</button>
           </form>
         </section>
+
+        <GreetingDemo />
 
         <nav>
           <Link href="/about">About →</Link>

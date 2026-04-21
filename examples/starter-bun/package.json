@@ -4,8 +4,10 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "bun run dev.ts",
-    "build": "bun run build.ts"
+    "dev": "bun run src/app.ts",
+    "start": "LF_MODE=listen bun run src/app.ts",
+    "build": "LF_MODE=build bun run src/app.ts",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "liteforge": "workspace:*",

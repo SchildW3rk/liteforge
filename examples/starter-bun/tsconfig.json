@@ -4,7 +4,8 @@
     "noEmit": true,
     "types": ["bun-types"],
     "jsx": "preserve",
-    "jsxImportSource": "liteforge"
+    "jsxImportSource": "liteforge",
+    "paths": {}
   },
   "include": ["src/**/*.ts", "src/**/*.tsx", "*.ts"],
   "exclude": ["node_modules", "dist"]
