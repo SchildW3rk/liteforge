@@ -12,7 +12,8 @@
  */
 
 import type { Plugin } from 'oakbun'
-import type { LiteForgePlugin } from '@liteforge/runtime'
+import type { AppInstance as RuntimeAppInstance, ComponentFactory, LiteForgePlugin } from '@liteforge/runtime'
+import { defineApp as runtimeDefineApp } from '@liteforge/runtime'
 import type { AnyServerModule, BaseCtx, InferServerApi, LiteForgeServerPlugin, ModulesMap } from './types.js'
 import type { ContextMap, ResolveContext } from './context.js'
 import { resolveRequestContext } from './context.js'
@@ -80,7 +81,11 @@ export interface AppInstance<
   TContext extends ContextMap = Record<never, never>,
   TModules extends ModulesMap = Record<never, never>,
 > {
+  /** Unmount the app and run plugin cleanups in reverse registration order. */
   unmount(): void
+
+  /** Read a provided value from the app context (proxies to the runtime `use`). */
+  use: RuntimeAppInstance['use']
 
   /**
    * Phantom-type carrier for `use('server')`. Undefined at runtime.
@@ -89,7 +94,7 @@ export interface AppInstance<
    * ```ts
    * declare module '@liteforge/runtime' {
    *   interface PluginRegistry {
-   *     server: typeof app['$server']
+   *     server: ServerOf<typeof app>
    *   }
    * }
    * ```
@@ -104,7 +109,7 @@ export interface AppInstance<
    * ```ts
    * declare module '@liteforge/server' {
    *   interface ServerCtxRegistry {
-   *     ctx: typeof app['$ctx']
+   *     ctx: CtxOf<typeof app>
    *   }
    * }
    * ```
@@ -199,8 +204,23 @@ export function defineApp<TContext extends ContextMap = Record<never, never>>(
       return builder
     },
 
-    mount() {
-      throw new Error('[@liteforge/server] .mount() not implemented yet (Phase F)')
+    async mount() {
+      // Phase F.1 — client-side mount only. No server, no Bun.serve.
+      // Delegates to @liteforge/runtime's defineApp, which handles target
+      // resolution, plugin.install() pass, root mount, and cleanup wiring.
+      const runtimeBuilder = runtimeDefineApp({
+        root: state.options.root as ComponentFactory<object> | (() => Node),
+        target: state.options.target,
+      })
+
+      // Compose LiteForge plugins: user-registered first, server-client plugin last.
+      const composedPlugins = composeLiteForgePlugins(state)
+      for (const p of composedPlugins) {
+        runtimeBuilder.use(p)
+      }
+
+      const runtimeInstance = await runtimeBuilder.mount()
+      return wrapRuntimeInstance(runtimeInstance)
     },
     listen(_port: number) {
       throw new Error('[@liteforge/server] .listen() not implemented yet (Phase F)')
@@ -244,6 +264,23 @@ export type { AnyServerModule }
 // works uniformly whether `app` is the builder or the resolved instance.
 export type ServerOf<T> = T extends { readonly $server: infer S } ? S : never
 export type CtxOf<T> = T extends { readonly $ctx: infer C } ? C : never
+
+// ─── Runtime-Instance wrapper ─────────────────────────────────────────────────
+// Wraps the `@liteforge/runtime` AppInstance in the fullstack AppInstance shape.
+// The `$server` and `$ctx` fields are pure phantom-type carriers — undefined at
+// runtime — so we just cast through. The user reaches the proxy via `use('server')`.
+function wrapRuntimeInstance<
+  TContext extends ContextMap,
+  TModules extends ModulesMap,
+>(runtime: RuntimeAppInstance): AppInstance<TContext, TModules> {
+  return {
+    unmount: runtime.unmount,
+    use: runtime.use,
+    // Phantom carriers — runtime value is undefined; TS sees the precise type.
+    $server: undefined as unknown as InferServerApi<LiteForgeServerPlugin<TModules>>,
+    $ctx: undefined as unknown as BaseCtx & ResolveContext<TContext>,
+  }
+}
 
 // ─── Context-Plugin Fabrik (wired into OakBun in Phase F) ────────────────────
 // Produces an OakBun-compatible plugin that, on every request, runs the
