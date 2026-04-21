@@ -9,13 +9,5 @@ export const greetingsModule = defineServerModule('greetings')
       timestamp: Date.now(),
       serverTime: new Date().toISOString(),
     }),
-  }).serverFn('test', {
-    input: z.object({ auto: z.string().min(1, "car required")} ),
-    handler: async (input) => {
-
-      return {
-        data: input.auto
-      }
-    }
   })
   .build()
