@@ -145,9 +145,11 @@ export interface FullstackAppBuilder<
   ): FullstackAppBuilder<TContext, TMap, true>
 
   mount(): Promise<AppInstance<TContext, TModules>>
+  /** Start the production server. Pass a number for the port only, or an options object for full control. */
   listen(port: number): Promise<AppInstance<TContext, TModules>>
+  listen(options: ListenOptions): Promise<AppInstance<TContext, TModules>>
   build(options: BuildOptions): Promise<BuildResult>
-  dev(options: { port: number; watchDir?: string }): Promise<AppInstance<TContext, TModules>>
+  dev(options: DevOptions): Promise<AppInstance<TContext, TModules>>
 
   /**
    * Phantom-type carrier for `use('server')`. Undefined at runtime.
@@ -236,17 +238,25 @@ export function defineApp<TContext extends ContextMap = Record<never, never>>(
       const runtimeInstance = await runtimeBuilder.mount()
       return wrapRuntimeInstance(runtimeInstance)
     },
-    async listen(port: number) {
-      return startServer(state, { port })
+    async listen(portOrOptions: number | ListenOptions) {
+      const opts: ListenOptions =
+        typeof portOrOptions === 'number' ? { port: portOrOptions } : portOrOptions
+      return startServer(state, {
+        port: opts.port,
+        ...(opts.hostname !== undefined ? { hostname: opts.hostname } : {}),
+        ...(opts.clientEntry !== undefined ? { clientEntry: opts.clientEntry } : {}),
+      })
     },
     async build(options: BuildOptions) {
       return runBuild(state, options)
     },
-    async dev(options: { port: number; watchDir?: string }) {
+    async dev(options: DevOptions) {
       return startServer(state, {
         port: options.port,
         devMode: true,
+        ...(options.hostname !== undefined ? { hostname: options.hostname } : {}),
         ...(options.watchDir !== undefined ? { watchDir: options.watchDir } : {}),
+        ...(options.clientEntry !== undefined ? { clientEntry: options.clientEntry } : {}),
       })
     },
   }
@@ -282,6 +292,33 @@ export type { AnyServerModule }
 // works uniformly whether `app` is the builder or the resolved instance.
 export type ServerOf<T> = T extends { readonly $server: infer S } ? S : never
 export type CtxOf<T> = T extends { readonly $ctx: infer C } ? C : never
+
+// ─── Terminal method option types ────────────────────────────────────────────
+
+/**
+ * Options for `.listen()`. When `clientEntry` is provided, the facade bundles
+ * the client on server start and serves it at `/client.js`. The HTML shell
+ * then automatically includes `<script type="module" src="/client.js">`.
+ */
+export interface ListenOptions {
+  port: number
+  hostname?: string
+  /** Path to the browser entry file (e.g. `./src/client.ts`). */
+  clientEntry?: string
+}
+
+/**
+ * Options for `.dev()`. Same as `.listen()` plus HMR controls.
+ * `clientEntry` triggers a rebuild on file change, after which the HMR
+ * WebSocket broadcasts a reload to connected browsers.
+ */
+export interface DevOptions {
+  port: number
+  hostname?: string
+  clientEntry?: string
+  /** Directory watched for HMR triggers. Defaults to `'src'`. */
+  watchDir?: string
+}
 
 // ─── .build() types ───────────────────────────────────────────────────────────
 
@@ -335,55 +372,60 @@ function wrapRuntimeInstance<
   }
 }
 
-// ─── runBuild — internal implementation for .build() ──────────────────────────
+// ─── bundleClient — shared bundling helper ────────────────────────────────────
+// Used by both runBuild() (writes to disk) and startServer() (keeps output
+// in memory for /client.js serving). Throws on build failure with a message
+// prefixed by the caller's label.
 
-async function runBuild(state: BuilderState, options: BuildOptions): Promise<BuildResult> {
-  const outDir = options.outDir ?? './dist'
-  const clientOutDir = `${outDir}/client`
-  const target = options.target ?? 'browser'
-  const minify = options.minify ?? true
+interface BundleClientOptions {
+  clientEntry: string
+  target: 'browser' | 'bun' | 'node'
+  minify: boolean
+  /** If set, write outputs to disk at this path. Otherwise in-memory only. */
+  outDir?: string
+  /** Error-message prefix — e.g. `.build()` or `.dev()` to hint the caller. */
+  contextLabel: string
+}
 
-  // Dynamic imports keep bun-specific APIs out of the node test-env import graph.
-  // This only runs at .build()-time, always under Bun.
+interface BundledClient {
+  /** Main JS output as text (for in-memory serving). */
+  mainJs: string
+  /** All outputs with their basenames, for additional asset serving. */
+  assets: Map<string, string>
+  /** Absolute output paths when written to disk, empty when in-memory only. */
+  outputPaths: string[]
+}
+
+async function bundleClient(options: BundleClientOptions): Promise<BundledClient> {
   const { liteforgeBunPlugin } = await import('@liteforge/bun-plugin')
-  const path = await import('node:path')
-  const fs = await import('node:fs/promises')
 
   const bunGlobal = (globalThis as unknown as {
     Bun?: {
       build: (opts: unknown) => Promise<{
         success: boolean
-        outputs: Array<{ path: string }>
+        outputs: Array<{ path: string; text(): Promise<string> }>
         logs: Array<{ level: string; message: string }>
       }>
     }
   }).Bun
   if (!bunGlobal) {
-    throw new Error('[@liteforge/server] .build() requires Bun runtime')
+    throw new Error(`[@liteforge/server] ${options.contextLabel} requires Bun runtime`)
   }
 
-  // 1. Bundle the client entry with the LiteForge JSX transform plugin.
-  //    `external: ['oakbun']` is unnecessary for browser target (OakBun is
-  //    server-only) but we keep it defensive — the starter-bun re-exports
-  //    `app` for both contexts and would otherwise try to bundle OakBun.
-  // Bun.build() can fail two ways:
-  //   1. Throws directly (syntax errors, missing entry, plugin errors)
-  //   2. Returns { success: false, logs: [...] } for resolvable but
-  //      semantically broken builds
-  // We normalise both into a single `.build() failed` message.
   let buildResult
   try {
-    buildResult = await bunGlobal.build({
+    const buildOpts: Record<string, unknown> = {
       entrypoints: [options.clientEntry],
-      outdir: clientOutDir,
-      target,
-      minify,
+      target: options.target,
+      minify: options.minify,
       plugins: [liteforgeBunPlugin()],
-      external: target === 'browser' ? ['oakbun'] : [],
-    })
+      external: options.target === 'browser' ? ['oakbun'] : [],
+    }
+    if (options.outDir !== undefined) buildOpts['outdir'] = options.outDir
+    buildResult = await bunGlobal.build(buildOpts)
   } catch (err) {
     const cause = err instanceof Error ? err.message : String(err)
-    throw new Error(`[@liteforge/server] .build() failed: ${cause}`)
+    throw new Error(`[@liteforge/server] ${options.contextLabel} failed: ${cause}`)
   }
 
   if (!buildResult.success) {
@@ -392,29 +434,67 @@ async function runBuild(state: BuilderState, options: BuildOptions): Promise<Bui
       .map((l) => l.message)
       .join('\n  ')
     throw new Error(
-      `[@liteforge/server] .build() failed:\n  ${messages || '(no error logs — check Bun.build output)'}`,
+      `[@liteforge/server] ${options.contextLabel} failed:\n  ${messages || '(no error logs)'}`,
     )
   }
 
-  // 2. Render the HTML shell (if a document descriptor was configured) and
-  //    write it as <outDir>/client/index.html. The shell references the
-  //    client bundle file emitted by Bun.build — users can adjust the
-  //    document's `scripts` entry to point at `/main.js` etc. if needed.
+  // Pick up every emitted asset by basename. The "main" JS is the one that
+  // corresponds to the clientEntry (ends with .js and isn't a chunk).
+  const assets = new Map<string, string>()
+  const outputPaths: string[] = []
+  let mainJs = ''
+
+  for (const output of buildResult.outputs) {
+    const path = await import('node:path')
+    const basename = path.basename(output.path)
+    if (options.outDir !== undefined) {
+      // On-disk mode: Bun.build already wrote the file; skip reading body.
+      outputPaths.push(output.path)
+    } else {
+      // In-memory mode: read the generated text.
+      const text = await output.text()
+      assets.set(basename, text)
+      if (basename.endsWith('.js') && !mainJs) mainJs = text
+    }
+  }
+
+  return { mainJs, assets, outputPaths }
+}
+
+// ─── runBuild — internal implementation for .build() ──────────────────────────
+
+async function runBuild(state: BuilderState, options: BuildOptions): Promise<BuildResult> {
+  const outDir = options.outDir ?? './dist'
+  const clientOutDir = `${outDir}/client`
+  const target = options.target ?? 'browser'
+  const minify = options.minify ?? true
+
+  const path = await import('node:path')
+  const fs = await import('node:fs/promises')
+
+  const bundled = await bundleClient({
+    clientEntry: options.clientEntry,
+    target,
+    minify,
+    outDir: clientOutDir,
+    contextLabel: '.build()',
+  })
+
+  // HTML shell — `.build()` always auto-references `/client.js` (relative to outDir).
   const documentDescriptor = state.options.document as DocumentDescriptor | undefined
   const mountId = resolveMountId(state.options.target)
   const html = documentDescriptor
-    ? renderDocument(documentDescriptor, { mountId })
-    : renderDocument({ _tag: 'LiteForgeDocument', config: {} }, { mountId })
+    ? renderDocument(withClientScript(documentDescriptor), { mountId })
+    : renderDocument(defaultDocumentWithClientScript(), { mountId })
 
   await fs.mkdir(clientOutDir, { recursive: true })
   const htmlPath = path.join(clientOutDir, 'index.html')
   await fs.writeFile(htmlPath, html, 'utf-8')
 
-  // 3. Collect emitted files (relative to outDir) for the BuildResult report.
   const absOutDir = path.resolve(outDir)
   const files: string[] = []
-  for (const output of buildResult.outputs) {
-    files.push(path.relative(absOutDir, output.path))
+  for (const p of bundled.outputPaths) {
+    files.push(path.relative(absOutDir, p))
   }
   files.push(path.relative(absOutDir, htmlPath))
 
@@ -422,6 +502,41 @@ async function runBuild(state: BuilderState, options: BuildOptions): Promise<Bui
     outDir: absOutDir,
     files,
     success: true,
+  }
+}
+
+// ─── Document client-script injection ─────────────────────────────────────────
+// Ensures the HTML shell references `/client.js` when the facade controls the
+// client bundle. Idempotent — if the user's document already lists a script
+// with `src === '/client.js'`, we don't add a duplicate.
+
+function withClientScript(doc: DocumentDescriptor): DocumentDescriptor {
+  const existing = doc.config.head?.scripts ?? []
+  const alreadyHasClientScript = existing.some(
+    (s) => s.src === '/client.js' && s.type === 'module',
+  )
+  if (alreadyHasClientScript) return doc
+
+  return {
+    _tag: 'LiteForgeDocument',
+    config: {
+      ...doc.config,
+      head: {
+        ...doc.config.head,
+        scripts: [...existing, { src: '/client.js', type: 'module' }],
+      },
+    },
+  }
+}
+
+function defaultDocumentWithClientScript(): DocumentDescriptor {
+  return {
+    _tag: 'LiteForgeDocument',
+    config: {
+      head: {
+        scripts: [{ src: '/client.js', type: 'module' }],
+      },
+    },
   }
 }
 
@@ -434,6 +549,12 @@ interface StartServerOptions {
   devMode?: boolean
   /** Dev-mode only: glob for file watcher (default: 'src'). */
   watchDir?: string
+  /**
+   * Path to a browser entry file. When set, the server bundles it on start
+   * (and on every file change in dev mode) and serves the output at
+   * `/client.js`. The HTML shell automatically references `/client.js`.
+   */
+  clientEntry?: string
 }
 
 const HMR_WS_PATH = '/__liteforge_hmr__'
@@ -474,24 +595,64 @@ async function startServer<
     registerRpcRoutes(oakbun, state.modulesMap)
   }
 
-  // 4. Dev mode: start the parallel WebSocket+watcher server FIRST, so its
+  // 4. Client bundle — bundled once at start, rebuilt on file change in dev mode.
+  //    Kept in a mutable reference so the rebuilder (below) can swap the bundle
+  //    atomically without restarting the server.
+  const clientBundle: { current: BundledClient | null } = { current: null }
+  if (options.clientEntry) {
+    clientBundle.current = await bundleClient({
+      clientEntry: options.clientEntry,
+      target: 'browser',
+      minify: !options.devMode,
+      contextLabel: options.devMode ? '.dev()' : '.listen()',
+    })
+  }
+
+  // 5. Dev mode: start the parallel WebSocket+watcher server FIRST, so its
   //    port is known before we render the HTML shell (we bake the WS URL
   //    into the injected client snippet).
   let devControl: { stop: () => Promise<void>; port: number } | null = null
   if (options.devMode) {
-    devControl = await startDevHmr({ watchDir: options.watchDir ?? 'src' })
+    devControl = await startDevHmr({
+      watchDir: options.watchDir ?? 'src',
+      ...(options.clientEntry !== undefined
+        ? {
+            onChange: async () => {
+              try {
+                clientBundle.current = await bundleClient({
+                  clientEntry: options.clientEntry!,
+                  target: 'browser',
+                  minify: false,
+                  contextLabel: '.dev() rebuild',
+                })
+              } catch (err) {
+                const msg = err instanceof Error ? err.message : String(err)
+                console.error(`[@liteforge/server] rebuild failed:\n  ${msg}`)
+              }
+            },
+          }
+        : {}),
+    })
   }
 
-  // 5. Register the HTML shell at GET / — served with the rendered document.
+  // 6. Register the HTML shell at GET / — served with the rendered document.
   //    In dev mode, inject HMR client snippet at the end of <body>.
+  //    When clientEntry is set, the document is auto-augmented to include
+  //    `<script type="module" src="/client.js">`.
   const documentDescriptor = state.options.document as DocumentDescriptor | undefined
   const mountId = resolveMountId(state.options.target)
   const capturedDevControl = devControl
+  const effectiveDocument: DocumentDescriptor | undefined = options.clientEntry
+    ? documentDescriptor
+      ? withClientScript(documentDescriptor)
+      : defaultDocumentWithClientScript()
+    : documentDescriptor
+
   ;(oakbun as unknown as {
     get: (path: string, handler: (ctx: { req: Request }) => Response | Promise<Response>) => void
   }).get('/', (ctx: { req: Request }) => {
-    let html = documentDescriptor
-      ? renderDocument(documentDescriptor, { mountId })
+    let html = effectiveDocument
+      ? renderDocument(effectiveDocument, { mountId })
       : renderDocument(
           { _tag: 'LiteForgeDocument', config: {} },
           { mountId },
@@ -509,13 +670,36 @@ async function startServer<
     })
   })
 
-  // 6. Start Bun.serve via OakBun's .listen(). OakBun returns the Bun server.
+  // 7. Register the client bundle route (only if clientEntry was provided).
+  //    /client.js serves the main JS. Other assets (e.g. code-split chunks)
+  //    are served from their basename under the same root.
+  if (options.clientEntry) {
+    const bundleRouter = oakbun as unknown as {
+      get: (path: string, handler: (ctx: { req: Request }) => Response) => void
+    }
+    bundleRouter.get('/client.js', () => {
+      const bundle = clientBundle.current
+      if (!bundle) return new Response('Client bundle not ready', { status: 503 })
+      return new Response(bundle.mainJs, {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/javascript; charset=utf-8',
+          // No caching in dev — always fresh after rebuild. .listen() users
+          // get a rebuilt bundle per server restart, so no-cache is also
+          // defensible here.
+          'Cache-Control': 'no-cache',
+        },
+      })
+    })
+  }
+
+  // 8. Start Bun.serve via OakBun's .listen(). OakBun returns the Bun server.
   //    Port 0 tells Bun to pick a free port — read back via server.port.
   const bunServer = (oakbun as unknown as {
     listen: (port: number) => { port: number; stop: () => Promise<void> | void }
   }).listen(options.port)
 
-  // 7. Return an AppInstance shaped for the server context.
+  // 9. Return an AppInstance shaped for the server context.
   return {
     unmount: () => { /* no-op — server-only mode */ },
     use: <T>(_key: string) => undefined as unknown as T,
@@ -559,6 +743,8 @@ function injectHmrSnippet(html: string, wsUrl: string): string {
 
 interface DevHmrOptions {
   watchDir: string
+  /** Optional hook invoked before the reload broadcast — used to rebuild the client bundle. */
+  onChange?: () => Promise<void> | void
 }
 
 async function startDevHmr(
@@ -585,11 +771,21 @@ async function startDevHmr(
     throw new Error('[@liteforge/server] .dev() requires Bun runtime')
   }
 
-  // Debounced broadcast: multiple file changes within 100ms coalesce into one reload.
+  // Debounced broadcast: multiple file changes within 100ms coalesce into one
+  // reload. If `onChange` is provided, it runs BEFORE the broadcast — the
+  // rebuilt bundle is served when browsers reload.
   let debounceTimer: ReturnType<typeof setTimeout> | null = null
   const broadcastReload = () => {
     if (debounceTimer) clearTimeout(debounceTimer)
-    debounceTimer = setTimeout(() => {
+    debounceTimer = setTimeout(async () => {
+      if (options.onChange) {
+        try {
+          await options.onChange()
+        } catch {
+          // bundleClient already logs; skip broadcast if rebuild failed
+          return
+        }
+      }
       const msg = JSON.stringify({ type: 'reload' })
       for (const ws of clients) {
         try {

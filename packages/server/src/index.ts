@@ -43,6 +43,8 @@ export type {
   CtxOf,
   BuildOptions,
   BuildResult,
+  ListenOptions,
+  DevOptions,
 } from './define-app.js'
 
 export type {
