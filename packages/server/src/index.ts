@@ -4,7 +4,7 @@ export { liteforgeServer } from './plugin.js'
 
 // High-level fullstack facade (Phase 2 Step 1.5)
 export { defineApp } from './define-app.js'
-export { defineDocument } from './define-document.js'
+export { defineDocument, renderDocument } from './define-document.js'
 
 export type {
   BaseCtx,
@@ -51,6 +51,7 @@ export type {
   DocumentMeta,
   DocumentLink,
   DocumentScript,
+  RenderDocumentOptions,
 } from './define-document.js'
 
 export type { ContextMap, ResolveContext } from './context.js'
