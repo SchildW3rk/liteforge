@@ -96,6 +96,28 @@ bricht nur im Dev-Mode. Keiner dieser States ist heute aktiv gebrochen
 **Helper existiert bereits:** `packages/runtime/src/_singleton.ts`
 (`createGlobalSingleton<T>(key, init): T`). Pattern ist etabliert.
 
+## Doku-Clarification: OPTIONS-Preflight ist by-design 405 (same-origin-only RPC)
+
+**Kein Bug-Fix — reine Doku-Aufgabe.**
+
+**Beobachtung:** `curl -X OPTIONS /api/_rpc/...` gegen den Dev- oder Prod-Server liefert `405 Method Not Allowed` statt eines CORS-Preflight-204. Das ist **korrekt und beabsichtigt**:
+
+- LiteForge-RPC ist **same-origin-only by design**. Der `X-Liteforge-RPC: 1` Header + same-origin-CORS sind bewusste CSRF-Mitigations.
+- Same-origin-Requests triggern nie einen Preflight — der Browser schickt den POST direkt. Der 405 ist nur für cross-origin-Clients sichtbar, und für die ist die Ablehnung das richtige Verhalten.
+- LiteForge-RPC ist **nicht** als öffentliche HTTP-API gedacht. Wer das braucht, nutzt OakBun direkt über `.plugin()` in `defineApp`.
+
+**TODOs:**
+1. `examples/starter-bun/README.md` — Abschnitt "Layer-Trennung" ergänzen:
+   > RPC über `defineApp` ist für dein eigenes Frontend (same-origin). Für öffentliche HTTP-APIs (andere Domains, Drittanbieter, Mobile-Apps) nutze OakBun direkt — siehe OakBun-Docs.
+2. Code-Kommentar im OPTIONS-Handler in `packages/server/src/_lifecycle.ts` (`registerRpcRoutes`):
+   ```ts
+   // 405 by design — LiteForge-RPC is same-origin-only.
+   // Use OakBun for public HTTP APIs.
+   ```
+3. Optional: `packages/server/README.md` Security-Section auf "same-origin-only" explizit machen (aktuell nur implizit via CORS-Default).
+
+**Scope:** Separater Doku-PR. Kein Code-Verhalten ändert sich.
+
 ## A — Bundle-Deduplikation via build plugin (nach D.1 als Optimierung)
 
 D.1 macht Bundle-Duplikation harmlos. A eliminiert sie bundle-size-technisch.

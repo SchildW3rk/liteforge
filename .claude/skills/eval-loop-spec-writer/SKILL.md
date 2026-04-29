@@ -1,6 +1,6 @@
 ---
 name: eval-loop-spec-writer
-description: Erstellt Implementation-Specs im Eval-Loop-Format für SchildW3rk-Framework-Arbeit (LiteForge, OakBun, Kontor). Auto-triggern bei Anfragen wie "Schreib eine Spec für [Feature/Package/Phase]", "Eval-Loop-Spec für ...", "Neues Package bauen — schreib die Spec", "Spec für Phase X Schritt Y". Nicht nutzen für triviale Bug-Fixes mit klarer Ursache, reine Config-Changes, Docs-Updates oder Tasks unter 2h.
+description: Erstellt Implementation-Specs im Eval-Loop-Format für SchildW3rk-Framework-Arbeit. Auto-triggern bei Anfragen wie "Schreib eine Spec für [Feature/Package/Phase]", "Eval-Loop-Spec für ...", "Neues Package bauen — schreib die Spec", "Spec für Phase X Schritt Y". Der Skill integriert SchildW3rks Code-Konventionen (500 LOC Limit, kein as unknown as, _prefix Visibility, Bun-native first) in jede Spec. Nicht nutzen für triviale Bug-Fixes mit klarer Ursache, reine Config-Changes, Docs-Updates oder Tasks unter 2h.
 ---
 
 # Eval-Loop-Spec-Writer
@@ -44,6 +44,27 @@ Nicht verwenden bei:
 - **Commit-Strategie** vorab definieren mit konkreten Commit-Titeln (conventional commits)
 - **Risk-Sektion mit 2-5 konkreten Stolperfallen** — nicht "könnte schwierig werden", sondern "Bun's `plugin()` hooks sind nicht idempotent wenn X"
 
+## SchildW3rk-Konventionen automatisch einweben
+
+Jede Spec muss die Code-Konventionen aus `CONVENTIONS.md` und Lessons aus `LESSONS.md` respektieren. Konkret:
+
+- **Hard Rules:** keine `any`, keine `as unknown as`, keine `!`-Assertions, 500 LOC pro File, keine `console.log`
+- **Visibility:** `_prefix` für cross-file internal, `#private` für class state, `_internal/` Ordner ab 5+ internen Symbolen, `index.ts` exportiert nur non-underscore
+- **Bun-nativ first:** `Bun.file/Glob/spawn/write` bevor Web-Standards, Node APIs nur mit `node:` Prefix
+- **TypeScript strict:** `strict`, `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, `verbatimModuleSyntax` — nie schwächen per-package
+- **Package-Struktur:** `@schildw3rk/<name>`, ESM-only, `publishConfig.access: public`, `repository.directory`
+
+Wenn eine Spec-Idee gegen eine Konvention verstößt: **Spec anpassen, nicht Konvention**. Konventionen wurden bewusst gewählt aufgrund konkreter Fehler in LiteForge/OakBun (siehe LESSONS.md).
+
+In die DoD jeder Spec automatisch aufnehmen:
+
+- [ ] `bun run typecheck` clean (inkludiert file-size, public-api, tsc)
+- [ ] `bun run check` clean (Biome format + lint)
+- [ ] `bun run test` alle Tests grün
+- [ ] Keine `as unknown as` in `src/` eingeführt
+- [ ] Keine Files über 500 LOC neu/extended
+- [ ] Keine `_`-Symbole in public `index.ts` re-exportiert
+
 ## Vergleichs-Kriterien in Approach-Evaluation
 
 Standard-Reihenfolge (je Kontext anpassen):
@@ -52,7 +73,7 @@ Standard-Reihenfolge (je Kontext anpassen):
 2. **DX** — wie fühlt sich die API an?
 3. **Bundle-Impact** — wenn Runtime-Package
 4. **Testbarkeit** — Unit + Integration getrennt?
-5. **Framework-Konsistenz** — passt das zum etablierten `define*` vs `create*` Muster?
+5. **Framework-Konsistenz** — respektiert es etablierte Patterns (bei Shell/Shield: siehe CONVENTIONS.md; bei Legacy Kontor/LiteForge/OakBun: `define*`/`create*` Muster)
 
 ## Was beim Schreiben der Spec zu vermeiden ist
 
@@ -75,10 +96,11 @@ Task-Listen können "done" zeigen während Git/Tests/Build das nicht bestätigen
 
 ```
 eval-loop-spec-writer/
-├── SKILL.md              ← dieses File
+├── SKILL.md
 ├── templates/
-│   └── spec-template.md  ← Struktur-Vorlage
+│   └── spec-template.md
 └── rules/
-    ├── bug-hunting.md           ← für Bug-Fix-Specs
-    └── refactoring-discipline.md ← für reine Refactorings
+    ├── bug-hunting.md
+    ├── refactoring-discipline.md
+    └── schildw3rk-conventions.md
 ```

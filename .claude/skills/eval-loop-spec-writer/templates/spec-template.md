@@ -4,7 +4,8 @@
 
 ## Kontext
 
-- **Projekt:** [LiteForge / OakBun / Kontor / ...]
+- **Projekt:** [schildw3rk (shell/shield) / Kontor / Legacy LiteForge / Legacy OakBun]
+- **Package:** [z.B. @schildw3rk/shell, @schildw3rk/shield, @schildw3rk/toast]
 - **Phase:** [z.B. Phase 2 Step 1 — `@liteforge/server`]
 - **Vorheriger Zustand:** [was ist aktuell? was läuft? welche Tests sind grün?]
 - **Trigger:** [warum jetzt? welche Vorbedingung ist erfüllt?]
@@ -102,14 +103,22 @@
 
 ## Definition of Done
 
-- [ ] Alle Tests grün (`bun test` exit 0)
-- [ ] `tsc --noEmit` clean, 0 Errors
-- [ ] Keine `as any` / `@ts-ignore` / `@ts-expect-error` im Production-Code
-- [ ] Keine Workarounds — Framework-Gaps sind Issues (Link: ...)
-- [ ] Docs in `/docs` aktualisiert (falls public API)
-- [ ] CHANGELOG.md Entry
+**Standard DoD für schildw3rk (alles muss passen):**
+
+- [ ] `bun run typecheck` clean (inkl. file-size, public-api, tsc)
+- [ ] `bun run check` clean (Biome format + lint)
+- [ ] `bun run test` alle Tests grün
+- [ ] Keine `as any` / `@ts-ignore` / `@ts-expect-error` / `as unknown as` in `src/`
+- [ ] Keine Workarounds — Framework-Gaps sind GitHub Issues (Link: ...)
+- [ ] Alle Files <500 LOC in `src/`
+- [ ] Visibility-Konvention eingehalten: `_prefix` für internal, keine Internals in `index.ts`
+- [ ] Bun-nativ wo möglich (kein `node:fs` wenn `Bun.file` existiert)
+- [ ] Docs in `README.md` bzw. `/docs` aktualisiert (falls public API)
+- [ ] CHANGELOG.md Entry (falls Public-API-Change)
 - [ ] Manuelle Smoke-Tests: [konkrete Schritte]
 - [ ] [Feature-spezifisch]
+
+**Für Legacy-Projekte (LiteForge/OakBun/Kontor):** DoD aus Projekt-CLAUDE.md übernehmen.
 
 ## Commits
 
